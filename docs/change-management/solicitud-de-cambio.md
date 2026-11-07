@@ -20,7 +20,7 @@ Se abre como **issue** con la plantilla *Solicitud de cambio* ([`.github/ISSUE_T
 
 ## Ejemplo: RFC-001 · Primer despliegue a producción (v1.0.0)
 
-> Ejemplo de referencia; el issue real se abre en GitHub con la plantilla.
+> Issue real: [#52](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/52), abierto con la plantilla el 7 de noviembre.
 
 **Cambio solicitado.** Llevar a prod la primera versión completa de la Parte 1: los 5 servicios núcleo, el middleware y el cliente web, con la configuración por variables de entorno y los secretos generados en la VM. Es la primera vez que prod recibe tráfico, así que se trata como cambio **Normal** con RFC por tocar configuración de prod.
 
