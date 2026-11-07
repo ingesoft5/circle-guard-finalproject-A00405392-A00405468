@@ -1,5 +1,7 @@
 // Construye y publica en Nexus la imagen de un servicio con tag de versión y de commit.
 // Nunca usa "latest". Si el servicio aún no tiene Dockerfile (HU-02), lo omite con aviso.
+// El contexto de build es la RAÍZ del repo (monorepo Gradle: los Dockerfiles copian settings.gradle.kts
+// y el módulo); cada servicio aporta su Dockerfile con -f.
 // Uso: dockerPublish('circleguard-auth-service', '1.2.0')
 def call(String svc, String version) {
     String dir = svc == 'web' ? 'mobile' : "services/${svc}"
@@ -16,7 +18,7 @@ def call(String svc, String version) {
                 docker build --pull -t "$IMAGE:$VERSION" -t "$IMAGE:sha-$SHA" \
                   --label org.opencontainers.image.version="$VERSION" \
                   --label org.opencontainers.image.revision="$GIT_COMMIT" \
-                  --label org.opencontainers.image.source="$GIT_URL" "$CTX"
+                  --label org.opencontainers.image.source="$GIT_URL" -f "$CTX/Dockerfile" .
                 docker push "$IMAGE:$VERSION"
                 docker push "$IMAGE:sha-$SHA"
                 docker image ls "$IMAGE" --format '{{.Repository}}:{{.Tag}} {{.Size}}' | head -2'''
