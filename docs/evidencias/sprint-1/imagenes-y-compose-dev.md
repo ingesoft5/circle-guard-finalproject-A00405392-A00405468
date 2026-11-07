@@ -53,3 +53,13 @@ Después (rewrite ... break + proxy_pass http://$upstream):
   UPSTREAM GOT: 'POST /api/v1/auth/login?x=1&y=a%20b HTTP/1.1'        <- conserva la codificación y el query string
   UPSTREAM GOT: 'POST / HTTP/1.1'                                      <- /api/auth/
 ```
+
+## Revalidación tras la corrección de nginx (2026-11-07)
+
+Imagen web reconstruida con `f6ee96f` y ambiente dev levantado de nuevo con `compose.sh dev up -d --wait`:
+
+```
+healthy: 10/10
+login super_admin -> HTTP 200
+GET /api/form/api/v1/questionnaires/no%20existe?x=1 -> HTTP 404 del servicio (la petición llega bien formada)
+```
