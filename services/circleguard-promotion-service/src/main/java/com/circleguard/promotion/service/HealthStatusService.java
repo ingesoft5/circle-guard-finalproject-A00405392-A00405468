@@ -69,9 +69,12 @@ public class HealthStatusService {
             "     CASE WHEN $status = 'CONFIRMED' THEN 'SUSPECT' " +
             "          WHEN $status = 'SUSPECT' THEN 'PROBABLE' " +
             "          ELSE c1.status END as l1Status " +
-            "WHERE c1 IS NOT NULL AND c1.status <> l1Status " +
-            "SET c1.status = l1Status, c1.statusUpdatedAt = timestamp() " +
-            "WITH source, collect(DISTINCT {id: c1.anonymousId, status: l1Status}) as l1 " +
+            // Sin WHERE aquí: si el usuario no tiene contactos, un WHERE descartaba la única fila,
+            // la consulta no devolvía resultado y no se actualizaba Redis ni se publicaba el evento.
+            "WITH source, c1, l1Status, (c1 IS NOT NULL AND c1.status <> l1Status) AS changed " +
+            "FOREACH (_ IN CASE WHEN changed THEN [1] ELSE [] END | " +
+            "  SET c1.status = l1Status, c1.statusUpdatedAt = timestamp()) " +
+            "WITH source, collect(DISTINCT CASE WHEN changed THEN {id: c1.anonymousId, status: l1Status} END) as l1 " +
             "OPTIONAL MATCH (source)-[r1]-(c1_node:User)-[r2]-(c2:User) " +
             "WHERE $status = 'CONFIRMED' " +
             "  AND ( " +
