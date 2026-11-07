@@ -20,6 +20,10 @@ spring:
       password: ${NEO4J_PASSWORD}
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      # Los servicios publican Map/objetos: sin JsonSerializer Kafka usa StringSerializer y el envío falla.
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
       group-id: promotion-service-group
       auto-offset-reset: earliest
