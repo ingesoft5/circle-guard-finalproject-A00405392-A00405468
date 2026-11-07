@@ -170,7 +170,7 @@ export default function QuestionnaireScreen() {
         <DynamicForm 
           questions={questionnaire.questions} 
           onSubmit={() => {}} // Controlled by external button
-          // Pass setResponses to capture state
+          onChange={setResponses}
         />
         
         <View style={styles.attachmentBox}>
