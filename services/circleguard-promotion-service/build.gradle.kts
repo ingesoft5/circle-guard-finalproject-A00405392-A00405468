@@ -30,13 +30,15 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:postgresql:1.21.4")
     testImplementation("org.testcontainers:neo4j:1.21.4")
+    testImplementation("org.testcontainers:kafka:1.21.4")
+    testImplementation("org.awaitility:awaitility")
 }
 
 // Las pruebas de rendimiento (NFR-1) dependen de la carga de la maquina:
 // se excluyen de `test` para que el pipeline no falle al azar y corren en su propia tarea.
 tasks.named<Test>("test") {
     useJUnitPlatform {
-        excludeTags("performance")
+        excludeTags("performance", "integration")
     }
 }
 
@@ -47,6 +49,19 @@ val performanceTest by tasks.registering(Test::class) {
     classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform {
         includeTags("performance")
+    }
+    shouldRunAfter(tasks.named("test"))
+}
+
+// HU-06 (#13): pruebas de integración con Testcontainers (@Tag("integration")).
+// No corren en `test`; el pipeline ejecuta esta tarea en su etapa "Integration tests".
+val integrationTest by tasks.registering(Test::class) {
+    description = "Ejecuta las pruebas de integración entre servicios (@Tag(\"integration\"))."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("integration")
     }
     shouldRunAfter(tasks.named("test"))
 }
