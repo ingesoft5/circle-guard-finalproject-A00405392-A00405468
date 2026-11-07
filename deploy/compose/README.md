@@ -28,6 +28,16 @@ docker build -f mobile/Dockerfile -t local/circleguard/circleguard-web:dev .
 
 Los Dockerfiles se construyen **desde la raíz del repo**, porque el build de Gradle es un monorepo.
 
+## Despliegue desde Jenkins (HU-08, HU-10)
+
+En cada *merge* a `main` el pipeline ([`Jenkinsfile`](../../Jenkinsfile)) calcula la versión con semantic-release, publica las 9 imágenes en Nexus con ese tag y las promueve: **dev** (automático) → E2E con Playwright → **stage** (automático si los E2E pasan) → aprobación manual (`input`) → **prod**. Cada despliegue lo hace `deployCompose(env, version)` ([`jenkins/vars/deployCompose.groovy`](../../jenkins/vars/deployCompose.groovy)) por SSH a la VM del ambiente:
+
+1. Copia esta carpeta a `/opt/circleguard/compose/` (sin tocar el `.env`).
+2. Corre [`deploy.sh`](../../jenkins/resources/scripts/deploy.sh) en la VM: la **primera vez genera los secretos** del ambiente en `<env>/.env` con `openssl rand` (nunca salen de la VM, ni al repo ni a Jenkins); luego fija `REGISTRY` e `IMAGE_TAG`, hace `compose pull` y `up -d --wait`, y anota la versión en `/opt/circleguard/RELEASES`.
+3. `smokeTest(env)` comprueba `/healthz` y el `readiness` de los 5 servicios a través del nginx.
+
+**Rollback:** el job `circleguard-rollback` de Jenkins ([`jenkins/rollback.Jenkinsfile`](../../jenkins/rollback.Jenkinsfile)) recibe `ENV` y `VERSION` y llama al mismo `deployCompose` con una versión anterior: las imágenes son inmutables y siguen en Nexus, así que volver atrás es cambiar `IMAGE_TAG`. En prod pide confirmación.
+
 ## Cómo se comunican
 
 El cliente web es la única entrada pública (puerto `WEB_PORT`). Su nginx reenvía `/api/<servicio>/...` al servicio correspondiente dentro de la red de compose, así que el navegador nunca habla directo con los servicios y no hay problemas de CORS. Los servicios no publican puertos.
