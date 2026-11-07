@@ -1,0 +1,39 @@
+{
+  "branches": ["main"],
+  "tagFormat": "v${version}",
+  "plugins": [
+    ["@semantic-release/commit-analyzer", { "preset": "conventionalcommits" }],
+    ["@semantic-release/release-notes-generator", {
+      "preset": "conventionalcommits",
+      "presetConfig": {
+        "types": [
+          { "type": "feat", "section": "Funcionalidades" },
+          { "type": "fix", "section": "Correcciones" },
+          { "type": "perf", "section": "Rendimiento" },
+          { "type": "revert", "section": "Reversiones" },
+          { "type": "docs", "section": "Documentación", "hidden": true },
+          { "type": "refactor", "section": "Refactorizaciones", "hidden": true },
+          { "type": "test", "section": "Pruebas", "hidden": true },
+          { "type": "build", "section": "Build", "hidden": true },
+          { "type": "ci", "section": "CI", "hidden": true },
+          { "type": "chore", "section": "Mantenimiento", "hidden": true }
+        ]
+      }
+    }],
+    ["@semantic-release/changelog", {
+      "changelogFile": "CHANGELOG.md",
+      "changelogTitle": "# Changelog de CircleGuard\n\nGenerado por semantic-release en el pipeline a partir de los Conventional Commits de `main`. La misma nota queda en [GitHub Releases](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases)."
+    }],
+    ["@semantic-release/exec", {
+      "prepareCmd": "mkdir -p .release && printf '%s' '${nextRelease.version}' > .release/version"
+    }],
+    ["@semantic-release/github", {
+      "assets": [{ "path": "CHANGELOG.md", "label": "CHANGELOG.md" }],
+      "successComment": ":rocket: Este cambio salió en la versión v${nextRelease.version}: https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/tag/v${nextRelease.version}. El pipeline la desplegó en dev y stage; prod requiere aprobación manual.",
+      "failComment": false,
+      "failTitle": false,
+      "labels": false,
+      "releasedLabels": false
+    }]
+  ]
+}

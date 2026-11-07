@@ -63,3 +63,6 @@ infra/bootstrap/.state/
 .env
 **/.env
 !**/.env.example
+
+# Salidas de semantic-release en el pipeline (la versión va a .release/version; el CHANGELOG, a la Release)
+.release/

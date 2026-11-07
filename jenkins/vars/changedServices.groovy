@@ -4,8 +4,7 @@
 //  - Si cambió algo común (Gradle, Jenkinsfile, Shared Library) se construyen todos.
 // Nombres = carpetas de services/ (p. ej. "circleguard-auth-service") y "web" para mobile/.
 List call() {
-    List all = sh(script: 'ls -d services/*/ | xargs -n1 basename', returnStdout: true).trim().split('\n') as List
-    all << 'web'
+    List all = all()
     String base = baseRef()
     if (!base) {
         echo '[changedServices] Sin referencia para comparar: se construyen todos'
@@ -23,6 +22,14 @@ List call() {
     }
     echo "[changedServices] Archivos cambiados: ${files.size()} → servicios: ${selected ?: 'ninguno'}"
     return selected
+}
+
+// Todos los servicios del monorepo (carpetas de services/) más el cliente web. En main, la etapa de
+// publicación los construye todos: las 9 imágenes llevan la misma versión que despliega el compose.
+List all() {
+    List everything = sh(script: 'ls -d services/*/ | xargs -n1 basename', returnStdout: true).trim().split('\n') as List
+    everything << 'web'
+    return everything
 }
 
 private String baseRef() {
