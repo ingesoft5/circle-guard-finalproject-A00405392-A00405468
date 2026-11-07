@@ -111,6 +111,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** `tests/e2e-playwright/` con los 3 flujos (inicio de sesión, cuestionario y validación de acceso), `global-setup` que deja un cuestionario activo, `run.sh` con la imagen oficial de Playwright y reportes HTML y JUnit. Corrigió cuatro errores de la app que salieron al probarla en un navegador real: 403 por CORS en el login (nginx perdía el puerto del `Host`), el cuestionario descartaba las respuestas, el rol de guardia no tenía el permiso `gate:scan` y el escáner no se podía usar en web.
 - **Verificación / cambios del equipo:** 5/5 E2E en verde dos veces seguidas contra el compose de dev; `jest` de `DynamicForm` 2/2 ([evidencia](docs/evidencias/sprint-1/pruebas-e2e-playwright.md)). La primera corrida falló 5/5: una por el 403 real y las demás por selectores (textos duplicados de pantallas ocultas y un mensaje que la app muestra en mayúsculas), que se corrigieron en las pruebas. Se decidió que en web el guardia pegue el código o use un lector USB, porque el navegador no tiene biometría. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-07 · `jmrojas06` · Gestión de cambios, arquitectura y documentación operativa (#18, #19, #38)
+
+- **Prompt:** *"Revisa, y entonces terminemos mi parte del sprint 1 y ojala revisar sprint 0."*
+- **Qué produjo:** `docs/change-management/politica.md` y `solicitud-de-cambio.md` (tipos de cambio, quién aprueba qué, RFC, esquema de etiquetado, trazabilidad, rollback), `docs/arquitectura/README.md` (tres diagramas Mermaid: servicios/eventos/datos, ambientes en AWS y pipeline), la sección "Operación" del `README.md` (mapa de la documentación, URL de los ambientes, cómo llega un cambio a prod, comandos), el borrador de `docs/agil/sprint-1.md`, la foto del burndown del 7 de noviembre y la corrección de `sprint-0.md` (#6 terminado en el PR #42).
+- **Verificación / cambios del equipo:** los tópicos de Kafka, los puertos y las dependencias del diagrama se tomaron del código (`grep` de `@KafkaListener` y `kafkaTemplate.send`, y los `application.yml`), no de memoria. Antes de tomar la foto del burndown se puso el tablero al día con el estado real de los PR (40 de 61 puntos pendientes al 7 nov). La fila de B en la retro del Sprint 0 y la *review*/retro del Sprint 1 las completa el equipo el domingo. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo

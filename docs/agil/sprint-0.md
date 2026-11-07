@@ -77,7 +77,7 @@ Limpieza (C1-C3): `gradle-wrapper.jar` versionado con `gradlew` en LF (`.gitattr
 | [#3](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/3) | `CONTRIBUTING.md` | A | 1 | Hecho (PR #35) |
 | [#4](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/4) | Plantillas de PR e issues | B | 1 | Hecho (PR #41) |
 | [#5](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/5) | Proteger `main` | A | 1 | Hecho |
-| [#6](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/6) | Código base limpio y en verde | B | 3 | En revisión |
+| [#6](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/6) | Código base limpio y en verde | B | 3 | Hecho (PR #42) |
 | [#7](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/7) | Este documento y *planning* del Sprint 1 | A+B | 1 | Hecho (PR #36) |
 
 ## 5. Planning del Sprint 1 (jue 5 – dom 8 nov)
@@ -127,7 +127,7 @@ Limpieza (C1-C3): `gradle-wrapper.jar` versionado con `gradlew` en LF (`.gitattr
 | `main` protegida, solo *squash* | PR #37 + `docs/evidencias/sprint-0/` |
 | Repo renombrado según la convención | Riesgo R3 |
 | Primeros PR revisados y fusionados por el otro integrante | PR #35, #36, #37 |
-| Código base en verde: 51 pruebas, 0 fallas desde un clon limpio (+ `performanceTest` aparte) | #6 + [`build-verde.txt`](../evidencias/sprint-0/build-verde.txt) (en revisión) |
+| Código base en verde: 51 pruebas, 0 fallas desde un clon limpio (+ `performanceTest` aparte) | #6 + [`build-verde.txt`](../evidencias/sprint-0/build-verde.txt) · PR #42 |
 | Plantillas de PR e issues (historia, bug, solicitud de cambio) | PR #41, `.github/` |
 
 ### Retrospectiva
