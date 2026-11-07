@@ -54,13 +54,14 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 
 | Layer | Technology | Rationale |
 |:---|:---|:---|
-| **Backend** | Spring Boot 4 / Java 21 | Enterprise-grade maturity & low-latency Jakarta EE support. |
+| **Backend** | Spring Boot 3.2.4 / Java 21 | Enterprise-grade maturity & low-latency Jakarta EE support. |
 | **Graph DB** | Neo4j 5.26 | High-performance recursive traversals unreachable with SQL. |
 | **Relational DB**| PostgreSQL 16 | ACID compliant storage for identity and configuration. |
-| **Message Bus** | Apache Kafka 7.6 | Persistent, audit-trailed event log for status dispatches. |
+| **Message Bus** | Apache Kafka 3.8 (KRaft, no ZooKeeper) | Persistent, audit-trailed event log for status dispatches. |
 | **Caching** | Redis 7.2 | L2 distributed cache for rapid entry-gate status validation. |
-| **Mobile/Web** | Expo (React Native) | Unified codebase across iOS, Android, and Browser. |
-| **Infra** | Kubernetes | Orchestration for high availability and auto-scaling. |
+| **Mobile/Web** | Expo (React Native) + nginx | Unified codebase across iOS, Android, and Browser; the web build is served by nginx, which also proxies `/api/<service>/`. |
+| **Infra** | Part 1: Docker Compose on EC2 (dev, stage, prod) · Part 2: Kubernetes | Isolated environments, same immutable images everywhere. |
+| **CI/CD** | Jenkins (multibranch + Shared Library), SonarQube, Nexus, semantic-release | Every PR is built, tested and gated; every merge to `main` is versioned and promoted dev → stage → prod. See [`docs/arquitectura/`](docs/arquitectura/README.md). |
 
 ---
 
@@ -81,6 +82,54 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 - [ ] Off-campus circle detection via P2P Bluetooth.
 - [ ] Global Health Dashboard with hotspot visualization.
 - [ ] Lab API bridge for automated test result ingestion.
+
+---
+
+## Operación (DevOps) — guía rápida
+
+> Documentación del equipo (Ingeniería de Software V). Reglas de trabajo en [`CONTRIBUTING.md`](CONTRIBUTING.md); plan, sprints y métricas en [`docs/agil/`](docs/agil/PLAN-PROYECTO.md); uso de IA generativa en [`IAG_REGISTRO.md`](IAG_REGISTRO.md).
+
+### Mapa de la documentación
+
+| Tema | Dónde |
+|---|---|
+| Arquitectura, eventos de Kafka y pipeline (diagramas) | [`docs/arquitectura/`](docs/arquitectura/README.md) |
+| Reconstruir la nube (AWS) con un comando, accesos | [`infra/bootstrap/README.md`](infra/bootstrap/README.md) |
+| Imágenes, compose por ambiente, despliegue y rollback | [`deploy/compose/README.md`](deploy/compose/README.md) |
+| Versionado automático y release notes | [`docs/release-notes/README.md`](docs/release-notes/README.md) |
+| Gestión de cambios: tipos, aprobaciones, RFC, etiquetado | [`docs/change-management/politica.md`](docs/change-management/politica.md) |
+| Sprints, burndown y evidencias | [`docs/agil/`](docs/agil), [`docs/evidencias/`](docs/evidencias) |
+
+### Ambientes
+
+Cada ambiente es una VM EC2 propia con su *security group* y su IP elástica. Se apagan cuando no se usan (`infra/bootstrap/down.sh`) y `up.sh` las vuelve a encender con la misma IP, así que las URL no cambian.
+
+| Ambiente | URL | Recibe |
+|---|---|---|
+| Herramientas | Jenkins `http://44.221.115.232:8080` · SonarQube `http://44.221.115.232:9000` · Nexus `http://44.221.115.232:8081` | — |
+| **dev** | `http://34.230.234.121` | Cada versión de `main`, automáticamente |
+| **stage** | `http://3.209.207.195` | La misma versión, si los E2E contra dev pasan |
+| **prod** | `http://50.19.116.114` | La misma versión, tras aprobación manual en Jenkins |
+
+### Cómo llega un cambio a producción
+
+1. Issue en el [tablero](https://github.com/orgs/ingesoft5/projects/8) → rama `<tipo>/<issue>-<descripcion>` → PR cuyo título es un Conventional Commit.
+2. Jenkins corre la **CI del PR**: commitlint, build, pruebas unitarias con JaCoCo (≥ 60 % de líneas en los 5 servicios núcleo), SonarQube con *quality gate* bloqueante y pruebas de integración con Testcontainers. Solo construye los servicios que cambiaron.
+3. El otro integrante aprueba y se hace *squash and merge* a `main` (protegida: PR obligatorio, 1 aprobación, también para administradores).
+4. En **`main`**: semantic-release calcula `vX.Y.Z` y crea el tag y la Release; se publican las 9 imágenes en Nexus con ese tag (nunca `latest`); despliegue a **dev** → E2E con Playwright → **stage** → aprobación manual (`input`) → **prod**. Discord y WhatsApp avisan los fallos, la espera de aprobación y el resultado.
+5. Volver atrás: job `circleguard-rollback` en Jenkins con `ENV` y `VERSION`.
+
+### Comandos frecuentes
+
+```bash
+./infra/bootstrap/up.sh                                            # crea o enciende tools, dev, stage y prod (~3 min si ya existen)
+./infra/bootstrap/up.sh tools dev                                  # solo Jenkins/Sonar/Nexus y dev
+./infra/bootstrap/down.sh                                          # apaga todo; se conservan datos e IPs
+./gradlew build                                                    # compila, unitarias y umbral de cobertura de los 8 servicios
+./gradlew :services:circleguard-gateway-service:integrationTest    # pruebas de integración (necesita Docker)
+./deploy/compose/compose.sh dev up -d --wait                       # el sistema completo en local
+./docs/agil/metricas/burndown.sh "Sprint 1" 2026-11-05 2026-11-08  # foto diaria del burndown
+```
 
 ---
 
@@ -153,10 +202,12 @@ We maintain high system integrity via multi-level testing:
 
 | Command | Scope |
 |:---|:---|
-| `./gradlew test` | Full system suite (Unit + Integration) |
-| `./gradlew :services:<name>:test` | Single service testing |
+| `./gradlew build` | Unit tests of the 8 services + JaCoCo report + line-coverage gate (≥ 60 % in the 5 core services) |
+| `./gradlew :services:<name>:test` | Unit tests of a single service |
+| `./gradlew :services:<name>:integrationTest` | Integration tests (`@Tag("integration")`) with **Testcontainers**: real Kafka, Neo4j and Redis containers. Needs Docker |
+| `tests/e2e-playwright/run.sh <BASE_URL>` | End-to-end tests with Playwright against a deployed environment (the pipeline runs them against dev before promoting to stage) |
 
-**Note**: Integration tests use **Testcontainers** to spawn ephemeral Neo4j and PostgreSQL instances for zero-side-effect validation.
+Coverage per service is published in Jenkins (JaCoCo) and SonarQube; the pipeline fails if a core service drops below 60 % or the SonarQube quality gate is red.
 
 ---
 
