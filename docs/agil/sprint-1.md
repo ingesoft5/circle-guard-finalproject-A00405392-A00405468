@@ -51,7 +51,7 @@ Ensayo general: un `fix:` recorre PR → revisión → `main` → `vX.Y.Z` → d
 | Las pruebas de integración encontraron 3 errores reales del código base que las unitarias no veían | Los PR apilados (#44→#45→#46, #48→#50) se marcan en conflicto al hacer *squash* y descartan aprobaciones: cada uno costó un rebase extra | Un PR a la vez contra `main`; el siguiente se abre cuando el anterior se fusiona |
 | El pipeline de CI quedó en verde el mismo día y bloqueó la demo de #47 | Las VMs estuvieron apagadas la mayor parte del sábado: la CD se validó en local y la corrida real quedó para el domingo | Encender `tools` + `dev` al empezar cada bloque de trabajo de pipeline y apagar al terminar |
 | _(jmrojas06)_ | _(jmrojas06)_ | _(jmrojas06)_ |
-| _(pierrecuevas)_ | _(pierrecuevas)_ | _(pierrecuevas)_ |
+| Las pruebas de integración y E2E cumplieron su objetivo y detectaron a tiempo fallos críticos: el gateway dejaba pasar a usuarios contagiados, el cuestionario perdía las respuestas y el login fallaba directamente en el navegador | Probé demasiado tiempo solo con `curl` en lugar de validar en un navegador real, por eso el tema de CORS apareció al final. Además, encadenar un PR sobre otro (#48 → #50) hizo que GitHub cerrara el segundo y hubo que rehacer el trabajo | Correr la suite E2E contra el docker-compose local antes de abrir cualquier PR que toque el frontend, y mantener la regla de abrir cada PR solo y directo contra `main` |
 
 ## 4. Entregables de la Parte 1 (índice para el informe)
 
