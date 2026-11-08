@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Platform, TextInput } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ScanResultOverlay } from '@/components/ScanResultOverlay';
 import { useGateValidation } from '@/hooks/useGateValidation';
@@ -16,8 +16,10 @@ export default function ScannerScreen() {
     const { authenticate, isAuthenticated } = useBiometricAuth();
     const [scanned, setScanned] = useState(false);
 
+    const [manualToken, setManualToken] = useState('');
+
     useEffect(() => {
-        if (!permission) {
+        if (!permission && Platform.OS !== 'web') {
             requestPermission();
         }
     }, []);
@@ -32,6 +34,40 @@ export default function ScannerScreen() {
         reset();
         setScanned(false);
     };
+
+    // Web: el navegador no tiene biometría ni la cámara del celular del guardia. El código se pega o lo
+    // escribe un lector de QR USB (funciona como teclado y termina con Enter).
+    if (Platform.OS === 'web') {
+        const submitManual = () => {
+            const token = manualToken.trim();
+            if (!token || status === 'validating') return;
+            validateToken(token);
+            setManualToken('');
+        };
+        return (
+            <View style={styles.container}>
+                <MeshBackground />
+                <View style={styles.centerContainer}>
+                    <Text style={styles.mainText}>GATE VALIDATION</Text>
+                    <Text style={styles.subText}>SCAN WITH A USB READER OR PASTE THE QR CODE</Text>
+                    <TextInput
+                        style={styles.manualInput}
+                        placeholder="QR code"
+                        placeholderTextColor="#52525b"
+                        value={manualToken}
+                        onChangeText={setManualToken}
+                        onSubmitEditing={submitManual}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                    />
+                    <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={submitManual}>
+                        <Text style={styles.primaryButtonText}>VALIDATE</Text>
+                    </TouchableOpacity>
+                </View>
+                <ScanResultOverlay status={status} result={result} onDismiss={handleDismiss} />
+            </View>
+        );
+    }
 
     if (!permission) {
         return <View style={styles.container}><MeshBackground /></View>;
@@ -115,6 +151,20 @@ export default function ScannerScreen() {
 }
 
 const styles = StyleSheet.create({
+    manualInput: {
+        width: '100%',
+        maxWidth: 420,
+        marginTop: 24,
+        marginBottom: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#27272a',
+        backgroundColor: '#18181b',
+        color: '#f4f4f5',
+        fontSize: 14,
+    },
     container: {
         flex: 1,
         backgroundColor: '#000',
