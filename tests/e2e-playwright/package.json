@@ -4,7 +4,7 @@
   "description": "Pruebas E2E del cliente web de CircleGuard con Playwright (HU-07, #14)",
   "scripts": {
     "test": "playwright test",
-    "report": "playwright show-report reports/html"
+    "report": "playwright show-report playwright-report"
   },
   "devDependencies": {
     "@playwright/test": "1.49.1",
