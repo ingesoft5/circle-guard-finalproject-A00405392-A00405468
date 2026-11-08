@@ -112,13 +112,15 @@ Cada ambiente es una VM EC2 propia con su *security group* y su IP elástica. Se
 | **stage** | `http://3.209.207.195` | La misma versión, si los E2E contra dev pasan |
 | **prod** | `http://50.19.116.114` | La misma versión, tras aprobación manual en Jenkins |
 
-#### Acceso del docente a Jenkins
+#### Acceso del docente
 
-Cuenta de **solo lectura** (ver jobs, ejecuciones, reportes y *logs*; no puede ejecutar, aprobar ni configurar nada). Se creó para la evaluación y se rota al terminar.
+Cuentas de **solo lectura**, una por herramienta. En Jenkins ve jobs, ejecuciones, reportes y *logs*; en SonarQube ve los 8 proyectos y su *quality gate*; en Nexus ve las imágenes y sus *tags*. En ninguna puede ejecutar, aprobar, subir, borrar ni configurar. Se crearon para la evaluación y se rotan al terminar.
 
 | Dónde | Usuario | Contraseña |
 |---|---|---|
 | Jenkins `http://44.221.115.232:8080` | `docente` | `S581jKSgHKQj0hCO1mQn51BT` |
+| SonarQube `http://44.221.115.232:9000` | `docente` | `yI3EMyA7Tf9tMgZDXW9YAa1-` |
+| Nexus `http://44.221.115.232:8081` | `docente` | `LeHGKilhIKQcbGy1fSL2T4mO` |
 
 ### Cómo llega un cambio a producción
 

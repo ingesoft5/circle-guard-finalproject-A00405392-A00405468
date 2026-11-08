@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Corre DENTRO de cg-tools. Configura Nexus por su API REST. Idempotente.
-# Uso: bash configure-nexus.sh <clave-admin> <clave-ci> <puerto-registro>
+# Uso: bash configure-nexus.sh <clave-admin> <clave-ci> <puerto-registro> [clave-docente]
 set -euo pipefail
-NX_PASS="${1:?}" CI_PASS="${2:?}" REG_PORT="${3:?}"
+NX_PASS="${1:?}" CI_PASS="${2:?}" REG_PORT="${3:?}" DOCENTE_PASS="${4:-}"
 API=http://localhost:8081/service/rest
 cd /opt/circleguard-tools
 # 1) Contraseña inicial de admin -> la generada (solo la primera vez).
@@ -34,5 +34,15 @@ if [[ "$(c "$API/v1/security/users?userId=ci" | jq length)" == "0" ]]; then
   c -X POST "$API/v1/security/users" -d "{\"userId\":\"ci\",\"firstName\":\"CI\",\"lastName\":\"Jenkins\",
     \"emailAddress\":\"ci@circleguard.local\",\"password\":\"$CI_PASS\",\"status\":\"active\",\"roles\":[\"ci-docker\"]}" >/dev/null
   echo "[nexus] usuario ci creado"
+fi
+# 6) Docente: solo puede ver y descargar el repositorio (sin subir, editar ni borrar).
+if [[ -n "$DOCENTE_PASS" ]]; then
+  c "$API/v1/security/roles/docente-lectura" >/dev/null 2>&1 || c -X POST "$API/v1/security/roles" -d '{"id":"docente-lectura","name":"docente-lectura",
+    "description":"Solo lectura del repositorio circleguard","privileges":["nx-repository-view-docker-circleguard-browse","nx-repository-view-docker-circleguard-read","nx-search-read"],"roles":[]}'
+  if [[ "$(c "$API/v1/security/users?userId=docente" | jq length)" == "0" ]]; then
+    c -X POST "$API/v1/security/users" -d "{\"userId\":\"docente\",\"firstName\":\"Docente\",\"lastName\":\"Solo lectura\",
+      \"emailAddress\":\"docente@circleguard.local\",\"password\":\"$DOCENTE_PASS\",\"status\":\"active\",\"roles\":[\"docente-lectura\"]}" >/dev/null
+    echo "[nexus] usuario docente creado"
+  fi
 fi
 echo "[nexus] configuración lista"
