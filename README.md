@@ -205,7 +205,7 @@ We maintain high system integrity via multi-level testing:
 | `./gradlew build` | Unit tests of the 8 services + JaCoCo report + line-coverage gate (≥ 60 % in the 5 core services) |
 | `./gradlew :services:<name>:test` | Unit tests of a single service |
 | `./gradlew :services:<name>:integrationTest` | Integration tests (`@Tag("integration")`) with **Testcontainers**: real Kafka, Neo4j and Redis containers. Needs Docker |
-| `tests/e2e-playwright/run.sh <BASE_URL>` | End-to-end tests with Playwright against a deployed environment (the pipeline runs them against dev before promoting to stage) |
+| `BASE_URL=http://<env-host> tests/e2e-playwright/run.sh` | End-to-end tests with Playwright against a deployed environment (the pipeline runs them against dev before promoting to stage) |
 
 Coverage per service is published in Jenkins (JaCoCo) and SonarQube; the pipeline fails if a core service drops below 60 % or the SonarQube quality gate is red.
 
