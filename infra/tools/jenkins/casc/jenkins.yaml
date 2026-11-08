@@ -139,3 +139,29 @@ jobs:
         orphanedItemStrategy { discardOldItems { numToKeep(10) } }
         triggers { periodicFolderTrigger { interval('1d') } }      // respaldo si se pierde un webhook
       }
+  - script: |
+      // HU-10 (#17): rollback = volver a desplegar una versión anterior (inmutable) ya publicada en Nexus.
+      pipelineJob('circleguard-rollback') {
+        displayName('CircleGuard · Rollback')
+        description('Devuelve dev, stage o prod a una versión anterior ya publicada en Nexus. Corre jenkins/rollback.Jenkinsfile de main.')
+        parameters {
+          choiceParam('ENV', ['dev', 'stage', 'prod'], 'Ambiente a devolver')
+          stringParam('VERSION', '', 'Versión a restaurar, sin la v (p. ej. 1.1.0). Ver GitHub Releases o el historial del ambiente.')
+        }
+        logRotator { numToKeep(20) }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/${GITHUB_REPO}.git')
+                  credentials('github-token')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('jenkins/rollback.Jenkinsfile')
+            lightweight(true)
+          }
+        }
+      }
