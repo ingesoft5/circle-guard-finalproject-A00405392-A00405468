@@ -119,7 +119,21 @@ Dev no se vio afectado: `deploy.sh` hace el `pull` antes de tocar los contenedor
 
 ## 7. Promoción de `v1.1.0` a prod y rollback
 
-_(al cierre: aprobación de prod, versión que responde `/version` en prod, y rollback de prod a `1.0.0` con `circleguard-rollback`, con el antes y el después en `RELEASES` y en los tags de las imágenes)_
+### Aprobación y despliegue en prod
+
+| Dato | Valor |
+|---|---|
+| Build | [`main` #3](http://44.221.115.232:8080/job/circleguard/job/main/3/), `SUCCESS` |
+| Aprobación | «Approved by jmrojas06», 8 de noviembre de 2026, 18:49 (hora de Colombia), tras 78 min en espera (4689 s en la etapa `Aprobación para prod`) |
+| Deploy prod | `SUCCESS` en 143 s |
+| `/version` en dev, stage y prod | `1.1.0` en los tres |
+| `/opt/circleguard/RELEASES` en prod | `1.0.0` (commit `f2b7707`, build #2) y `1.1.0` (commit `34303d1`, build #3) |
+
+Las etapas Build, Unit tests, SonarQube e Integration quedaron `NOT_EXECUTED` en #3 porque el commit solo cambió `mobile/` y `deploy/`; la CI completa de ese cambio corrió en el PR #57.
+
+### Rollback de prod a `1.0.0`
+
+_(al cierre: ejecución de `circleguard-rollback` con `ENV=prod` y `VERSION=1.0.0`, con el antes y el después en `RELEASES` y en los tags de las imágenes)_
 
 ## 8. Incidencias de la corrida (y qué se aprendió)
 
