@@ -27,6 +27,15 @@ server {
         return 200 "ok\n";
     }
 
+    # Versión desplegada (p. ej. "1.1.0"): el compose la fija con APP_VERSION (= IMAGE_TAG) al arrancar el
+    # contenedor. Sirve para comprobar qué versión corre en cada ambiente, también tras un rollback.
+    location = /version {
+        access_log off;
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        return 200 "${APP_VERSION}\n";
+    }
+
     # /api/<servicio>/<ruta>  ->  http://<upstream>/<ruta>
     # Se quita el prefijo con rewrite y proxy_pass va SIN ruta: así nginx vuelve a codificar la ruta
     # (espacios, tildes) y conserva el query string. Con proxy_pass http://$up/$captura la ruta llegaba
