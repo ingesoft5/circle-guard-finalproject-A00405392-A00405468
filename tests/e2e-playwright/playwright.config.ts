@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * E2E contra el cliente web desplegado en un ambiente (por defecto el compose local de dev).
  *   BASE_URL=http://<ip-dev> npx playwright test
- * Reportes: HTML en playwright-report/ y JUnit en results/junit.xml (los publica Jenkins).
+ * Reportes: HTML en reports/html y JUnit en reports/junit.xml (los publica Jenkins, ver jenkins/vars/e2eTests.groovy).
  */
 export default defineConfig({
   testDir: './tests',
@@ -15,8 +15,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-    ['junit', { outputFile: 'results/junit.xml' }],
+    ['html', { outputFolder: 'reports/html', open: 'never' }],
+    ['junit', { outputFile: 'reports/junit.xml' }],
   ],
   use: {
     baseURL: process.env.BASE_URL ?? 'http://localhost:8090',

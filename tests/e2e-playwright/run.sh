@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# Corre los E2E de Playwright contra un ambiente. Contrato con el pipeline (jenkins/vars/e2eTests.groovy):
+# Corre los E2E de Playwright contra un ambiente desde una máquina local:
 #   bash tests/e2e-playwright/run.sh <BASE_URL>
 #   - termina con código != 0 si falla algún E2E
-#   - deja tests/e2e-playwright/playwright-report/index.html (HTML) y tests/e2e-playwright/results/junit.xml (JUnit)
-#
-# Dentro de la imagen oficial de Playwright (trae Chromium en /ms-playwright) corre directo: así lo usa Jenkins
-# con docker.image(...).inside, que comparte el workspace con el contenedor.
-# Fuera de ella (en local) lanza esa misma imagen con docker run montando esta carpeta.
+#   - deja tests/e2e-playwright/reports/html/index.html (HTML) y tests/e2e-playwright/reports/junit.xml (JUnit)
+# Jenkins no usa este script: corre la misma imagen con docker.image(...).inside (jenkins/vars/e2eTests.groovy),
+# porque desde su contenedor un `docker run -v` no puede montar el workspace.
+# Dentro de la imagen oficial de Playwright (trae Chromium en /ms-playwright) corre directo.
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BASE_URL="${1:-${BASE_URL:-http://host.docker.internal:8090}}"

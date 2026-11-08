@@ -1,6 +1,4 @@
 node_modules/
 .npm/
-playwright-report/
-results/
-test-results/
 reports/
+test-results/
