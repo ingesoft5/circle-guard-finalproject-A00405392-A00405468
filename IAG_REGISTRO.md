@@ -92,6 +92,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** línea base con JaCoCo por clase, 11 clases de prueba nuevas (unitarias con Mockito y de controlador con la `SecurityConfig` real) para auth, identity, form y promotion, y `jacocoTestCoverageVerification` con mínimo 0.60 en los 5 servicios núcleo.
 - **Verificación / cambios del equipo:** auth 29 → 89.6 %, identity 50 → 84.4 %, form 43.6 → 88.6 %, promotion 35 → 68.4 %, gateway 81 %; 110 pruebas, 0 fallas. Se comprobó que el umbral bloquea subiéndolo al 95 % en gateway: el build falla con `Rule violated` ([evidencia](docs/evidencias/sprint-1/cobertura-servicios-nucleo.md)). La verificación se puso en el `build.gradle.kts` de cada servicio para no chocar con el JaCoCo del archivo raíz de #46. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-07 · `pierrecuevas` · Pruebas de integración entre servicios (#13)
+
+- **Prompt:** *"vamos haciendo lo demas entonces"*.
+- **Qué produjo:** 3 pruebas de integración con Testcontainers (form → Kafka → promotion con Neo4j y Redis; QR de auth → gateway con Redis; promotion → Kafka → notification) en una tarea `integrationTest` aparte, y la corrección de tres errores que esas pruebas encontraron: gateway no negaba el acceso a `SUSPECT`/`PROBABLE`/`CONFIRMED`, la consulta Cypher de promotion no actualizaba Redis ni publicaba el evento si el usuario no tenía contactos, y promotion, identity y notification no tenían serializador JSON para publicar a Kafka.
+- **Verificación / cambios del equipo:** las pruebas se corrieron primero sin tocar el código y fallaron por esas causas (salidas en la [evidencia](docs/evidencias/sprint-1/pruebas-integracion.md)); después de corregir: 11 casos, 0 fallas, y `./gradlew build` en verde con las pruebas de propagación a contactos intactas. Una primera falla en Redis fue un error de la prueba (no esperaba la escritura asíncrona) y se corrigió en la prueba, no en el código. La regla de qué estados niegan el acceso se tomó del enunciado (cerco Sospechoso → Probable → Confirmado). _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo
