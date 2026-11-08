@@ -111,8 +111,38 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** `tests/e2e-playwright/` con los 3 flujos (inicio de sesión, cuestionario y validación de acceso), `global-setup` que deja un cuestionario activo, `run.sh` con la imagen oficial de Playwright y reportes HTML y JUnit. Corrigió cuatro errores de la app que salieron al probarla en un navegador real: 403 por CORS en el login (nginx perdía el puerto del `Host`), el cuestionario descartaba las respuestas, el rol de guardia no tenía el permiso `gate:scan` y el escáner no se podía usar en web.
 - **Verificación / cambios del equipo:** 5/5 E2E en verde dos veces seguidas contra el compose de dev; `jest` de `DynamicForm` 2/2 ([evidencia](docs/evidencias/sprint-1/pruebas-e2e-playwright.md)). La primera corrida falló 5/5: una por el 403 real y las demás por selectores (textos duplicados de pantallas ocultas y un mensaje que la app muestra en mayúsculas), que se corrigieron en las pruebas. Se decidió que en web el guardia pegue el código o use un lector USB, porque el navegador no tiene biometría. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-07 · `jmrojas06` · Gestión de cambios, arquitectura y documentación operativa (#18, #19, #38)
+
+- **Prompt:** *"Revisa, y entonces terminemos mi parte del sprint 1 y ojala revisar sprint 0."*
+- **Qué produjo:** `docs/change-management/politica.md` y `solicitud-de-cambio.md` (tipos de cambio, quién aprueba qué, RFC, esquema de etiquetado, trazabilidad, rollback), `docs/arquitectura/README.md` (tres diagramas Mermaid: servicios/eventos/datos, ambientes en AWS y pipeline), la sección "Operación" del `README.md` (mapa de la documentación, URL de los ambientes, cómo llega un cambio a prod, comandos), el borrador de `docs/agil/sprint-1.md`, la foto del burndown del 7 de noviembre y la corrección de `sprint-0.md` (#6 terminado en el PR #42).
+- **Verificación / cambios del equipo:** los tópicos de Kafka, los puertos y las dependencias del diagrama se tomaron del código (`grep` de `@KafkaListener` y `kafkaTemplate.send`, y los `application.yml`), no de memoria. Antes de tomar la foto del burndown se puso el tablero al día con el estado real de los PR (40 de 61 puntos pendientes al 7 nov). La fila de B en las retros del Sprint 0 y del Sprint 1 y su reflexión sobre IAG son texto de `pierrecuevas`, incorporado tal como lo envió (con ajustes mínimos de redacción); la *review*, la fila de A y la reflexión de A las completa el equipo el domingo. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo
 
 _Se completa al cierre de cada sprint (en la retrospectiva): qué aportó la IA, qué errores cometió y cómo se detectaron, qué decisiones se tomaron en contra de su sugerencia y qué aprendimos haciendo el trabajo nosotros._
+
+### Sprint 1 · Contribución individual de `pierrecuevas` (Pierre Cuevas)
+
+Apoyarme en la IA para la parte técnica (Dockerfiles, compose por ambientes y la suite de pruebas unitarias, de integración y E2E) me permitió sacar tareas repetitivas en tiempo récord, como armar 11 clases de prueba y 9 Dockerfiles. Aun así, la experiencia dejó claro que no se puede confiar a ciegas en lo que genera. Hubo tropiezos que solo saltaron al ejecutar los comandos en local y revisar los logs a fondo:
+
+- Una prueba de integración fallaba porque intentaba leer de Redis antes de que promotion terminara de escribir (el fallo era de la prueba, no del código).
+- La IA marcó la prueba de rendimiento como superada cuando en mi máquina fallaba el 75 % de las veces.
+- Los selectores iniciales de Playwright venían mal planteados y un script traía saltos de línea de Windows (CRLF) que rompían la ejecución en Linux.
+
+Lo más rescatable fue que, al depurar y correr las pruebas de integración y E2E, aparecieron errores graves del sistema que habrían pasado desapercibidos: el gateway dejaba ingresar a personas contagiadas, promotion omitía la actualización en Redis si el usuario no tenía contactos registrados y el formulario enviaba payloads vacíos. Enfrentarlos me obligó a entender la arquitectura a fondo para explicarlos y corregirlos.
+
+**Criterio y decisiones tomadas:**
+
+- Mantener la autoría real en el historial de Git (cero créditos automáticos a la IA en commits o PR).
+- Revisar cada cambio de José antes de aprobarlo y no aceptar un "ya funciona" sin ver la prueba corriendo.
+- Exigir la ejecución exitosa de las pruebas como único criterio de aceptación; nada de dar por hecho un "ya funciona".
+
+**Compromiso para el Sprint 2:** comprender al 100 % el impacto de cada cambio antes de subirlo y validar todo en un navegador real desde el día uno.
+
+*Redacté esta reflexión con apoyo de la IA a partir de lo que pasó en el sprint; la revisé y la ajusté.*
+
+### Sprint 1 · Contribución individual de `jmrojas06`
+
+_(por completar)_

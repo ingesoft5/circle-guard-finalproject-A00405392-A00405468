@@ -8,7 +8,7 @@ xychart-beta
     x-axis ["11-05", "11-06", "11-07", "11-08"]
     y-axis "Story points" 0 --> 61
     line [61.0, 40.7, 20.3, 0.0]
-    line [61, 61]
+    line [61, 61, 40]
 ```
 
 Línea de arriba al inicio: **ideal** (baja lineal hasta 0). Segunda línea: **real** (puntos de historias que no están en *Done*).
@@ -17,3 +17,4 @@ Línea de arriba al inicio: **ideal** (baja lineal hasta 0). Segunda línea: **r
 |---|---|---|---|
 | 2026-11-05 | 61 / 61 | 0 | 14 |
 | 2026-11-06 | 61 / 61 | 0 | 14 |
+| 2026-11-07 | 40 / 61 | 4 | 10 |
