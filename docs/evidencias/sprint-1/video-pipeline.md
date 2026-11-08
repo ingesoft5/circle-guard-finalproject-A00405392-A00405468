@@ -8,7 +8,7 @@ Recorrido por las herramientas y los tres ambientes de CircleGuard después de l
 | Tamaño | 189 MB (MP4) |
 | Grabado | 8 de noviembre de 2026, 18:16 (hora de Colombia), en el computador de `jmrojas06` |
 | Edición | Ninguna |
-| Enlace | _(se agrega al subirlo)_ |
+| Enlace | [circleguard-pipeline-sprint1.mp4](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/download/v1.1.0/circleguard-pipeline-sprint1.mp4), archivo adjunto al release `v1.1.0` (GitHub lo ofrece como descarga) |
 
 ## Cómo se grabó
 
@@ -37,6 +37,29 @@ Los tiempos son aproximados (salen de cuadros tomados cada 15 segundos).
 | 3:15 | Aplicación en dev | Sesión iniciada y pase con código QR |
 | 3:30 | Aplicación en stage | Lo mismo en stage |
 | 3:40 | Aplicación en prod | Lo mismo en prod |
+
+## Antes y después
+
+Lo que muestra el video es el resultado de este sprint. El punto de partida, según el enunciado y la línea base del Sprint 0, era un sistema funcional sin ninguna práctica DevOps.
+
+| Métrica | Antes (4 de noviembre) | Después (8 de noviembre) |
+|---|---|---|
+| Pruebas unitarias | 51 | 110 |
+| Pruebas de integración y E2E | 0 y 0 | 11 de integración y 6 E2E de Playwright |
+| Cobertura de líneas, auth | 29,1 % | 89,6 % |
+| Cobertura de líneas, identity | 50,4 % | 84,4 % |
+| Cobertura de líneas, form | 43,6 % | 88,6 % |
+| Cobertura de líneas, promotion | 35,0 % | 68,4 % |
+| Cobertura de líneas, gateway | 81,0 % | 81,0 % |
+| Imágenes Docker | 0 | 9, con *tags* de versión y de commit |
+| Pipeline de CI/CD | ninguno | Jenkins multibranch con *Shared Library* de 11 pasos |
+| Ambientes desplegados | 0 | 3 (dev, stage y prod), con 10 contenedores `healthy` cada uno |
+| Versiones publicadas | 0 | 2 (`v1.0.0` y `v1.1.0`), con notas automáticas |
+| Secretos | en texto plano en `docker-compose.dev.yml` | generados en cada VM, fuera del repositorio |
+| Reconstruir la plataforma | pasos manuales | un comando, `up.sh`, en 3,5 min |
+| Errores reales del código base encontrados por las pruebas | 0 | 3 de integración y 4 de la aplicación, ya corregidos |
+
+La cobertura de «antes» y de «después» es de JaCoCo (línea base y [`cobertura-servicios-nucleo.md`](cobertura-servicios-nucleo.md)). Medida por SonarQube sobre el código final: 88,6 %, 84,6 %, 88,6 %, 70,4 % y 81,8 %, en el mismo orden.
 
 ## Lo que el video no muestra
 

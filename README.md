@@ -99,6 +99,7 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 | Versionado automático y release notes | [`docs/release-notes/README.md`](docs/release-notes/README.md) |
 | Gestión de cambios: tipos, aprobaciones, RFC, etiquetado | [`docs/change-management/politica.md`](docs/change-management/politica.md) |
 | Sprints, burndown y evidencias | [`docs/agil/`](docs/agil), [`docs/evidencias/`](docs/evidencias) |
+| Video del pipeline de punta a punta (3 min 47 s) y su guion | [Video](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/download/v1.1.0/circleguard-pipeline-sprint1.mp4) · [guion y antes/después](docs/evidencias/sprint-1/video-pipeline.md) |
 
 ### Ambientes
 
