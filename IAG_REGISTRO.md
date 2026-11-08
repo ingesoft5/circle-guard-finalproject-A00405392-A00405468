@@ -136,10 +136,12 @@ Lo más rescatable fue que, al depurar y correr las pruebas de integración y E2
 **Criterio y decisiones tomadas:**
 
 - Mantener la autoría real en el historial de Git (cero créditos automáticos a la IA en commits o PR).
-- Revisar línea por línea cada bloque de código sugerido antes de integrarlo.
+- Revisar cada cambio de José antes de aprobarlo y no aceptar un "ya funciona" sin ver la prueba corriendo.
 - Exigir la ejecución exitosa de las pruebas como único criterio de aceptación; nada de dar por hecho un "ya funciona".
 
 **Compromiso para el Sprint 2:** comprender al 100 % el impacto de cada cambio antes de subirlo y validar todo en un navegador real desde el día uno.
+
+*Redacté esta reflexión con apoyo de la IA a partir de lo que pasó en el sprint; la revisé y la ajusté.*
 
 ### Sprint 1 · Contribución individual de `jmrojas06`
 
