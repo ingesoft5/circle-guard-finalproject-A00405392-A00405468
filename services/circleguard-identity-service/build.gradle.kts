@@ -25,3 +25,20 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.springframework.security:spring-security-test")
 }
+
+// HU-05 (#12): cobertura de líneas mínima del 60 % en este servicio núcleo.
+// JaCoCo se aplica en el build.gradle.kts raíz; aquí solo se exige el umbral.
+// Corre al terminar `test`, así que el pipeline falla si la cobertura baja.
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn(tasks.named("test"))
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                minimum = "0.60".toBigDecimal()
+            }
+        }
+    }
+}
+tasks.named<Test>("test") { finalizedBy("jacocoTestCoverageVerification") }
+tasks.named("check") { dependsOn("jacocoTestCoverageVerification") }

@@ -64,4 +64,57 @@ public class LoginControllerTest {
                 .andExpect(jsonPath("$.anonymousId").value(anonymousId.toString()))
                 .andExpect(jsonPath("$.type").value("Bearer"));
     }
+
+    @Test
+    void wrongCredentialsReturn401WithoutCallingIdentity() throws Exception {
+        Mockito.when(authManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new org.springframework.security.authentication.BadCredentialsException("bad"));
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\": \"super_admin\", \"password\": \"mala\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Invalid username or password"));
+
+        Mockito.verifyNoInteractions(identityClient);
+    }
+
+    @Test
+    void identityServiceDownReturns500() throws Exception {
+        Mockito.when(authManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(Mockito.mock(Authentication.class));
+        Mockito.when(identityClient.getAnonymousId("super_admin"))
+                .thenThrow(new org.springframework.web.client.ResourceAccessException("identity caido"));
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\": \"super_admin\", \"password\": \"password\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("identity caido")));
+    }
+
+    @Test
+    void visitorHandoffIssuesVisitorToken() throws Exception {
+        UUID anonymousId = UUID.randomUUID();
+        Mockito.when(jwtService.generateToken(Mockito.eq(anonymousId), Mockito.any(Authentication.class)))
+                .thenReturn("visitor-jwt");
+
+        mockMvc.perform(post("/api/v1/auth/visitor/handoff")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"anonymousId\": \"" + anonymousId + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("visitor-jwt"))
+                .andExpect(jsonPath("$.handoffPayload").value("HANDOFF_TOKEN:" + anonymousId + ":visitor-jwt"));
+
+        Mockito.verify(jwtService).generateToken(Mockito.eq(anonymousId), Mockito.argThat(a ->
+                a.getAuthorities().stream().anyMatch(g -> g.getAuthority().equals("VISITOR"))));
+    }
+
+    @Test
+    void visitorHandoffWithoutAnonymousIdIsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/visitor/handoff")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
 }
