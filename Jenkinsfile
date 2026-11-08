@@ -114,8 +114,8 @@ pipeline {
                     steps { e2eTests('dev') }
                     post {
                         always {
-                            junit allowEmptyResults: true, testResults: 'tests/e2e-playwright/results/*.xml'
-                            publishHTML([reportDir: 'tests/e2e-playwright/playwright-report', reportFiles: 'index.html',
+                            junit allowEmptyResults: true, testResults: 'tests/e2e-playwright/reports/junit.xml'
+                            publishHTML([reportDir: 'tests/e2e-playwright/reports/html', reportFiles: 'index.html',
                                          reportName: 'Playwright E2E (dev)', allowMissing: true, keepAll: true, alwaysLinkToLastBuild: true])
                         }
                     }
