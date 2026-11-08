@@ -129,6 +129,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** `docs/agil/sprint-1.md` final (review con el estado y la evidencia reales de cada historia, demostración, métricas y retrospectiva), `docs/evidencias/sprint-1/ensayo-pipeline-real.md` (la corrida real de v1.0.0 y v1.1.0, la CI completa del PR #56, SonarQube, Nexus, los 3 ambientes y el aviso de fallo), las 12 revisiones que estaban pendientes en esta bitácora, la reflexión de `jmrojas06` y la actualización del tablero (HU-05 a HU-09 a Done).
 - **Verificación / cambios del equipo:** las cifras salen de las APIs de Jenkins, SonarQube, Nexus y GitHub y de las propias VMs, consultadas después de cada corrida. Cada revisión completada en la bitácora se tomó del registro de aprobaciones de GitHub (quién, cuándo y lo que escribió) y no se le atribuyó a nadie nada que no estuviera escrito allí. La fila de la retro y la reflexión de `jmrojas06` son un borrador de la IA que `jmrojas06` revisa y ajusta antes de fusionar. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-08 · `jmrojas06` · Video del pipeline de punta a punta (#20)
+
+- **Prompts:** *"si me pasas un prompt para que mi pc con claude en google pueda usarlo para el grabar el video y todo eso? solo grabar la web y ya, sin edicion"* y, con el video ya grabado, *"ponle un guion o algo, que diga como que fue grabado en mi pc, pero que se uso la depuracion de claude para pasar de paginas"*.
+- **Qué produjo:** el prompt del recorrido para *Claude en Chrome* (14 direcciones, con pausas y la regla de no pulsar nada que cambie algo), los comandos de grabación y los usuarios de cada sitio. Después, la ficha [`video-pipeline.md`](docs/evidencias/sprint-1/video-pipeline.md) con el guion y la declaración de cómo se grabó. Para escribir el guion, la IA extrajo 16 cuadros del video (uno cada 15 s) y los revisó uno por uno.
+- **Verificación / cambios del equipo:** el video dura 3 min 47 s y pesa 189 MB; no se editó. En los 16 cuadros no aparecen contraseñas ni tokens, pero la revisión es por muestreo y no cubre cada segundo. La navegación entre páginas la hizo *Claude en Chrome* (el aviso «“Claude” comenzó a depurar este navegador» se ve en todo el video) y el inicio de sesión en la aplicación lo hizo la persona a mano. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo
