@@ -38,6 +38,8 @@ En cada *merge* a `main` el pipeline ([`Jenkinsfile`](../../Jenkinsfile)) calcul
 
 **Rollback:** el job `circleguard-rollback` de Jenkins ([`jenkins/rollback.Jenkinsfile`](../../jenkins/rollback.Jenkinsfile)) recibe `ENV` y `VERSION` y llama al mismo `deployCompose` con una versión anterior: las imágenes son inmutables y siguen en Nexus, así que volver atrás es cambiar `IMAGE_TAG`. En prod pide confirmación.
 
+**Qué versión corre:** el nginx del web expone `GET /version` con la versión desplegada en el ambiente (su `IMAGE_TAG`, p. ej. `1.1.0`): `curl http://<ip-del-ambiente>/version`. Una imagen anterior a esta función no tiene la ruta, así que tras un rollback a una de ellas la referencia es el tag de las imágenes en `docker ps` y el historial `/opt/circleguard/RELEASES`.
+
 ## Cómo se comunican
 
 El cliente web es la única entrada pública (puerto `WEB_PORT`). Su nginx reenvía `/api/<servicio>/...` al servicio correspondiente dentro de la red de compose, así que el navegador nunca habla directo con los servicios y no hay problemas de CORS. Los servicios no publican puertos.

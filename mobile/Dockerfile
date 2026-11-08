@@ -14,7 +14,9 @@ RUN npx expo export -p web --output-dir dist
 # --- Etapa 2: nginx sin privilegios (usuario nginx, puerto 8080) ------------------
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 # Upstreams por variable: la misma imagen sirve en dev, stage y prod (y en Kubernetes con otro resolver).
+# APP_VERSION tiene valor por defecto: si faltara, "${APP_VERSION}" no se sustituiría y nginx no arrancaría.
 ENV NGINX_RESOLVER=127.0.0.11 \
+    APP_VERSION=dev \
     AUTH_UPSTREAM=auth:8180 \
     IDENTITY_UPSTREAM=identity:8083 \
     FORM_UPSTREAM=form:8086 \
