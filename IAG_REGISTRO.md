@@ -159,6 +159,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** la sección 2.1 de `ensayo-pipeline-real.md` con la cobertura de Sonar antes y después de `lombok.config` (leída de la API de SonarQube tras el build `main` #6), la actualización de la matriz de la rúbrica (rollback de prod hecho, `v1.1.0` aprobada, check obligatorio activo) y una nota en `video-pipeline.md` de que el video se grabó antes de ese cambio.
 - **Verificación / cambios del equipo:** las cifras se contrastaron con `api/measures/component` de SonarQube; el check obligatorio con `gh api …/protection`; el rollback con la API de Jenkins y el `RELEASES` de la VM de prod. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-08 · `jmrojas06` · Informe de la Parte 1 en PDF con capturas (#20)
+
+- **Prompt:** *"inserta tu las capturas, y entregemoslo. No hay nada que hacer en la plataforma [...] solo con subir a github vale"*.
+- **Qué produjo:** las capturas públicas con Playwright (GitHub Releases, pull requests fusionados, `/version` de los tres ambientes y la web de prod), la inserción de esas y de las dos del rollback que aportó el equipo en el Anexo B del informe, la exportación a PDF y la corrección de la frase del docente (las credenciales de solo lectura están en el README).
+- **Verificación / cambios del equipo:** se revisó el PDF página por página; las capturas con sesión iniciada (Jenkins, SonarQube, Nexus, EC2, Discord/WhatsApp, reportes de Playwright) no las puede tomar la IA y las aporta el equipo. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo

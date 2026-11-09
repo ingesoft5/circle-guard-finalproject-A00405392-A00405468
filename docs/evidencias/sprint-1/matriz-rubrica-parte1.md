@@ -80,10 +80,10 @@ Cada fila toma un criterio de la rúbrica (P1.1 a P1.8), lo que pide la columna 
 | Diagramas claros | [`docs/arquitectura/README.md`](../../arquitectura/README.md): servicios y eventos, ambientes en AWS y pipeline | ✅ |
 | Video | [`video-pipeline.md`](video-pipeline.md): 3 min 47 s, adjunto al release `v1.1.0` | ✅ |
 | Bitácora de IAG con reflexión crítica | [`IAG_REGISTRO.md`](../../../IAG_REGISTRO.md): una entrada por PR, revisiones y reflexiones individuales | 🟡 falta la reflexión de `jmrojas06` |
-| Informe PDF con enlaces y evidencias | Se entrega en la plataforma con los enlaces de esta matriz | ⏳ |
+| Informe PDF con enlaces y evidencias | [`docs/entrega/informe-parte1-pipeline-cicd.pdf`](../../entrega/informe-parte1-pipeline-cicd.pdf), con enlaces y capturas | ✅ |
 
 ## Pendientes al cierre de esta verificación
 
 1. ~~Rollback de prod a `v1.0.0`~~ y ~~check obligatorio de `main`~~: hechos el 8 de nov.
 3. Fila de cada integrante en las retros, reflexión de `jmrojas06` y foto de cierre del burndown (P1.1, P1.8).
-4. Informe PDF en la plataforma (P1.8).
+4. ~~Informe PDF~~: entregado en `docs/entrega/`.
