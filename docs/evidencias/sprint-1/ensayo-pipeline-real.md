@@ -133,7 +133,16 @@ Las etapas Build, Unit tests, SonarQube e Integration quedaron `NOT_EXECUTED` en
 
 ### Rollback de prod a `1.0.0`
 
-_(al cierre: ejecución de `circleguard-rollback` con `ENV=prod` y `VERSION=1.0.0`, con el antes y el después en `RELEASES` y en los tags de las imágenes)_
+| Dato | Valor |
+|---|---|
+| Build | [`circleguard-rollback` #2](http://44.221.115.232:8080/job/circleguard-rollback/2/), `SUCCESS` en 3 min 48 s |
+| Parámetros | `ENV=prod`, `VERSION=1.0.0` |
+| Confirmación | «¿Devolver PROD a v1.0.0?»: «Approved by jmrojas06» a las 18:57 (hora de Colombia), tras 1 min 18 s de pausa |
+| Después | Las imágenes `circleguard-web` y `circleguard-gateway-service` en prod corren con el tag `1.0.0`; 10 contenedores `healthy` |
+| `/opt/circleguard/RELEASES` en prod | Tercera línea: `1.0.0  rollback  34303d1`, enlazada al build #2 del job de rollback |
+| Dev y stage | Siguen en `1.1.0` (el rollback solo toca el ambiente elegido) |
+
+En prod, `/version` ya no devuelve `1.1.0` porque la imagen web `1.0.0` no tiene ese endpoint: es la prueba visible de que la versión anterior quedó desplegada.
 
 ## 8. Incidencias de la corrida (y qué se aprendió)
 
