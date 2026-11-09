@@ -153,6 +153,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** una regla de entrada 8081 a `0.0.0.0/0` en el security group de `tools` (con login obligatorio y sin acceso anónimo), el mismo cambio en `bootstrap-cloud.sh` (y sin la poda de Nexus por CIDR, que la habría retirado) y la protección de `main` con `continuous-integration/jenkins/pr-merge` como check obligatorio, conservando el resto de la configuración (1 aprobación, descarte de aprobaciones viejas, sin saltos para administradores, historial lineal, conversaciones resueltas).
 - **Verificación / cambios del equipo:** se leyó la protección vigente antes de reemplazarla y se comprobó después con `gh api`; el contexto exacto (`continuous-integration/jenkins/pr-merge`) se confirmó en los estados del PR #59. La regla de AWS se verificó con `DescribeSecurityGroups`. Riesgo aceptado: Nexus queda expuesto a internet con login. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-08 · `jmrojas06` · Correcciones de documentación tras el cierre (cobertura, rollback y check obligatorio)
+
+- **Prompt:** *"ya lo aprobo y el mismo hizo squash"* (sobre #60) y, antes, *"desde main entonces corregimos cosas de la documentacion, metricas y esas cosas"*.
+- **Qué produjo:** la sección 2.1 de `ensayo-pipeline-real.md` con la cobertura de Sonar antes y después de `lombok.config` (leída de la API de SonarQube tras el build `main` #6), la actualización de la matriz de la rúbrica (rollback de prod hecho, `v1.1.0` aprobada, check obligatorio activo) y una nota en `video-pipeline.md` de que el video se grabó antes de ese cambio.
+- **Verificación / cambios del equipo:** las cifras se contrastaron con `api/measures/component` de SonarQube; el check obligatorio con `gh api …/protection`; el rollback con la API de Jenkins y el `RELEASES` de la VM de prod. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo

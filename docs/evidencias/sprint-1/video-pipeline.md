@@ -59,7 +59,7 @@ Lo que muestra el video es el resultado de este sprint. El punto de partida, seg
 | Reconstruir la plataforma | pasos manuales | un comando, `up.sh`, en 3,5 min |
 | Errores reales del código base encontrados por las pruebas | 0 | 3 de integración y 4 de la aplicación, ya corregidos |
 
-La cobertura de «antes» y de «después» es de JaCoCo (línea base y [`cobertura-servicios-nucleo.md`](cobertura-servicios-nucleo.md)). Medida por SonarQube sobre el código final: 88,6 %, 84,6 %, 88,6 %, 70,4 % y 81,8 %, en el mismo orden.
+La cobertura de «antes» y de «después» es de JaCoCo (línea base y [`cobertura-servicios-nucleo.md`](cobertura-servicios-nucleo.md)). Medida por SonarQube por líneas sobre el código final: 88,6 %, 84,6 %, 88,6 %, 70,4 % y 81,8 %, en el mismo orden. La medida combinada de líneas y ramas que muestra el panel de Sonar pasó de 56,7 / 43,4 / 40,3 / 41,1 / 80,8 % a 90,6 / 91,0 / 75,7 / 62,3 / 79,2 % al excluir el código que genera Lombok ([`ensayo-pipeline-real.md`](ensayo-pipeline-real.md) §2.1); el video se grabó antes de ese cambio.
 
 ## Lo que el video no muestra
 

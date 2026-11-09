@@ -43,17 +43,17 @@ Cada fila toma un criterio de la rúbrica (P1.1 a P1.8), lo que pide la columna 
 | JaCoCo y *quality gate* de SonarQube que bloquea | CI completa del PR #56: 121 pruebas, SonarQube con *quality gate* «CircleGuard» OK en los 8 proyectos ([`ensayo-pipeline-real.md`](ensayo-pipeline-real.md) §2); bloqueo demostrado con el PR #47 ([`ci-quality-gate-bloquea-pr.txt`](ci-quality-gate-bloquea-pr.txt)) | ✅ |
 | Ejecución selectiva por servicio | `changedServices()`; el PR #47 construyó solo `gateway`; un cambio en `jenkins/` construye los 9 | ✅ |
 | Estado visible en el PR | Jenkins publica `continuous-integration/jenkins/pr-merge` en cada PR (comprobado en #56 y #58) | ✅ |
-| Check de Jenkins como requisito para fusionar (`CONTRIBUTING.md` §4) | La protección de `main` todavía no lo marca como obligatorio | ⏳ |
+| Check de Jenkins como requisito para fusionar (`CONTRIBUTING.md` §4) | Desde el 8 de nov por la noche la protección de `main` exige `continuous-integration/jenkins/pr-merge` (`gh api repos/…/branches/main/protection`); el PR #60 fue el primero que lo pasó | ✅ |
 
 ## P1.5 Entrega continua y promoción (2.5 %) · E1.5
 
 | Pide «Excelente» | Evidencia | Estado |
 |---|---|---|
 | Despliegue automático a dev, E2E, stage | Builds `main` #2 (`v1.0.0`) y #3 (`v1.1.0`, por *webhook*) ([`ensayo-pipeline-real.md`](ensayo-pipeline-real.md) §1 y §5) | ✅ |
-| Aprobación manual a prod | `v1.0.0` pasó por el `input` y se desplegó en prod (aprobado por `pierrecuevas`); `v1.1.0` espera su aprobación | ✅ / 🟡 |
+| Aprobación manual a prod | `v1.0.0` pasó por el `input` y se desplegó en prod (aprobado por `pierrecuevas`); `v1.1.0` también (main #3, aprobado por `jmrojas06`, [`ensayo-pipeline-real.md`](ensayo-pipeline-real.md) §7) | ✅ |
 | Versionado semántico automático | Tags [`v1.0.0`](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/tag/v1.0.0) y [`v1.1.0`](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/tag/v1.1.0) creados por semantic-release | ✅ |
 | Notificaciones de fallo | Fallo provocado en `circleguard-rollback` #1 con aviso a WhatsApp y Discord ([`ensayo-pipeline-real.md`](ensayo-pipeline-real.md) §6) | ✅ |
-| *Rollback* demostrado | Job `circleguard-rollback` creado por JCasC y probado con un fallo controlado; **el rollback exitoso de prod a `v1.0.0` está pendiente** | ⏳ |
+| *Rollback* demostrado | Job `circleguard-rollback` creado por JCasC: fallo controlado (#1) y **rollback exitoso de prod a `v1.0.0` (#2, 3 min 48 s, confirmación manual, 10 contenedores `healthy`)**; [`ensayo-pipeline-real.md`](ensayo-pipeline-real.md) §7 | ✅ |
 
 ## P1.6 Pruebas automatizadas (3.5 %) · E1.6
 
@@ -84,7 +84,6 @@ Cada fila toma un criterio de la rúbrica (P1.1 a P1.8), lo que pide la columna 
 
 ## Pendientes al cierre de esta verificación
 
-1. Rollback de prod a `v1.0.0` y su evidencia (P1.5).
-2. Marcar `continuous-integration/jenkins/pr-merge` como check obligatorio de `main` (P1.4).
+1. ~~Rollback de prod a `v1.0.0`~~ y ~~check obligatorio de `main`~~: hechos el 8 de nov.
 3. Fila de cada integrante en las retros, reflexión de `jmrojas06` y foto de cierre del burndown (P1.1, P1.8).
 4. Informe PDF en la plataforma (P1.8).
