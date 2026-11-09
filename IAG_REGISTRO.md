@@ -165,6 +165,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** las capturas públicas con Playwright (GitHub Releases, pull requests fusionados, `/version` de los tres ambientes y la web de prod), la inserción de esas y de las dos del rollback que aportó el equipo en el Anexo B del informe, la exportación a PDF y la corrección de la frase del docente (las credenciales de solo lectura están en el README).
 - **Verificación / cambios del equipo:** se revisó el PDF página por página; las capturas con sesión iniciada (Jenkins, SonarQube, Nexus, EC2, Discord/WhatsApp, reportes de Playwright) no las puede tomar la IA y las aporta el equipo. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-08 · `jmrojas06` · Informe final con las capturas de Nexus y de la web en producción (#20)
+
+- **Prompt:** *"Por ahora solo este. Y el de Web prod. [...] ya, no mas pantallazos"*, con las capturas de Nexus y de la web de producción (inicio de sesión, `/version` y sesión iniciada) tomadas por el equipo.
+- **Qué produjo:** la sustitución de las capturas de Nexus y de la web de producción del informe por las del equipo (con la barra de direcciones visible), su inserción en el Anexo B y la nueva exportación del PDF (15 páginas).
+- **Verificación / cambios del equipo:** se revisó el PDF y se comprobó que no contiene contraseñas. Las capturas con sesión iniciada en Sonar, EC2 y Discord no se incluyen por decisión del equipo. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo
