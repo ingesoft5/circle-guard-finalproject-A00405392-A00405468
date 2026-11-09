@@ -123,6 +123,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** la ruta `GET /version` en el nginx del web (devuelve `APP_VERSION`), `APP_VERSION` con valor por defecto en el `Dockerfile` del web, `APP_VERSION: ${IMAGE_TAG}` en el servicio `web` del compose, una prueba E2E (`version.spec.ts`) y la nota en `deploy/compose/README.md`.
 - **Verificación / cambios del equipo:** se probó en local con el nginx real de la imagen: `/version` devuelve `1.1.0` en texto plano y sin caché, `/healthz` y `/` siguen respondiendo y `nginx -t` es correcto. Sin `APP_VERSION` nginx no arranca (`unknown "app_version" variable`), por eso la imagen trae un valor por defecto. `docker compose config` es válido en dev, stage y prod, y el web recibe `APP_VERSION=1.1.0`. La prueba E2E pasa con Playwright 1.49.1 contra ese nginx y falla contra uno sin la ruta. Queda por comprobar en el pipeline real la versión que muestra cada ambiente. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-08 · `jmrojas06` · Cobertura de SonarQube por encima del 60 % (rúbrica P1.6)
+
+- **Prompt:** *"necesitamos tener eso por encima del 60% coverage, como se hace? hazlo, cumplamos las rubricas"*, con una captura de SonarQube que mostraba 56,7 % en `auth`.
+- **Qué produjo:** el diagnóstico (SonarQube cuenta líneas y ramas; en `auth` las ramas estaban en 13,8 % y casi todas eran código que genera Lombok) y el archivo `lombok.config` con `lombok.addLombokGeneratedAnnotation = true`, que hace que JaCoCo deje fuera ese código. No se tocó ninguna prueba ni ningún umbral.
+- **Verificación / cambios del equipo:** se corrieron las pruebas unitarias de los 5 servicios en Docker y se calculó la cobertura (líneas + ramas) del XML de JaCoCo: auth 90,6 %, identity 91,0 %, form 75,7 %, promotion 62,3 %, gateway 79,2 %. Son cifras locales; la medida oficial es la de SonarQube tras el build de `main`. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo
