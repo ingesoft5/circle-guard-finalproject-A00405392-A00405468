@@ -24,7 +24,7 @@ Las etapas Build, Unit tests, SonarQube e Integration tests salieron *NOT_EXECUT
 
 ## 2. CI completa sobre el código final (PR #56, build `PR-56` #1)
 
-[Build PR-56 #1](http://44.221.115.232:8080/job/circleguard/job/PR-56/1/) · **SUCCESS** en 9,5 min. El PR toca `jenkins/`, así que `changedServices` construyó los 9 servicios. GitHub recibió el check obligatorio `continuous-integration/jenkins/pr-merge: SUCCESS`.
+[Build PR-56 #1](http://44.221.115.232:8080/job/circleguard/job/PR-56/1/) · **SUCCESS** en 9,5 min. El PR toca `jenkins/`, así que `changedServices` construyó los 9 servicios. GitHub recibió el check `continuous-integration/jenkins/pr-merge: SUCCESS` (desde el 8 de nov por la noche es requisito para fusionar en `main`).
 
 | Etapa | Resultado | Min |
 |---|---|---|
@@ -50,6 +50,21 @@ Pruebas JUnit del build: **121, 0 fallas, 0 omitidas** (110 unitarias y 11 de in
 | dashboard | 5,2 % | 0,0 % | 3,5 % |
 
 La meta del enunciado es cobertura de **líneas** ≥ 60 % en los 5 servicios núcleo (auth, identity, promotion, form, gateway): se cumple en todos y además el build la exige con `jacocoTestCoverageVerification` (mínimo 0,60 de líneas). El indicador «Coverage» que muestra el panel de SonarQube combina líneas y ramas, y por eso se ve más bajo en los servicios con pocas pruebas de ramas.
+
+
+### 2.1 Cobertura de Sonar después de `lombok.config` (PR #59 y #56)
+
+El «Coverage» de Sonar mezcla líneas y ramas, y las ramas estaban bajas por el código que genera Lombok (`equals`, `hashCode`, *builders*). Se agregó `lombok.config` con `lombok.addLombokGeneratedAnnotation = true`, que hace que JaCoCo ignore ese código, sin tocar pruebas ni umbrales. Como `changedServices` no trataba `lombok.config` como configuración común, el merge de #59 no disparó ningún análisis; el PR #56 lo corrigió y el build [`main` #6](http://44.221.115.232:8080/job/circleguard/job/main/6/) (SUCCESS) analizó los 9 servicios.
+
+| Servicio | «Coverage» antes | «Coverage» después (build `main` #6) | Líneas después |
+|---|---|---|---|
+| auth | 56,7 % | **90,6 %** | 92,3 % |
+| identity | 43,4 % | **91,0 %** | 93,5 % |
+| form | 40,3 % | **75,7 %** | 86,7 % |
+| promotion | 41,1 % | **62,3 %** | 67,4 % |
+| gateway | 80,8 % | **79,2 %** | 80,0 % |
+
+Los cinco servicios núcleo superan el 60 % también en la medida combinada de SonarQube. El menos holgado es promotion.
 
 ## 3. Imágenes inmutables en Nexus
 
@@ -143,6 +158,11 @@ Las etapas Build, Unit tests, SonarQube e Integration quedaron `NOT_EXECUTED` en
 | Dev y stage | Siguen en `1.1.0` (el rollback solo toca el ambiente elegido) |
 
 En prod, `/version` ya no devuelve `1.1.0` porque la imagen web `1.0.0` no tiene ese endpoint: es la prueba visible de que la versión anterior quedó desplegada.
+
+
+### Prod de vuelta a `v1.1.0`
+
+Tras demostrar el rollback, prod volvió a `1.1.0` con el mismo job para quedar igual que dev y stage: [`circleguard-rollback` #3](http://44.221.115.232:8080/job/circleguard-rollback/3/) (`ENV=prod`, `VERSION=1.1.0`), `SUCCESS`; la confirmación («¿Devolver PROD a v1.1.0?») quedó registrada como «Approved by admin». `RELEASES` de prod termina con la línea `1.1.0  rollback  4d2efa4` (la palabra `rollback` es el tipo de operación del job, aunque aquí la versión sea la más nueva). Los tres ambientes responden `/version` = `1.1.0` y prod tiene los 10 contenedores `healthy`.
 
 ## 8. Incidencias de la corrida (y qué se aprendió)
 
