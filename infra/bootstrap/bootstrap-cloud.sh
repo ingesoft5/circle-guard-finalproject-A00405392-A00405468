@@ -8,7 +8,7 @@ LOG_TAG=cloud
 require aws jq curl
 
 mkdir -p "$STATE_DIR"; chmod 700 "$STATE_DIR"
-# Quién entra por SSH y a Nexus: la IP de quien corre el script más las de ADMIN_CIDRS
+# Quién entra por SSH: la IP de quien corre el script más las de ADMIN_CIDRS
 # (lista separada por comas, p. ej. ADMIN_CIDRS="203.0.113.5/32,198.51.100.7/32").
 # Las reglas por CIDR de esos puertos que ya no estén en la lista se retiran (p. ej. una IP que cambió).
 ADMIN_LIST=()
@@ -84,11 +84,11 @@ for env in dev stage prod; do SG[$env]="$(ensure_sg "$PROJECT-$env-sg" "Ambiente
 
 for cidr in "${ADMIN_LIST[@]}"; do
   allow "${SG[tools]}" 22 "$cidr"
-  allow "${SG[tools]}" "$NEXUS_PORT" "$cidr"
   for env in dev stage prod; do allow "${SG[$env]}" 22 "$cidr"; done
 done
 allow "${SG[tools]}" "$JENKINS_PORT" 0.0.0.0/0      # webhook de GitHub y acceso del docente (con login)
 allow "${SG[tools]}" "$SONAR_PORT" 0.0.0.0/0        # quality gate visible para el docente (con login)
+allow "${SG[tools]}" "$NEXUS_PORT" 0.0.0.0/0        # imágenes visibles para el docente (con login; sin acceso anónimo)
 for env in dev stage prod; do
   allow "${SG[$env]}" 22 "${SG[tools]}"               # Jenkins despliega por SSH
   allow "${SG[$env]}" "$WEB_PORT" 0.0.0.0/0           # cliente web del ambiente
@@ -96,7 +96,6 @@ for env in dev stage prod; do
 done
 # Con las IPs nuevas ya autorizadas, se retiran las que sobran (nunca queda un momento sin acceso).
 prune_cidrs "${SG[tools]}" 22
-prune_cidrs "${SG[tools]}" "$NEXUS_PORT"
 for env in dev stage prod; do prune_cidrs "${SG[$env]}" 22; done
 log "Security groups listos"
 
