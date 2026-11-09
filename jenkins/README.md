@@ -35,7 +35,7 @@ Un `main` sin versión nueva (solo commits `docs`, `ci`, `test`, `chore`…) cor
 
 - **PR:** lo que cambió respecto a la rama destino (`git merge-base`).
 - **`main`:** lo que cambió desde el último build exitoso; si no lo hay, desde el commit anterior.
-- Si cambia algo **común** (`build.gradle.kts`, `settings.gradle.kts`, `gradle/`, `gradlew`, `Jenkinsfile` o cualquier archivo de `jenkins/`), se construyen **todos** los servicios y el cliente web.
+- Si cambia algo **común** (`build.gradle.kts`, `settings.gradle.kts`, `lombok.config`, `gradle/`, `gradlew`, `Jenkinsfile` o cualquier archivo de `jenkins/`), se construyen **todos** los servicios y el cliente web.
 - Si no hay referencia para comparar, también se construyen todos.
 - En la publicación de `main` las 9 imágenes se construyen siempre, con la misma versión, porque el *compose* de cada ambiente usa un único `IMAGE_TAG`.
 
