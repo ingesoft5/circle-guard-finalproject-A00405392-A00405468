@@ -11,7 +11,7 @@ List call() {
         return all
     }
     List files = sh(script: "git diff --name-only ${base} HEAD", returnStdout: true).trim().split('\n').findAll { it }
-    def global = ~/^(build\.gradle\.kts|settings\.gradle\.kts|gradle\/.*|gradlew|Jenkinsfile|jenkins\/.*)$/
+    def global = ~/^(build\.gradle\.kts|settings\.gradle\.kts|lombok\.config|gradle\/.*|gradlew|Jenkinsfile|jenkins\/.*)$/
     if (files.any { it ==~ global }) {
         echo '[changedServices] Cambió configuración común: se construyen todos'
         return all

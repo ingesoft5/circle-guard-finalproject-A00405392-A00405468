@@ -141,6 +141,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** el diagnóstico (SonarQube cuenta líneas y ramas; en `auth` las ramas estaban en 13,8 % y casi todas eran código que genera Lombok) y el archivo `lombok.config` con `lombok.addLombokGeneratedAnnotation = true`, que hace que JaCoCo deje fuera ese código. No se tocó ninguna prueba ni ningún umbral.
 - **Verificación / cambios del equipo:** se corrieron las pruebas unitarias de los 5 servicios en Docker y se calculó la cobertura (líneas + ramas) del XML de JaCoCo: auth 90,6 %, identity 91,0 %, form 75,7 %, promotion 62,3 %, gateway 79,2 %. Son cifras locales; la medida oficial es la de SonarQube tras el build de `main`. _Revisión: por completar por el revisor del PR._
 
+### 2026-11-08 · `jmrojas06` · Referencia del pipeline y CI completa sobre el código final (#20)
+
+- **Prompt:** *"si, arma el PR"*, respuesta a la propuesta de la IA de abrir un PR que obligara a Jenkins a correr la CI completa: el primer build de `main` (v1.0.0) omitió Build, pruebas, SonarQube e integración porque lo último que había cambiado eran documentos.
+- **Qué produjo:** `jenkins/README.md`: cómo se conecta el pipeline (multibranch, *webhooks*, librería cargada desde la misma rama), qué etapa corre en un PR y cuál en `main`, las reglas de la ejecución selectiva, la referencia de los 11 pasos de la *Shared Library* y de `deploy.sh` y `notify.sh`, credenciales y variables, rollback, aprobación y concurrencia, y dónde ver cada resultado. Al estar bajo `jenkins/`, `changedServices` lo trata como cambio común y construye los 9 servicios: es la primera vez que Jenkins ejecuta cobertura, SonarQube e integración sobre el código final.
+- **Verificación / cambios del equipo:** cada paso se documentó leyendo su código fuente (`jenkins/vars/*.groovy`, `Jenkinsfile`, `rollback.Jenkinsfile`, `deploy.sh`, `notify.sh`); los IDs de credenciales, las variables globales y el nombre del repositorio de Nexus se tomaron de `jenkins.yaml` y de `configure-nexus.sh`, no de memoria. Al leer el `Jenkinsfile` se vio además que `disableConcurrentBuilds(abortPrevious: true)` aborta el build anterior de la rama, incluido uno que espera la aprobación de prod, y quedó documentado como regla operativa. _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Reflexión crítica del equipo
