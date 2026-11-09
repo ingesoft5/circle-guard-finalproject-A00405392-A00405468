@@ -159,6 +159,11 @@ Las etapas Build, Unit tests, SonarQube e Integration quedaron `NOT_EXECUTED` en
 
 En prod, `/version` ya no devuelve `1.1.0` porque la imagen web `1.0.0` no tiene ese endpoint: es la prueba visible de que la versión anterior quedó desplegada.
 
+
+### Prod de vuelta a `v1.1.0`
+
+Tras demostrar el rollback, prod volvió a `1.1.0` con el mismo job para quedar igual que dev y stage: [`circleguard-rollback` #3](http://44.221.115.232:8080/job/circleguard-rollback/3/) (`ENV=prod`, `VERSION=1.1.0`), `SUCCESS`; la confirmación («¿Devolver PROD a v1.1.0?») quedó registrada como «Approved by admin». `RELEASES` de prod termina con la línea `1.1.0  rollback  4d2efa4` (la palabra `rollback` es el tipo de operación del job, aunque aquí la versión sea la más nueva). Los tres ambientes responden `/version` = `1.1.0` y prod tiene los 10 contenedores `healthy`.
+
 ## 8. Incidencias de la corrida (y qué se aprendió)
 
 | Qué pasó | Causa | Qué se hizo |
