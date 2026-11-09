@@ -28,7 +28,7 @@
 | [#17](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/17) | HU-10 Rollback | A | 2 | **Hecho.** `circleguard-rollback` #2 devolvió prod de `1.1.0` a `1.0.0` en 3 min 48 s, tras confirmación manual; los 10 contenedores quedaron `healthy` | [`ensayo-pipeline-real.md`](../evidencias/sprint-1/ensayo-pipeline-real.md) |
 | [#18](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/18) | HU-11 Change management | A+B | 2 | **Hecho** (PR #53). Política, guía de solicitud de cambio y el [RFC #52](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/52) del primer despliegue a prod, aprobado en el `input` por `pierrecuevas`, enlazado a las Releases y cerrado | [`docs/change-management/`](../change-management/politica.md) |
 | [#19](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/19) | HU-12 Documentación e IAG | A+B | 3 | **Hecho** (PR #53, #56). README operativo, diagramas, referencia del pipeline y bitácora de IAG con revisiones y reflexión | [`README.md`](../../README.md), [`docs/arquitectura/`](../arquitectura/README.md), [`jenkins/README.md`](../../jenkins/README.md), [`IAG_REGISTRO.md`](../../IAG_REGISTRO.md) |
-| [#20](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/20) | HU-13 Cierre del sprint | A+B | 2 | El video del pipeline (3 min 47 s) está grabado y subido; el informe está redactado y se entrega en la plataforma en PDF | este documento, [video](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/download/v1.1.0/circleguard-pipeline-sprint1.mp4) y [su guion](../evidencias/sprint-1/video-pipeline.md) |
+| [#20](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/20) | HU-13 Cierre del sprint | A+B | 2 | El video del pipeline (3 min 47 s) está grabado y subido; el informe en PDF está en [`docs/entrega/`](../entrega/informe-parte1-pipeline-cicd.pdf) | este documento, [video](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/download/v1.1.0/circleguard-pipeline-sprint1.mp4) y [su guion](../evidencias/sprint-1/video-pipeline.md) |
 | [#38](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/38) | HU-28 Burndown diario | A | 2 | **Hecho** (foto diaria del 5 al 8 nov) | [`metricas/`](metricas/sprint-1-burndown.md) |
 
 ### Demostración de punta a punta
@@ -45,8 +45,8 @@ El domingo 8 el pipeline corrió de punta a punta en AWS, con las 4 VMs encendid
 
 | Métrica | Valor |
 |---|---|
-| Puntos comprometidos / terminados | 61 / 59 (HU-13, 2 puntos, se cierra con la entrega del informe PDF) |
-| Velocidad del sprint | 59 puntos en 4 días (5 a 8 de nov) |
+| Puntos comprometidos / terminados | 61 / 61 |
+| Velocidad del sprint | 61 puntos en 4 días (5 a 8 de nov) |
 | Pruebas | 51 → 121 (110 unitarias + 11 de integración con Testcontainers) + 6 E2E de Playwright |
 | Cobertura de líneas (núcleo, SonarQube) | auth 88,6 % · identity 84,6 % · form 88,6 % · promotion 70,4 % · gateway 81,8 % |
 | PR fusionados en el sprint | #43, #44, #45, #46, #48, #49, #51, #53, #54, #55, #57 |
