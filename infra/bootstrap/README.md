@@ -58,5 +58,7 @@ Las contraseñas están en `infra/bootstrap/.state/secrets.env`:
 | Jenkins (docente, solo lectura) | `docente` | `JENKINS_DOCENTE_PASSWORD` |
 | SonarQube | `admin` | `SONAR_ADMIN_PASSWORD` |
 | Nexus | `admin` | `NEXUS_ADMIN_PASSWORD` |
+| SonarQube (docente, solo lectura) | `docente` | `SONAR_DOCENTE_PASSWORD` |
+| Nexus (docente, solo lectura) | `docente` | `NEXUS_DOCENTE_PASSWORD` |
 
 SSH a una VM: `ssh -i infra/bootstrap/.state/circleguard-key.pem ubuntu@<ip>`.

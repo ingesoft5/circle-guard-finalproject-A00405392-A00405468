@@ -99,6 +99,7 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 | Versionado automático y release notes | [`docs/release-notes/README.md`](docs/release-notes/README.md) |
 | Gestión de cambios: tipos, aprobaciones, RFC, etiquetado | [`docs/change-management/politica.md`](docs/change-management/politica.md) |
 | Sprints, burndown y evidencias | [`docs/agil/`](docs/agil), [`docs/evidencias/`](docs/evidencias) |
+| Video del pipeline de punta a punta (3 min 47 s) y su guion | [Video](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/download/v1.1.0/circleguard-pipeline-sprint1.mp4) · [guion y antes/después](docs/evidencias/sprint-1/video-pipeline.md) |
 
 ### Ambientes
 
@@ -110,6 +111,16 @@ Cada ambiente es una VM EC2 propia con su *security group* y su IP elástica. Se
 | **dev** | `http://34.230.234.121` | Cada versión de `main`, automáticamente |
 | **stage** | `http://3.209.207.195` | La misma versión, si los E2E contra dev pasan |
 | **prod** | `http://50.19.116.114` | La misma versión, tras aprobación manual en Jenkins |
+
+#### Acceso del docente
+
+Cuentas de **solo lectura**, una por herramienta. En Jenkins ve jobs, ejecuciones, reportes y *logs*; en SonarQube ve los 8 proyectos y su *quality gate*; en Nexus ve las imágenes y sus *tags*. En ninguna puede ejecutar, aprobar, subir, borrar ni configurar. Se crearon para la evaluación y se rotan al terminar.
+
+| Dónde | Usuario | Contraseña |
+|---|---|---|
+| Jenkins `http://44.221.115.232:8080` | `docente` | `S581jKSgHKQj0hCO1mQn51BT` |
+| SonarQube `http://44.221.115.232:9000` | `docente` | `yI3EMyA7Tf9tMgZDXW9YAa1-` |
+| Nexus `http://44.221.115.232:8081` | `docente` | `LeHGKilhIKQcbGy1fSL2T4mO` |
 
 ### Cómo llega un cambio a producción
 

@@ -16,11 +16,12 @@ REMOTE_DIR="/opt/circleguard-tools"
 
 # --- Secretos (se generan una sola vez y quedan en .state/secrets.env) ---------
 for s in JENKINS_ADMIN_PASSWORD JENKINS_JMROJAS06_PASSWORD JENKINS_PIERRECUEVAS_PASSWORD JENKINS_DOCENTE_PASSWORD \
-         SONAR_DB_PASSWORD NEXUS_ADMIN_PASSWORD NEXUS_CI_PASSWORD; do
+         SONAR_DB_PASSWORD NEXUS_ADMIN_PASSWORD NEXUS_CI_PASSWORD NEXUS_DOCENTE_PASSWORD; do
   ensure_secret "$s"
 done
 # SonarQube 26 exige mayúscula, minúscula, número y carácter especial.
 ensure_secret SONAR_ADMIN_PASSWORD 20 strong
+ensure_secret SONAR_DOCENTE_PASSWORD 20 strong
 secret_from_env GITHUB_TOKEN
 secret_from_env DISCORD_WEBHOOK_URL optional   # E1.5: aviso de fallos; se puede activar después
 secret_from_env WHATSAPP_RECIPIENTS optional   # "+57XXXXXXXXXX:apikey,+57...:apikey" (CallMeBot)
@@ -68,7 +69,7 @@ remote tools "cd $REMOTE_DIR && docker compose up -d sonar-db sonarqube nexus"
 log "Configurando Nexus"
 wait_for_http tools "http://localhost:$NEXUS_PORT/service/rest/v1/status" 200 60
 NX_PASS="$(sec NEXUS_ADMIN_PASSWORD)"
-remote tools "bash /tmp/cg-remote/configure-nexus.sh '$NX_PASS' '$(sec NEXUS_CI_PASSWORD)' $REGISTRY_PORT"
+remote tools "bash /tmp/cg-remote/configure-nexus.sh '$NX_PASS' '$(sec NEXUS_CI_PASSWORD)' $REGISTRY_PORT '$(sec NEXUS_DOCENTE_PASSWORD)'"
 
 # --- SonarQube ---------------------------------------------------------------------
 log "Configurando SonarQube"
@@ -92,6 +93,13 @@ if ! remote tools "curl -fsS -u admin:'$SQ_PASS' localhost:$SONAR_PORT/api/webho
   remote tools "curl -fsS -u admin:'$SQ_PASS' -X POST localhost:$SONAR_PORT/api/webhooks/create \
     --data-urlencode name=jenkins --data-urlencode url=http://jenkins:8080/sonarqube-webhook/" >/dev/null
   log "Webhook SonarQube -> Jenkins creado"
+fi
+# Usuario del docente: usuario normal (grupo sonar-users), sin permisos de administración.
+if [[ "$(remote tools "curl -fsS -u admin:'$SQ_PASS' 'localhost:$SONAR_PORT/api/users/search?q=docente'" | jq '[.users[]|select(.login=="docente")]|length')" == "0" ]]; then
+  remote tools "curl -fsS -u admin:'$SQ_PASS' -X POST localhost:$SONAR_PORT/api/users/create \
+    --data-urlencode login=docente --data-urlencode name=Docente \
+    --data-urlencode password='$(sec SONAR_DOCENTE_PASSWORD)'" >/dev/null
+  log "Usuario docente de SonarQube creado"
 fi
 
 remote tools "bash /tmp/cg-remote/configure-sonar-qg.sh '$SQ_PASS' $SONAR_PORT"
