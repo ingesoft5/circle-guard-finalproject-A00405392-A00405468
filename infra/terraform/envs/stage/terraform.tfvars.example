@@ -1,0 +1,5 @@
+# Copia este archivo a terraform.tfvars (no se versiona) y completa los valores.
+admin_cidrs    = ["203.0.113.5/32"]            # tu IP publica: curl https://checkip.amazonaws.com
+tools_cidr     = "198.51.100.10/32"            # IP elastica de la VM tools, con /32
+ssh_public_key = "ssh-ed25519 AAAA... usuario" # ssh-keygen -y -f infra/bootstrap/.state/circleguard-key.pem
+alert_email    = "equipo@example.com"          # correo que recibe las alarmas

@@ -1,0 +1,4 @@
+$ ./infra/terraform/run.sh drift dev
+== drift dev
+DRIFT: dev difiere del codigo (mira el detalle con: ./infra/terraform/run.sh dev plan)
+codigo de salida: 2

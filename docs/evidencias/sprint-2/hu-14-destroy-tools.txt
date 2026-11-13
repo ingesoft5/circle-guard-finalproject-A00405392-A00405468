@@ -1,0 +1,1406 @@
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵
+Acquiring state lock. This may take a few moments...
+module.compute.aws_iam_role.this: Refreshing state... [id=circleguard-tools-vm-role]
+module.observability.aws_sns_topic.alerts: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts]
+module.registry.aws_ecr_repository.this["circleguard-web"]: Refreshing state... [id=circleguard-web]
+data.aws_caller_identity.current: Reading...
+aws_key_pair.this: Refreshing state... [id=circleguard-tools-key]
+module.observability.aws_cloudwatch_log_group.this: Refreshing state... [id=/circleguard/tools]
+module.registry.aws_ecr_repository.this["circleguard-file-service"]: Refreshing state... [id=circleguard-file-service]
+module.registry.aws_ecr_repository.this["circleguard-gateway-service"]: Refreshing state... [id=circleguard-gateway-service]
+module.compute.aws_eip.this: Refreshing state... [id=eipalloc-07c907c6455bbb14c]
+module.registry.aws_ecr_repository.this["circleguard-auth-service"]: Refreshing state... [id=circleguard-auth-service]
+data.aws_caller_identity.current: Read complete after 0s [id=<ID-CUENTA>]
+module.registry.aws_ecr_repository.this["circleguard-identity-service"]: Refreshing state... [id=circleguard-identity-service]
+module.registry.aws_ecr_repository.this["circleguard-notification-service"]: Refreshing state... [id=circleguard-notification-service]
+module.registry.aws_ecr_repository.this["circleguard-dashboard-service"]: Refreshing state... [id=circleguard-dashboard-service]
+module.registry.aws_ecr_repository.this["circleguard-form-service"]: Refreshing state... [id=circleguard-form-service]
+module.registry.aws_ecr_repository.this["circleguard-promotion-service"]: Refreshing state... [id=circleguard-promotion-service]
+module.network.aws_vpc.this: Refreshing state... [id=vpc-0242bff6441009cda]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Reading...
+module.observability.aws_sns_topic_subscription.email: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts:1ccae2aa-f060-419a-a51c-2820e6d38971]
+module.compute.aws_iam_instance_profile.this: Refreshing state... [id=circleguard-tools-vm-profile]
+module.compute.aws_iam_role_policy.extra[0]: Refreshing state... [id=circleguard-tools-vm-role:circleguard-tools-vm-extra]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-auth-service"]: Refreshing state... [id=circleguard-auth-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-form-service"]: Refreshing state... [id=circleguard-form-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-gateway-service"]: Refreshing state... [id=circleguard-gateway-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-identity-service"]: Refreshing state... [id=circleguard-identity-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-promotion-service"]: Refreshing state... [id=circleguard-promotion-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-file-service"]: Refreshing state... [id=circleguard-file-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-web"]: Refreshing state... [id=circleguard-web]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-notification-service"]: Refreshing state... [id=circleguard-notification-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-dashboard-service"]: Refreshing state... [id=circleguard-dashboard-service]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Read complete after 1s [id=/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id]
+module.network.aws_internet_gateway.this: Refreshing state... [id=igw-07ea93a6c5e913634]
+module.network.aws_security_group.this: Refreshing state... [id=sg-070f0c1d4f8d461dd]
+module.network.aws_subnet.public: Refreshing state... [id=subnet-010f28ba014e623b6]
+module.network.aws_route_table.public: Refreshing state... [id=rtb-0c0b4f819fc76437e]
+module.network.aws_vpc_security_group_egress_rule.all: Refreshing state... [id=sgr-0bfa1aba42d15c201]
+module.network.aws_vpc_security_group_ingress_rule.this["9000-0.0.0.0/0"]: Refreshing state... [id=sgr-012a84754e76347d6]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-0ed2a646f274c369b]
+module.network.aws_vpc_security_group_ingress_rule.this["8081-0.0.0.0/0"]: Refreshing state... [id=sgr-015161e4a7c8f70be]
+module.network.aws_vpc_security_group_ingress_rule.this["8080-0.0.0.0/0"]: Refreshing state... [id=sgr-0594dd6368ddaa6a9]
+module.network.aws_route_table_association.public: Refreshing state... [id=rtbassoc-058051f864a3512f9]
+module.compute.aws_instance.this: Refreshing state... [id=i-<ID-CUENTA>60f1d]
+module.compute.aws_eip_association.this: Refreshing state... [id=eipassoc-02b5023a3377e4748]
+module.observability.aws_cloudwatch_metric_alarm.status: Refreshing state... [id=circleguard-tools-fallo-de-estado]
+module.observability.aws_cloudwatch_metric_alarm.cpu: Refreshing state... [id=circleguard-tools-cpu-alta]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_key_pair.this will be destroyed
+  - resource "aws_key_pair" "this" {
+      - arn             = "arn:aws:ec2:us-east-1:<ID-CUENTA>:key-pair/circleguard-tools-key" -> null
+      - fingerprint     = "uUjI9wM5+iTpGap+5uEpQU3FWX9MEEBqvJz1d3moc8c=" -> null
+      - id              = "circleguard-tools-key" -> null
+      - key_name        = "circleguard-tools-key" -> null
+      - key_pair_id     = "key-0f8ef2b2ee80f4a89" -> null
+      - key_type        = "ed25519" -> null
+      - public_key      = "ssh-ed25519 <LLAVE-PUBLICA>" -> null
+      - region          = "us-east-1" -> null
+      - tags            = {} -> null
+      - tags_all        = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # module.compute.aws_eip.this will be destroyed
+  - resource "aws_eip" "this" {
+      - allocation_id            = "eipalloc-07c907c6455bbb14c" -> null
+      - arn                      = "arn:aws:ec2:us-east-1:<ID-CUENTA>:elastic-ip/eipalloc-07c907c6455bbb14c" -> null
+      - association_id           = "eipassoc-02b5023a3377e4748" -> null
+      - domain                   = "vpc" -> null
+      - id                       = "eipalloc-07c907c6455bbb14c" -> null
+      - instance                 = "i-<ID-CUENTA>60f1d" -> null
+      - network_border_group     = "us-east-1" -> null
+      - network_interface        = "eni-00239f6691ea61515" -> null
+      - private_dns              = "ip-10-0-1-38.ec2.internal" -> null
+      - private_ip               = "10.0.1.38" -> null
+      - public_dns               = "ec2-184-197-78-124.compute-1.amazonaws.com" -> null
+      - public_ip                = "184.197.78.124" -> null
+      - public_ipv4_pool         = "amazon" -> null
+      - region                   = "us-east-1" -> null
+      - tags                     = {
+          - "Name" = "circleguard-tools-vm-eip"
+        } -> null
+      - tags_all                 = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-vm-eip"
+          - "Project"   = "circleguard"
+        } -> null
+        # (5 unchanged attributes hidden)
+    }
+
+  # module.compute.aws_eip_association.this will be destroyed
+  - resource "aws_eip_association" "this" {
+      - allocation_id        = "eipalloc-07c907c6455bbb14c" -> null
+      - id                   = "eipassoc-02b5023a3377e4748" -> null
+      - instance_id          = "i-<ID-CUENTA>60f1d" -> null
+      - network_interface_id = "eni-00239f6691ea61515" -> null
+      - private_ip_address   = "10.0.1.38" -> null
+      - public_ip            = "184.197.78.124" -> null
+      - region               = "us-east-1" -> null
+    }
+
+  # module.compute.aws_iam_instance_profile.this will be destroyed
+  - resource "aws_iam_instance_profile" "this" {
+      - arn         = "arn:aws:iam::<ID-CUENTA>:instance-profile/circleguard-tools-vm-profile" -> null
+      - create_date = "2026-11-13T18:10:04Z" -> null
+      - id          = "circleguard-tools-vm-profile" -> null
+      - name        = "circleguard-tools-vm-profile" -> null
+      - path        = "/" -> null
+      - role        = "circleguard-tools-vm-role" -> null
+      - tags        = {} -> null
+      - tags_all    = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - unique_id   = "AIPARORD6NBT3EPMQZW3T" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # module.compute.aws_iam_role.this will be destroyed
+  - resource "aws_iam_role" "this" {
+      - arn                   = "arn:aws:iam::<ID-CUENTA>:role/circleguard-tools-vm-role" -> null
+      - assume_role_policy    = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "sts:AssumeRole"
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - create_date           = "2026-11-13T18:10:03Z" -> null
+      - force_detach_policies = false -> null
+      - id                    = "circleguard-tools-vm-role" -> null
+      - managed_policy_arns   = [] -> null
+      - max_session_duration  = 3600 -> null
+      - name                  = "circleguard-tools-vm-role" -> null
+      - path                  = "/" -> null
+      - tags                  = {} -> null
+      - tags_all              = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - unique_id             = "AROARORD6NBT5VOURDUPH" -> null
+        # (3 unchanged attributes hidden)
+
+      - inline_policy {
+          - name   = "circleguard-tools-vm-extra" -> null
+          - policy = jsonencode(
+                {
+                  - Statement = [
+                      - {
+                          - Action   = [
+                              - "ecr:GetAuthorizationToken",
+                            ]
+                          - Effect   = "Allow"
+                          - Resource = [
+                              - "*",
+                            ]
+                        },
+                      - {
+                          - Action   = [
+                              - "ecr:BatchCheckLayerAvailability",
+                              - "ecr:BatchGetImage",
+                              - "ecr:GetDownloadUrlForLayer",
+                              - "ecr:InitiateLayerUpload",
+                              - "ecr:UploadLayerPart",
+                              - "ecr:CompleteLayerUpload",
+                              - "ecr:PutImage",
+                              - "ecr:DescribeImages",
+                              - "ecr:DescribeRepositories",
+                              - "ecr:ListImages",
+                            ]
+                          - Effect   = "Allow"
+                          - Resource = [
+                              - "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-*",
+                            ]
+                        },
+                    ]
+                  - Version   = "2012-10-17"
+                }
+            ) -> null
+        }
+    }
+
+  # module.compute.aws_iam_role_policy.extra[0] will be destroyed
+  - resource "aws_iam_role_policy" "extra" {
+      - id          = "circleguard-tools-vm-role:circleguard-tools-vm-extra" -> null
+      - name        = "circleguard-tools-vm-extra" -> null
+      - policy      = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action   = [
+                          - "ecr:GetAuthorizationToken",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = [
+                          - "*",
+                        ]
+                    },
+                  - {
+                      - Action   = [
+                          - "ecr:BatchCheckLayerAvailability",
+                          - "ecr:BatchGetImage",
+                          - "ecr:GetDownloadUrlForLayer",
+                          - "ecr:InitiateLayerUpload",
+                          - "ecr:UploadLayerPart",
+                          - "ecr:CompleteLayerUpload",
+                          - "ecr:PutImage",
+                          - "ecr:DescribeImages",
+                          - "ecr:DescribeRepositories",
+                          - "ecr:ListImages",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = [
+                          - "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-*",
+                        ]
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - role        = "circleguard-tools-vm-role" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # module.compute.aws_instance.this will be destroyed
+  - resource "aws_instance" "this" {
+      - ami                                  = "ami-08b275ac6cc5dbefb" -> null
+      - arn                                  = "arn:aws:ec2:us-east-1:<ID-CUENTA>:instance/i-<ID-CUENTA>60f1d" -> null
+      - associate_public_ip_address          = true -> null
+      - availability_zone                    = "us-east-1a" -> null
+      - disable_api_stop                     = false -> null
+      - disable_api_termination              = false -> null
+      - ebs_optimized                        = false -> null
+      - force_destroy                        = false -> null
+      - get_password_data                    = false -> null
+      - hibernation                          = false -> null
+      - iam_instance_profile                 = "circleguard-tools-vm-profile" -> null
+      - id                                   = "i-<ID-CUENTA>60f1d" -> null
+      - instance_initiated_shutdown_behavior = "stop" -> null
+      - instance_state                       = "running" -> null
+      - instance_type                        = "t3.xlarge" -> null
+      - ipv6_address_count                   = 0 -> null
+      - ipv6_addresses                       = [] -> null
+      - key_name                             = "circleguard-tools-key" -> null
+      - monitoring                           = false -> null
+      - placement_partition_number           = 0 -> null
+      - primary_network_interface_id         = "eni-00239f6691ea61515" -> null
+      - private_dns                          = "ip-10-0-1-38.ec2.internal" -> null
+      - private_ip                           = "10.0.1.38" -> null
+      - public_dns                           = "ec2-184-197-78-124.compute-1.amazonaws.com" -> null
+      - public_ip                            = "184.197.78.124" -> null
+      - region                               = "us-east-1" -> null
+      - secondary_private_ips                = [] -> null
+      - security_groups                      = [] -> null
+      - source_dest_check                    = true -> null
+      - subnet_id                            = "subnet-010f28ba014e623b6" -> null
+      - tags                                 = {
+          - "Name" = "circleguard-tools-vm"
+          - "Role" = "tools"
+        } -> null
+      - tags_all                             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-vm"
+          - "Project"   = "circleguard"
+          - "Role"      = "tools"
+        } -> null
+      - tenancy                              = "default" -> null
+      - user_data                            = <<-EOT
+            #!/usr/bin/env bash
+            # Generado por Terraform (modulo compute, role = tools). Docker, Jenkins, SonarQube y Nexus
+            # los instala despues infra/bootstrap/bootstrap-tools.sh.
+            set -euo pipefail
+            
+            hostnamectl set-hostname "circleguard-tools-vm"
+        EOT -> null
+      - user_data_replace_on_change          = false -> null
+      - vpc_security_group_ids               = [
+          - "sg-070f0c1d4f8d461dd",
+        ] -> null
+        # (7 unchanged attributes hidden)
+
+      - capacity_reservation_specification {
+          - capacity_reservation_preference = "open" -> null
+        }
+
+      - cpu_options {
+          - core_count            = 2 -> null
+          - threads_per_core      = 2 -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - credit_specification {
+          - cpu_credits = "unlimited" -> null
+        }
+
+      - enclave_options {
+          - enabled = false -> null
+        }
+
+      - maintenance_options {
+          - auto_recovery = "default" -> null
+        }
+
+      - metadata_options {
+          - http_endpoint               = "enabled" -> null
+          - http_protocol_ipv6          = "disabled" -> null
+          - http_put_response_hop_limit = 2 -> null
+          - http_tokens                 = "required" -> null
+          - instance_metadata_tags      = "disabled" -> null
+        }
+
+      - primary_network_interface {
+          - delete_on_termination = true -> null
+          - network_interface_id  = "eni-00239f6691ea61515" -> null
+        }
+
+      - private_dns_name_options {
+          - enable_resource_name_dns_a_record    = false -> null
+          - enable_resource_name_dns_aaaa_record = false -> null
+          - hostname_type                        = "ip-name" -> null
+        }
+
+      - root_block_device {
+          - delete_on_termination = true -> null
+          - device_name           = "/dev/sda1" -> null
+          - encrypted             = true -> null
+          - iops                  = 3000 -> null
+          - kms_key_id            = "arn:aws:kms:us-east-1:<ID-CUENTA>:key/c0b48d39-5876-4e71-8242-bf13bf6f6aba" -> null
+          - tags                  = {} -> null
+          - tags_all              = {
+              - "Env"       = "tools"
+              - "ManagedBy" = "terraform"
+              - "Project"   = "circleguard"
+            } -> null
+          - throughput            = 125 -> null
+          - volume_id             = "vol-0da8f92313cfbe3f6" -> null
+          - volume_size           = 60 -> null
+          - volume_type           = "gp3" -> null
+        }
+    }
+
+  # module.network.aws_internet_gateway.this will be destroyed
+  - resource "aws_internet_gateway" "this" {
+      - arn      = "arn:aws:ec2:us-east-1:<ID-CUENTA>:internet-gateway/igw-07ea93a6c5e913634" -> null
+      - id       = "igw-07ea93a6c5e913634" -> null
+      - owner_id = "<ID-CUENTA>" -> null
+      - region   = "us-east-1" -> null
+      - tags     = {
+          - "Name" = "circleguard-tools-igw"
+        } -> null
+      - tags_all = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-igw"
+          - "Project"   = "circleguard"
+        } -> null
+      - vpc_id   = "vpc-0242bff6441009cda" -> null
+    }
+
+  # module.network.aws_route_table.public will be destroyed
+  - resource "aws_route_table" "public" {
+      - arn              = "arn:aws:ec2:us-east-1:<ID-CUENTA>:route-table/rtb-0c0b4f819fc76437e" -> null
+      - id               = "rtb-0c0b4f819fc76437e" -> null
+      - owner_id         = "<ID-CUENTA>" -> null
+      - propagating_vgws = [] -> null
+      - region           = "us-east-1" -> null
+      - route            = [
+          - {
+              - cidr_block                 = "0.0.0.0/0"
+              - gateway_id                 = "igw-07ea93a6c5e913634"
+                # (12 unchanged attributes hidden)
+            },
+        ] -> null
+      - tags             = {
+          - "Name" = "circleguard-tools-public"
+        } -> null
+      - tags_all         = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-public"
+          - "Project"   = "circleguard"
+        } -> null
+      - vpc_id           = "vpc-0242bff6441009cda" -> null
+    }
+
+  # module.network.aws_route_table_association.public will be destroyed
+  - resource "aws_route_table_association" "public" {
+      - id             = "rtbassoc-058051f864a3512f9" -> null
+      - region         = "us-east-1" -> null
+      - route_table_id = "rtb-0c0b4f819fc76437e" -> null
+      - subnet_id      = "subnet-010f28ba014e623b6" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # module.network.aws_security_group.this will be destroyed
+  - resource "aws_security_group" "this" {
+      - arn                    = "arn:aws:ec2:us-east-1:<ID-CUENTA>:security-group/sg-070f0c1d4f8d461dd" -> null
+      - description            = "Security group de circleguard-tools" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "Salida abierta: paquetes, k3s e imagenes"
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+            },
+        ] -> null
+      - id                     = "sg-070f0c1d4f8d461dd" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "Jenkins: webhook de GitHub y acceso del docente"
+              - from_port        = 8080
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 8080
+            },
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "Nexus: artefactos visibles para el docente"
+              - from_port        = 8081
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 8081
+            },
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "SonarQube: quality gate visible para el docente"
+              - from_port        = 9000
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 9000
+            },
+          - {
+              - cidr_blocks      = [
+                  - "<IP-ADMIN>/32",
+                ]
+              - description      = "SSH desde administracion"
+              - from_port        = 22
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 22
+            },
+        ] -> null
+      - name                   = "circleguard-tools-sg" -> null
+      - owner_id               = "<ID-CUENTA>" -> null
+      - region                 = "us-east-1" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "circleguard-tools-sg"
+        } -> null
+      - tags_all               = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-sg"
+          - "Project"   = "circleguard"
+        } -> null
+      - vpc_id                 = "vpc-0242bff6441009cda" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # module.network.aws_subnet.public will be destroyed
+  - resource "aws_subnet" "public" {
+      - arn                                            = "arn:aws:ec2:us-east-1:<ID-CUENTA>:subnet/subnet-010f28ba014e623b6" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "us-east-1a" -> null
+      - availability_zone_id                           = "use1-az1" -> null
+      - cidr_block                                     = "10.0.1.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-010f28ba014e623b6" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = false -> null
+      - owner_id                                       = "<ID-CUENTA>" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - region                                         = "us-east-1" -> null
+      - tags                                           = {
+          - "Name" = "circleguard-tools-public"
+        } -> null
+      - tags_all                                       = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-public"
+          - "Project"   = "circleguard"
+        } -> null
+      - vpc_id                                         = "vpc-0242bff6441009cda" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.network.aws_vpc.this will be destroyed
+  - resource "aws_vpc" "this" {
+      - arn                                  = "arn:aws:ec2:us-east-1:<ID-CUENTA>:vpc/vpc-0242bff6441009cda" -> null
+      - assign_generated_ipv6_cidr_block     = false -> null
+      - cidr_block                           = "10.0.0.0/16" -> null
+      - default_network_acl_id               = "acl-022ec7e30378efc30" -> null
+      - default_route_table_id               = "rtb-037f232c18001b015" -> null
+      - default_security_group_id            = "sg-0e22d644470fa234f" -> null
+      - dhcp_options_id                      = "dopt-0cbed819368ad19d5" -> null
+      - enable_dns_hostnames                 = true -> null
+      - enable_dns_support                   = true -> null
+      - enable_network_address_usage_metrics = false -> null
+      - id                                   = "vpc-0242bff6441009cda" -> null
+      - instance_tenancy                     = "default" -> null
+      - ipv6_netmask_length                  = 0 -> null
+      - main_route_table_id                  = "rtb-037f232c18001b015" -> null
+      - owner_id                             = "<ID-CUENTA>" -> null
+      - region                               = "us-east-1" -> null
+      - tags                                 = {
+          - "Name" = "circleguard-tools-vpc"
+        } -> null
+      - tags_all                             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Name"      = "circleguard-tools-vpc"
+          - "Project"   = "circleguard"
+        } -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.network.aws_vpc_security_group_egress_rule.all will be destroyed
+  - resource "aws_vpc_security_group_egress_rule" "all" {
+      - arn                    = "arn:aws:ec2:us-east-1:<ID-CUENTA>:security-group-rule/sgr-0bfa1aba42d15c201" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "Salida abierta: paquetes, k3s e imagenes" -> null
+      - id                     = "sgr-0bfa1aba42d15c201" -> null
+      - ip_protocol            = "-1" -> null
+      - region                 = "us-east-1" -> null
+      - security_group_id      = "sg-070f0c1d4f8d461dd" -> null
+      - security_group_rule_id = "sgr-0bfa1aba42d15c201" -> null
+      - tags_all               = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"] will be destroyed
+  - resource "aws_vpc_security_group_ingress_rule" "this" {
+      - arn                    = "arn:aws:ec2:us-east-1:<ID-CUENTA>:security-group-rule/sgr-0ed2a646f274c369b" -> null
+      - cidr_ipv4              = "<IP-ADMIN>/32" -> null
+      - description            = "SSH desde administracion" -> null
+      - from_port              = 22 -> null
+      - id                     = "sgr-0ed2a646f274c369b" -> null
+      - ip_protocol            = "tcp" -> null
+      - region                 = "us-east-1" -> null
+      - security_group_id      = "sg-070f0c1d4f8d461dd" -> null
+      - security_group_rule_id = "sgr-0ed2a646f274c369b" -> null
+      - tags_all               = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - to_port                = 22 -> null
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["8080-0.0.0.0/0"] will be destroyed
+  - resource "aws_vpc_security_group_ingress_rule" "this" {
+      - arn                    = "arn:aws:ec2:us-east-1:<ID-CUENTA>:security-group-rule/sgr-0594dd6368ddaa6a9" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "Jenkins: webhook de GitHub y acceso del docente" -> null
+      - from_port              = 8080 -> null
+      - id                     = "sgr-0594dd6368ddaa6a9" -> null
+      - ip_protocol            = "tcp" -> null
+      - region                 = "us-east-1" -> null
+      - security_group_id      = "sg-070f0c1d4f8d461dd" -> null
+      - security_group_rule_id = "sgr-0594dd6368ddaa6a9" -> null
+      - tags_all               = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - to_port                = 8080 -> null
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["8081-0.0.0.0/0"] will be destroyed
+  - resource "aws_vpc_security_group_ingress_rule" "this" {
+      - arn                    = "arn:aws:ec2:us-east-1:<ID-CUENTA>:security-group-rule/sgr-015161e4a7c8f70be" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "Nexus: artefactos visibles para el docente" -> null
+      - from_port              = 8081 -> null
+      - id                     = "sgr-015161e4a7c8f70be" -> null
+      - ip_protocol            = "tcp" -> null
+      - region                 = "us-east-1" -> null
+      - security_group_id      = "sg-070f0c1d4f8d461dd" -> null
+      - security_group_rule_id = "sgr-015161e4a7c8f70be" -> null
+      - tags_all               = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - to_port                = 8081 -> null
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["9000-0.0.0.0/0"] will be destroyed
+  - resource "aws_vpc_security_group_ingress_rule" "this" {
+      - arn                    = "arn:aws:ec2:us-east-1:<ID-CUENTA>:security-group-rule/sgr-012a84754e76347d6" -> null
+      - cidr_ipv4              = "0.0.0.0/0" -> null
+      - description            = "SonarQube: quality gate visible para el docente" -> null
+      - from_port              = 9000 -> null
+      - id                     = "sgr-012a84754e76347d6" -> null
+      - ip_protocol            = "tcp" -> null
+      - region                 = "us-east-1" -> null
+      - security_group_id      = "sg-070f0c1d4f8d461dd" -> null
+      - security_group_rule_id = "sgr-012a84754e76347d6" -> null
+      - tags_all               = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - to_port                = 9000 -> null
+    }
+
+  # module.observability.aws_cloudwatch_log_group.this will be destroyed
+  - resource "aws_cloudwatch_log_group" "this" {
+      - arn                         = "arn:aws:logs:us-east-1:<ID-CUENTA>:log-group:/circleguard/tools" -> null
+      - deletion_protection_enabled = false -> null
+      - id                          = "/circleguard/tools" -> null
+      - log_group_class             = "STANDARD" -> null
+      - name                        = "/circleguard/tools" -> null
+      - region                      = "us-east-1" -> null
+      - retention_in_days           = 14 -> null
+      - skip_destroy                = false -> null
+      - tags                        = {} -> null
+      - tags_all                    = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # module.observability.aws_cloudwatch_metric_alarm.cpu will be destroyed
+  - resource "aws_cloudwatch_metric_alarm" "cpu" {
+      - actions_enabled                       = true -> null
+      - alarm_actions                         = [
+          - "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts",
+        ] -> null
+      - alarm_description                     = "CPU promedio mayor a 80 % durante 10 minutos" -> null
+      - alarm_name                            = "circleguard-tools-cpu-alta" -> null
+      - arn                                   = "arn:aws:cloudwatch:us-east-1:<ID-CUENTA>:alarm:circleguard-tools-cpu-alta" -> null
+      - comparison_operator                   = "GreaterThanThreshold" -> null
+      - datapoints_to_alarm                   = 0 -> null
+      - dimensions                            = {
+          - "InstanceId" = "i-<ID-CUENTA>60f1d"
+        } -> null
+      - evaluation_interval                   = 0 -> null
+      - evaluation_periods                    = 2 -> null
+      - id                                    = "circleguard-tools-cpu-alta" -> null
+      - insufficient_data_actions             = [] -> null
+      - metric_name                           = "CPUUtilization" -> null
+      - namespace                             = "AWS/EC2" -> null
+      - ok_actions                            = [
+          - "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts",
+        ] -> null
+      - period                                = 300 -> null
+      - region                                = "us-east-1" -> null
+      - statistic                             = "Average" -> null
+      - tags                                  = {} -> null
+      - tags_all                              = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - threshold                             = 80 -> null
+      - treat_missing_data                    = "notBreaching" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.observability.aws_cloudwatch_metric_alarm.status will be destroyed
+  - resource "aws_cloudwatch_metric_alarm" "status" {
+      - actions_enabled                       = true -> null
+      - alarm_actions                         = [
+          - "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts",
+        ] -> null
+      - alarm_description                     = "La VM fallo un chequeo de estado de AWS durante 2 minutos" -> null
+      - alarm_name                            = "circleguard-tools-fallo-de-estado" -> null
+      - arn                                   = "arn:aws:cloudwatch:us-east-1:<ID-CUENTA>:alarm:circleguard-tools-fallo-de-estado" -> null
+      - comparison_operator                   = "GreaterThanThreshold" -> null
+      - datapoints_to_alarm                   = 0 -> null
+      - dimensions                            = {
+          - "InstanceId" = "i-<ID-CUENTA>60f1d"
+        } -> null
+      - evaluation_interval                   = 0 -> null
+      - evaluation_periods                    = 2 -> null
+      - id                                    = "circleguard-tools-fallo-de-estado" -> null
+      - insufficient_data_actions             = [] -> null
+      - metric_name                           = "StatusCheckFailed" -> null
+      - namespace                             = "AWS/EC2" -> null
+      - ok_actions                            = [
+          - "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts",
+        ] -> null
+      - period                                = 60 -> null
+      - region                                = "us-east-1" -> null
+      - statistic                             = "Maximum" -> null
+      - tags                                  = {} -> null
+      - tags_all                              = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+      - threshold                             = 0 -> null
+      - treat_missing_data                    = "notBreaching" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.observability.aws_sns_topic.alerts will be destroyed
+  - resource "aws_sns_topic" "alerts" {
+      - application_success_feedback_sample_rate = 0 -> null
+      - arn                                      = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts" -> null
+      - content_based_deduplication              = false -> null
+      - fifo_topic                               = false -> null
+      - firehose_success_feedback_sample_rate    = 0 -> null
+      - http_success_feedback_sample_rate        = 0 -> null
+      - id                                       = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts" -> null
+      - lambda_success_feedback_sample_rate      = 0 -> null
+      - maximum_message_size                     = 0 -> null
+      - name                                     = "circleguard-tools-alerts" -> null
+      - owner                                    = "<ID-CUENTA>" -> null
+      - policy                                   = jsonencode(
+            {
+              - Id        = "__default_policy_ID"
+              - Statement = [
+                  - {
+                      - Action    = [
+                          - "SNS:GetTopicAttributes",
+                          - "SNS:SetTopicAttributes",
+                          - "SNS:AddPermission",
+                          - "SNS:RemovePermission",
+                          - "SNS:DeleteTopic",
+                          - "SNS:Subscribe",
+                          - "SNS:ListSubscriptionsByTopic",
+                          - "SNS:Publish",
+                        ]
+                      - Condition = {
+                          - StringEquals = {
+                              - "AWS:SourceOwner" = "<ID-CUENTA>"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - AWS = "*"
+                        }
+                      - Resource  = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts"
+                      - Sid       = "__default_statement_ID"
+                    },
+                ]
+              - Version   = "2008-10-17"
+            }
+        ) -> null
+      - region                                   = "us-east-1" -> null
+      - signature_version                        = 0 -> null
+      - sqs_success_feedback_sample_rate         = 0 -> null
+      - tags                                     = {} -> null
+      - tags_all                                 = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+        # (18 unchanged attributes hidden)
+    }
+
+  # module.observability.aws_sns_topic_subscription.email will be destroyed
+  - resource "aws_sns_topic_subscription" "email" {
+      - arn                             = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts:1ccae2aa-f060-419a-a51c-2820e6d38971" -> null
+      - confirmation_timeout_in_minutes = 1 -> null
+      - confirmation_was_authenticated  = false -> null
+      - endpoint                        = "<CORREO-ALARMAS>" -> null
+      - endpoint_auto_confirms          = false -> null
+      - id                              = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts:1ccae2aa-f060-419a-a51c-2820e6d38971" -> null
+      - owner_id                        = "<ID-CUENTA>" -> null
+      - pending_confirmation            = true -> null
+      - protocol                        = "email" -> null
+      - raw_message_delivery            = false -> null
+      - region                          = "us-east-1" -> null
+      - topic_arn                       = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts" -> null
+        # (6 unchanged attributes hidden)
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-auth-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-auth-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-auth-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-dashboard-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-dashboard-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-dashboard-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-file-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-file-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-file-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-form-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-form-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-form-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-gateway-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-gateway-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-gateway-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-identity-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-identity-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-identity-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-notification-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-notification-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-notification-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-promotion-service"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-promotion-service" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-promotion-service" -> null
+    }
+
+  # module.registry.aws_ecr_lifecycle_policy.this["circleguard-web"] will be destroyed
+  - resource "aws_ecr_lifecycle_policy" "this" {
+      - id          = "circleguard-web" -> null
+      - policy      = jsonencode(
+            {
+              - rules = [
+                  - {
+                      - action       = {
+                          - type = "expire"
+                        }
+                      - description  = "Conserva las ultimas 20 imagenes"
+                      - rulePriority = 1
+                      - selection    = {
+                          - countNumber = 20
+                          - countType   = "imageCountMoreThan"
+                          - tagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        ) -> null
+      - region      = "us-east-1" -> null
+      - registry_id = "<ID-CUENTA>" -> null
+      - repository  = "circleguard-web" -> null
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-auth-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-auth-service" -> null
+      - id                   = "circleguard-auth-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-auth-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-auth-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-dashboard-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-dashboard-service" -> null
+      - id                   = "circleguard-dashboard-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-dashboard-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-dashboard-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-file-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-file-service" -> null
+      - id                   = "circleguard-file-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-file-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-file-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-form-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-form-service" -> null
+      - id                   = "circleguard-form-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-form-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-form-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-gateway-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-gateway-service" -> null
+      - id                   = "circleguard-gateway-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-gateway-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-gateway-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-identity-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-identity-service" -> null
+      - id                   = "circleguard-identity-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-identity-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-identity-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-notification-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-notification-service" -> null
+      - id                   = "circleguard-notification-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-notification-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-notification-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-promotion-service"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-promotion-service" -> null
+      - id                   = "circleguard-promotion-service" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-promotion-service" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-promotion-service" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+  # module.registry.aws_ecr_repository.this["circleguard-web"] will be destroyed
+  - resource "aws_ecr_repository" "this" {
+      - arn                  = "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-web" -> null
+      - id                   = "circleguard-web" -> null
+      - image_tag_mutability = "IMMUTABLE" -> null
+      - name                 = "circleguard-web" -> null
+      - region               = "us-east-1" -> null
+      - registry_id          = "<ID-CUENTA>" -> null
+      - repository_url       = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-web" -> null
+      - tags                 = {} -> null
+      - tags_all             = {
+          - "Env"       = "tools"
+          - "ManagedBy" = "terraform"
+          - "Project"   = "circleguard"
+        } -> null
+
+      - encryption_configuration {
+          - encryption_type = "AES256" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - image_scanning_configuration {
+          - scan_on_push = true -> null
+        }
+    }
+
+Plan: 0 to add, 0 to change, 41 to destroy.
+
+Changes to Outputs:
+  - alerts_topic_arn = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts" -> null
+  - instance_id      = "i-<ID-CUENTA>60f1d" -> null
+  - private_ip       = "10.0.1.38" -> null
+  - public_ip        = "184.197.78.124" -> null
+  - repository_urls  = {
+      - circleguard-auth-service         = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-auth-service"
+      - circleguard-dashboard-service    = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-dashboard-service"
+      - circleguard-file-service         = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-file-service"
+      - circleguard-form-service         = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-form-service"
+      - circleguard-gateway-service      = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-gateway-service"
+      - circleguard-identity-service     = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-identity-service"
+      - circleguard-notification-service = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-notification-service"
+      - circleguard-promotion-service    = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-promotion-service"
+      - circleguard-web                  = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-web"
+    } -> null
+  - ssh              = "ssh -i infra/bootstrap/.state/circleguard-key.pem ubuntu@184.197.78.124" -> null
+  - vpc_id           = "vpc-0242bff6441009cda" -> null
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-form-service"]: Destroying... [id=circleguard-form-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-file-service"]: Destroying... [id=circleguard-file-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-promotion-service"]: Destroying... [id=circleguard-promotion-service]
+module.observability.aws_cloudwatch_log_group.this: Destroying... [id=/circleguard/tools]
+module.network.aws_vpc_security_group_ingress_rule.this["9000-0.0.0.0/0"]: Destroying... [id=sgr-012a84754e76347d6]
+module.compute.aws_eip_association.this: Destroying... [id=eipassoc-02b5023a3377e4748]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Destroying... [id=sgr-0ed2a646f274c369b]
+module.observability.aws_sns_topic_subscription.email: Destroying... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts:1ccae2aa-f060-419a-a51c-2820e6d38971]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-gateway-service"]: Destroying... [id=circleguard-gateway-service]
+module.observability.aws_cloudwatch_metric_alarm.status: Destroying... [id=circleguard-tools-fallo-de-estado]
+module.observability.aws_sns_topic_subscription.email: Destruction complete after 1s
+module.network.aws_route_table_association.public: Destroying... [id=rtbassoc-058051f864a3512f9]
+module.observability.aws_cloudwatch_log_group.this: Destruction complete after 1s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-identity-service"]: Destroying... [id=circleguard-identity-service]
+module.observability.aws_cloudwatch_metric_alarm.status: Destruction complete after 1s
+module.compute.aws_iam_role_policy.extra[0]: Destroying... [id=circleguard-tools-vm-role:circleguard-tools-vm-extra]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-promotion-service"]: Destruction complete after 1s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-form-service"]: Destruction complete after 1s
+module.observability.aws_cloudwatch_metric_alarm.cpu: Destroying... [id=circleguard-tools-cpu-alta]
+module.network.aws_vpc_security_group_ingress_rule.this["8081-0.0.0.0/0"]: Destroying... [id=sgr-015161e4a7c8f70be]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-gateway-service"]: Destruction complete after 1s
+module.network.aws_vpc_security_group_egress_rule.all: Destroying... [id=sgr-0bfa1aba42d15c201]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-file-service"]: Destruction complete after 1s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-auth-service"]: Destroying... [id=circleguard-auth-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-identity-service"]: Destruction complete after 0s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-dashboard-service"]: Destroying... [id=circleguard-dashboard-service]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Destruction complete after 1s
+module.network.aws_vpc_security_group_ingress_rule.this["8080-0.0.0.0/0"]: Destroying... [id=sgr-0594dd6368ddaa6a9]
+module.network.aws_vpc_security_group_ingress_rule.this["9000-0.0.0.0/0"]: Destruction complete after 1s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-web"]: Destroying... [id=circleguard-web]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-auth-service"]: Destruction complete after 0s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-notification-service"]: Destroying... [id=circleguard-notification-service]
+module.observability.aws_cloudwatch_metric_alarm.cpu: Destruction complete after 0s
+module.observability.aws_sns_topic.alerts: Destroying... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-dashboard-service"]: Destruction complete after 0s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-web"]: Destruction complete after 0s
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-notification-service"]: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-notification-service"]: Destroying... [id=circleguard-notification-service]
+module.registry.aws_ecr_repository.this["circleguard-dashboard-service"]: Destroying... [id=circleguard-dashboard-service]
+module.registry.aws_ecr_repository.this["circleguard-file-service"]: Destroying... [id=circleguard-file-service]
+module.observability.aws_sns_topic.alerts: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-form-service"]: Destroying... [id=circleguard-form-service]
+module.compute.aws_iam_role_policy.extra[0]: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-promotion-service"]: Destroying... [id=circleguard-promotion-service]
+module.network.aws_vpc_security_group_ingress_rule.this["8081-0.0.0.0/0"]: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-gateway-service"]: Destroying... [id=circleguard-gateway-service]
+module.network.aws_route_table_association.public: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-web"]: Destroying... [id=circleguard-web]
+module.network.aws_vpc_security_group_egress_rule.all: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-identity-service"]: Destroying... [id=circleguard-identity-service]
+module.registry.aws_ecr_repository.this["circleguard-notification-service"]: Destruction complete after 0s
+module.registry.aws_ecr_repository.this["circleguard-auth-service"]: Destroying... [id=circleguard-auth-service]
+module.registry.aws_ecr_repository.this["circleguard-file-service"]: Destruction complete after 0s
+module.network.aws_route_table.public: Destroying... [id=rtb-0c0b4f819fc76437e]
+module.registry.aws_ecr_repository.this["circleguard-dashboard-service"]: Destruction complete after 1s
+module.registry.aws_ecr_repository.this["circleguard-form-service"]: Destruction complete after 1s
+module.registry.aws_ecr_repository.this["circleguard-promotion-service"]: Destruction complete after 1s
+module.registry.aws_ecr_repository.this["circleguard-gateway-service"]: Destruction complete after 1s
+module.network.aws_vpc_security_group_ingress_rule.this["8080-0.0.0.0/0"]: Destruction complete after 1s
+module.registry.aws_ecr_repository.this["circleguard-web"]: Destruction complete after 1s
+module.registry.aws_ecr_repository.this["circleguard-identity-service"]: Destruction complete after 1s
+module.registry.aws_ecr_repository.this["circleguard-auth-service"]: Destruction complete after 1s
+module.compute.aws_eip_association.this: Destruction complete after 2s
+module.compute.aws_instance.this: Destroying... [id=i-<ID-CUENTA>60f1d]
+module.network.aws_route_table.public: Destruction complete after 1s
+module.network.aws_internet_gateway.this: Destroying... [id=igw-07ea93a6c5e913634]
+module.network.aws_internet_gateway.this: Destruction complete after 1s
+module.compute.aws_instance.this: Still destroying... [id=i-<ID-CUENTA>60f1d, 00m10s elapsed]
+module.compute.aws_instance.this: Still destroying... [id=i-<ID-CUENTA>60f1d, 00m20s elapsed]
+module.compute.aws_instance.this: Still destroying... [id=i-<ID-CUENTA>60f1d, 00m30s elapsed]
+module.compute.aws_instance.this: Destruction complete after 30s
+aws_key_pair.this: Destroying... [id=circleguard-tools-key]
+module.compute.aws_iam_instance_profile.this: Destroying... [id=circleguard-tools-vm-profile]
+module.compute.aws_eip.this: Destroying... [id=eipalloc-07c907c6455bbb14c]
+module.network.aws_subnet.public: Destroying... [id=subnet-010f28ba014e623b6]
+module.network.aws_security_group.this: Destroying... [id=sg-070f0c1d4f8d461dd]
+module.compute.aws_iam_instance_profile.this: Destruction complete after 0s
+module.compute.aws_iam_role.this: Destroying... [id=circleguard-tools-vm-role]
+aws_key_pair.this: Destruction complete after 0s
+module.compute.aws_iam_role.this: Destruction complete after 1s
+module.network.aws_subnet.public: Destruction complete after 1s
+module.network.aws_security_group.this: Destruction complete after 1s
+module.network.aws_vpc.this: Destroying... [id=vpc-0242bff6441009cda]
+module.compute.aws_eip.this: Destruction complete after 1s
+module.network.aws_vpc.this: Destruction complete after 1s
+
+Destroy complete! Resources: 41 destroyed.

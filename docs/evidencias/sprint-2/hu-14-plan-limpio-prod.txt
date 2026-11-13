@@ -1,0 +1,48 @@
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵
+Acquiring state lock. This may take a few moments...
+data.aws_caller_identity.current: Reading...
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Reading...
+aws_key_pair.this: Refreshing state... [id=circleguard-prod-key]
+module.compute.aws_iam_role.this: Refreshing state... [id=circleguard-prod-k3s-role]
+module.observability.aws_cloudwatch_log_group.this: Refreshing state... [id=/circleguard/prod]
+module.compute.aws_eip.this: Refreshing state... [id=eipalloc-04daf879afea0c843]
+module.network.aws_vpc.this: Refreshing state... [id=vpc-0c512c96af035b9dc]
+module.observability.aws_sns_topic.alerts: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-prod-alerts]
+data.aws_caller_identity.current: Read complete after 0s [id=<ID-CUENTA>]
+module.storage.aws_s3_bucket.this: Refreshing state... [id=circleguard-prod-data-<ID-CUENTA>]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Read complete after 0s [id=/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id]
+module.observability.aws_sns_topic_subscription.email: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-prod-alerts:dfcad03a-4782-4940-af78-db1a339889f9]
+module.compute.aws_iam_role_policy.extra[0]: Refreshing state... [id=circleguard-prod-k3s-role:circleguard-prod-k3s-extra]
+module.compute.aws_iam_instance_profile.this: Refreshing state... [id=circleguard-prod-k3s-profile]
+module.network.aws_internet_gateway.this: Refreshing state... [id=igw-0c8eec318f9912582]
+module.network.aws_security_group.this: Refreshing state... [id=sg-0bd57e8d235f55dcc]
+module.network.aws_subnet.public: Refreshing state... [id=subnet-09e761196a9944890]
+module.network.aws_route_table.public: Refreshing state... [id=rtb-0629a2afca7cc4468]
+module.network.aws_vpc_security_group_egress_rule.all: Refreshing state... [id=sgr-0fd9705142fcb93b4]
+module.network.aws_vpc_security_group_ingress_rule.this["80-0.0.0.0/0"]: Refreshing state... [id=sgr-0fb5df8bde30d775d]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-014894b15383976cd]
+module.network.aws_vpc_security_group_ingress_rule.this["6443-44.221.115.232/32"]: Refreshing state... [id=sgr-0bba9e6d113f56001]
+module.network.aws_vpc_security_group_ingress_rule.this["443-0.0.0.0/0"]: Refreshing state... [id=sgr-0bc<ID-CUENTA>88]
+module.network.aws_vpc_security_group_ingress_rule.this["6443-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-0ca17347c21ebb0be]
+module.network.aws_vpc_security_group_ingress_rule.this["22-44.221.115.232/32"]: Refreshing state... [id=sgr-0c6d11989360dc1c8]
+module.compute.aws_instance.this: Refreshing state... [id=i-00c26b79c62e42fd8]
+module.network.aws_route_table_association.public: Refreshing state... [id=rtbassoc-0b614f123a30509c3]
+module.storage.aws_s3_bucket_versioning.this: Refreshing state... [id=circleguard-prod-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_public_access_block.this: Refreshing state... [id=circleguard-prod-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_server_side_encryption_configuration.this: Refreshing state... [id=circleguard-prod-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_policy.this: Refreshing state... [id=circleguard-prod-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_lifecycle_configuration.this: Refreshing state... [id=circleguard-prod-data-<ID-CUENTA>]
+module.compute.aws_eip_association.this: Refreshing state... [id=eipassoc-00d78db23b516dc09]
+module.observability.aws_cloudwatch_metric_alarm.status: Refreshing state... [id=circleguard-prod-fallo-de-estado]
+module.observability.aws_cloudwatch_metric_alarm.cpu: Refreshing state... [id=circleguard-prod-cpu-alta]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+Releasing state lock. This may take a few moments...
