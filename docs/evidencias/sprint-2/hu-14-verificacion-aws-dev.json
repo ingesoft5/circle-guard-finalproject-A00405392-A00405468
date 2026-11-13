@@ -1,0 +1,32 @@
+{
+  "descripcion": "Lo que AWS reporta del ambiente dev creado por Terraform (consultado con la API de AWS despues del apply, el 13 nov 2026). Las IP de administracion estan reemplazadas por la palabra ip-restringida.",
+  "instancia": {
+    "name": "circleguard-dev-k3s",
+    "type": "t3.large",
+    "imds_tokens": "required",
+    "volumes": [{ "type": "gp3", "size_gb": 40, "encrypted": true }],
+    "tags": { "Role": "k3s", "Env": "dev", "ManagedBy": "terraform", "Project": "circleguard", "Name": "circleguard-dev-k3s" }
+  },
+  "security_group_puertos": {
+    "22": ["ip-restringida", "ip-restringida"],
+    "80": ["mundo"],
+    "443": ["mundo"],
+    "6443": ["ip-restringida", "ip-restringida"]
+  },
+  "ssh_abierto_al_mundo": false,
+  "rol_ecr_acciones": [
+    "ecr:BatchCheckLayerAvailability",
+    "ecr:BatchGetImage",
+    "ecr:GetAuthorizationToken",
+    "ecr:GetDownloadUrlForLayer"
+  ],
+  "bucket_respaldos": {
+    "versionado": "Enabled",
+    "bloqueo_publico": { "BlockPublicAcls": true, "IgnorePublicAcls": true, "BlockPublicPolicy": true, "RestrictPublicBuckets": true },
+    "cifrado": "AES256"
+  },
+  "alarmas": [
+    { "name": "circleguard-dev-cpu-alta", "metric": "CPUUtilization", "threshold": 80, "state": "OK" },
+    { "name": "circleguard-dev-fallo-de-estado", "metric": "StatusCheckFailed", "threshold": 0, "state": "OK" }
+  ]
+}

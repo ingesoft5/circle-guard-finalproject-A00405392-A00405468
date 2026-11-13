@@ -1,0 +1,58 @@
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵
+Acquiring state lock. This may take a few moments...
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Reading...
+data.aws_caller_identity.current: Reading...
+aws_key_pair.this: Refreshing state... [id=circleguard-tools-key]
+module.observability.aws_cloudwatch_log_group.this: Refreshing state... [id=/circleguard/tools]
+module.compute.aws_iam_role.this: Refreshing state... [id=circleguard-tools-vm-role]
+module.network.aws_vpc.this: Refreshing state... [id=vpc-0242bff6441009cda]
+module.compute.aws_eip.this: Refreshing state... [id=eipalloc-07c907c6455bbb14c]
+module.observability.aws_sns_topic.alerts: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts]
+module.registry.aws_ecr_repository.this["circleguard-auth-service"]: Refreshing state... [id=circleguard-auth-service]
+module.registry.aws_ecr_repository.this["circleguard-promotion-service"]: Refreshing state... [id=circleguard-promotion-service]
+data.aws_caller_identity.current: Read complete after 0s [id=<ID-CUENTA>]
+module.registry.aws_ecr_repository.this["circleguard-file-service"]: Refreshing state... [id=circleguard-file-service]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Read complete after 1s [id=/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id]
+module.registry.aws_ecr_repository.this["circleguard-web"]: Refreshing state... [id=circleguard-web]
+module.registry.aws_ecr_repository.this["circleguard-gateway-service"]: Refreshing state... [id=circleguard-gateway-service]
+module.registry.aws_ecr_repository.this["circleguard-identity-service"]: Refreshing state... [id=circleguard-identity-service]
+module.registry.aws_ecr_repository.this["circleguard-form-service"]: Refreshing state... [id=circleguard-form-service]
+module.registry.aws_ecr_repository.this["circleguard-dashboard-service"]: Refreshing state... [id=circleguard-dashboard-service]
+module.registry.aws_ecr_repository.this["circleguard-notification-service"]: Refreshing state... [id=circleguard-notification-service]
+module.observability.aws_sns_topic_subscription.email: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts:1ccae2aa-f060-419a-a51c-2820e6d38971]
+module.compute.aws_iam_role_policy.extra[0]: Refreshing state... [id=circleguard-tools-vm-role:circleguard-tools-vm-extra]
+module.compute.aws_iam_instance_profile.this: Refreshing state... [id=circleguard-tools-vm-profile]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-file-service"]: Refreshing state... [id=circleguard-file-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-auth-service"]: Refreshing state... [id=circleguard-auth-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-notification-service"]: Refreshing state... [id=circleguard-notification-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-web"]: Refreshing state... [id=circleguard-web]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-promotion-service"]: Refreshing state... [id=circleguard-promotion-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-gateway-service"]: Refreshing state... [id=circleguard-gateway-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-dashboard-service"]: Refreshing state... [id=circleguard-dashboard-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-identity-service"]: Refreshing state... [id=circleguard-identity-service]
+module.registry.aws_ecr_lifecycle_policy.this["circleguard-form-service"]: Refreshing state... [id=circleguard-form-service]
+module.network.aws_internet_gateway.this: Refreshing state... [id=igw-07ea93a6c5e913634]
+module.network.aws_security_group.this: Refreshing state... [id=sg-070f0c1d4f8d461dd]
+module.network.aws_subnet.public: Refreshing state... [id=subnet-010f28ba014e623b6]
+module.network.aws_route_table.public: Refreshing state... [id=rtb-0c0b4f819fc76437e]
+module.network.aws_vpc_security_group_egress_rule.all: Refreshing state... [id=sgr-0bfa1aba42d15c201]
+module.network.aws_vpc_security_group_ingress_rule.this["8081-0.0.0.0/0"]: Refreshing state... [id=sgr-015161e4a7c8f70be]
+module.network.aws_vpc_security_group_ingress_rule.this["8080-0.0.0.0/0"]: Refreshing state... [id=sgr-0594dd6368ddaa6a9]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-0ed2a646f274c369b]
+module.network.aws_vpc_security_group_ingress_rule.this["9000-0.0.0.0/0"]: Refreshing state... [id=sgr-012a84754e76347d6]
+module.compute.aws_instance.this: Refreshing state... [id=i-<ID-CUENTA>60f1d]
+module.network.aws_route_table_association.public: Refreshing state... [id=rtbassoc-058051f864a3512f9]
+module.compute.aws_eip_association.this: Refreshing state... [id=eipassoc-02b5023a3377e4748]
+module.observability.aws_cloudwatch_metric_alarm.cpu: Refreshing state... [id=circleguard-tools-cpu-alta]
+module.observability.aws_cloudwatch_metric_alarm.status: Refreshing state... [id=circleguard-tools-fallo-de-estado]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+Releasing state lock. This may take a few moments...

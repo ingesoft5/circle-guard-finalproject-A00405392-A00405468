@@ -1,0 +1,48 @@
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵
+Acquiring state lock. This may take a few moments...
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Reading...
+data.aws_caller_identity.current: Reading...
+aws_key_pair.this: Refreshing state... [id=circleguard-stage-key]
+module.network.aws_vpc.this: Refreshing state... [id=vpc-08b6027f32c28ace2]
+module.compute.aws_iam_role.this: Refreshing state... [id=circleguard-stage-k3s-role]
+module.compute.aws_eip.this: Refreshing state... [id=eipalloc-09b143ae1d367366d]
+module.observability.aws_cloudwatch_log_group.this: Refreshing state... [id=/circleguard/stage]
+module.observability.aws_sns_topic.alerts: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-stage-alerts]
+data.aws_caller_identity.current: Read complete after 0s [id=<ID-CUENTA>]
+module.storage.aws_s3_bucket.this: Refreshing state... [id=circleguard-stage-data-<ID-CUENTA>]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Read complete after 0s [id=/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id]
+module.observability.aws_sns_topic_subscription.email: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-stage-alerts:865715a6-9429-47d9-854d-652a41ec2dd8]
+module.compute.aws_iam_instance_profile.this: Refreshing state... [id=circleguard-stage-k3s-profile]
+module.compute.aws_iam_role_policy.extra[0]: Refreshing state... [id=circleguard-stage-k3s-role:circleguard-stage-k3s-extra]
+module.network.aws_internet_gateway.this: Refreshing state... [id=igw-0d52a63c0f2cc3e40]
+module.network.aws_security_group.this: Refreshing state... [id=sg-04b7bf641d451b14d]
+module.network.aws_subnet.public: Refreshing state... [id=subnet-066565fb0ee285cf7]
+module.network.aws_route_table.public: Refreshing state... [id=rtb-0c4c0f2da45212df8]
+module.network.aws_vpc_security_group_egress_rule.all: Refreshing state... [id=sgr-0a6ad6abb1e355af3]
+module.network.aws_vpc_security_group_ingress_rule.this["80-0.0.0.0/0"]: Refreshing state... [id=sgr-04e1d6ecf6f00ecef]
+module.network.aws_vpc_security_group_ingress_rule.this["22-44.221.115.232/32"]: Refreshing state... [id=sgr-0a0eaf39dbdbec72c]
+module.network.aws_vpc_security_group_ingress_rule.this["6443-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-087a9e8942a0497b4]
+module.network.aws_vpc_security_group_ingress_rule.this["443-0.0.0.0/0"]: Refreshing state... [id=sgr-0fe9f5de91acb6dc3]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-081fc9c3f5de2902f]
+module.network.aws_vpc_security_group_ingress_rule.this["6443-44.221.115.232/32"]: Refreshing state... [id=sgr-02f428c358d411f44]
+module.compute.aws_instance.this: Refreshing state... [id=i-080596701c93a03bf]
+module.network.aws_route_table_association.public: Refreshing state... [id=rtbassoc-030366bc77a2d43be]
+module.storage.aws_s3_bucket_public_access_block.this: Refreshing state... [id=circleguard-stage-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_versioning.this: Refreshing state... [id=circleguard-stage-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_server_side_encryption_configuration.this: Refreshing state... [id=circleguard-stage-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_policy.this: Refreshing state... [id=circleguard-stage-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_lifecycle_configuration.this: Refreshing state... [id=circleguard-stage-data-<ID-CUENTA>]
+module.compute.aws_eip_association.this: Refreshing state... [id=eipassoc-063bdd16ddd130991]
+module.observability.aws_cloudwatch_metric_alarm.status: Refreshing state... [id=circleguard-stage-fallo-de-estado]
+module.observability.aws_cloudwatch_metric_alarm.cpu: Refreshing state... [id=circleguard-stage-cpu-alta]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+Releasing state lock. This may take a few moments...

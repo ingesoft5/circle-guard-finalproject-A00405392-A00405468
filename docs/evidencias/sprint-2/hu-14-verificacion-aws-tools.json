@@ -1,0 +1,31 @@
+{
+  "descripcion": "Lo que AWS reporta del ambiente tools creado por Terraform (consultado con la API de AWS despues del apply, el 13 nov 2026).",
+  "ecr": [
+    { "name": "circleguard-auth-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-dashboard-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-file-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-form-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-gateway-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-identity-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-notification-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-promotion-service", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" },
+    { "name": "circleguard-web", "mutability": "IMMUTABLE", "scan_on_push": true, "encryption": "AES256" }
+  ],
+  "instancias": [
+    {
+      "name": "circleguard-tools-vm",
+      "type": "t3.xlarge",
+      "imds_tokens": "required",
+      "volumes": [{ "type": "gp3", "size_gb": 60, "encrypted": true }],
+      "profile": "circleguard-tools-vm-profile"
+    }
+  ],
+  "security_group_tools": {
+    "puertos_de_entrada": [22, 8080, 8081, 9000],
+    "ssh_abierto_al_mundo": false
+  },
+  "alarmas": [
+    { "name": "circleguard-tools-cpu-alta", "metric": "CPUUtilization", "threshold": 80, "state": "OK" },
+    { "name": "circleguard-tools-fallo-de-estado", "metric": "StatusCheckFailed", "threshold": 0, "state": "OK" }
+  ]
+}
