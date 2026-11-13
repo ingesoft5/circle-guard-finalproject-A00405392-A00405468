@@ -1,6 +1,4 @@
-# Cifrado con SSE-S3 (AES256): una llave KMS propia agrega costo y complejidad sin ganar nada aqui.
 # Sin bucket de logs de acceso: son respaldos de un ambiente pequeno y los logs agregarian otro bucket que cuidar.
-# trivy:ignore:AVD-AWS-0132
 # trivy:ignore:AVD-AWS-0089
 resource "aws_s3_bucket" "this" {
   bucket = var.name
@@ -14,6 +12,8 @@ resource "aws_s3_bucket_versioning" "this" {
   }
 }
 
+# Cifrado con SSE-S3 (AES256): una llave KMS propia agrega costo y complejidad sin ganar nada aqui.
+# trivy:ignore:AVD-AWS-0132
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 

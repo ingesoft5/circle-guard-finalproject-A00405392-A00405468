@@ -16,9 +16,7 @@ locals {
   bucket_name = "circleguard-tfstate-${data.aws_caller_identity.current.account_id}"
 }
 
-# Cifrado con SSE-S3 (AES256): una llave KMS propia agrega costo y complejidad sin ganar nada aqui.
 # Sin bucket de logs de acceso: es un bucket de estado de 2 personas y los logs agregarian otro bucket que cuidar.
-# trivy:ignore:AVD-AWS-0132
 # trivy:ignore:AVD-AWS-0089
 resource "aws_s3_bucket" "state" {
   bucket = local.bucket_name
@@ -36,6 +34,8 @@ resource "aws_s3_bucket_versioning" "state" {
   }
 }
 
+# Cifrado con SSE-S3 (AES256): una llave KMS propia agrega costo y complejidad sin ganar nada aqui.
+# trivy:ignore:AVD-AWS-0132
 resource "aws_s3_bucket_server_side_encryption_configuration" "state" {
   bucket = aws_s3_bucket.state.id
 
