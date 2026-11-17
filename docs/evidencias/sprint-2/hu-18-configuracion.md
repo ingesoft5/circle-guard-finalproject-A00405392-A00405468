@@ -16,7 +16,7 @@ Los valores por defecto conservan el comportamiento de siempre: desplegar esta h
 
 - **Pruebas de los dos estados del toggle** ([`LdapLoginToggleTest`](../../../services/circleguard-auth-service/src/test/java/com/circleguard/auth/security/LdapLoginToggleTest.java), 7): con el toggle encendido se prueba LDAP y, si falla, la base local; con el toggle apagado **LDAP nunca autentica** y las credenciales malas siguen rechazándose. Con `ApplicationContextRunner` se comprueba que la propiedad `circleguard.features.ldap-login-enabled=false` llega al componente y que, sin propiedad, queda encendido.
 - **Pruebas del K configurable** ([`KAnonymityConfigTest`](../../../services/circleguard-dashboard-service/src/test/java/com/circleguard/dashboard/service/KAnonymityConfigTest.java), 9): la misma población de 3 personas se enmascara con K=5 y se muestra con K=3; un conteo de 7 se enmascara con K=10; el valor se lee de la propiedad (8); sin propiedad es 5; **un K de 0 impide arrancar**. Las tendencias de entrada usan el mismo K que el filtro.
-- **Suites completas:** auth 27 pruebas y dashboard 11, 0 fallas; la cobertura mínima de JaCoCo de auth se sigue cumpliendo.
+- **Suites completas, sobre la `main` que ya incluye la resiliencia de #66:** auth 33 pruebas y dashboard 15, 0 fallas; la cobertura mínima de JaCoCo de auth se sigue cumpliendo.
 - **Chart:** 40 pruebas de plantillas (2 nuevas: las dos claves del ConfigMap con sus valores por defecto y cambiadas con `--set`) y `helm lint --strict` sin errores en los 4 ambientes.
 - **En un clúster real** (k3s local, la misma versión que Terraform instala): el mismo release se desplegó con los valores por defecto y después con `--set config.features.ldapLoginEnabled=false --set config.privacy.kAnonymity=8`, **con la misma imagen** — [`hu-18-configuracion-k3s.txt`](hu-18-configuracion-k3s.txt):
 
@@ -37,5 +37,6 @@ Los valores por defecto conservan el comportamiento de siempre: desplegar esta h
 
 - **El cambio de valores reinicia pods:** no hay recarga en caliente (decisión documentada en el patrón).
 - **El dashboard no se ejecutó en el k3s local** (`values-local.yaml` lo desactiva por memoria): el K se comprobó en el ConfigMap y con las pruebas, no en un pod del dashboard. En prod (`t3.xlarge`) el dashboard está habilitado.
+- **La demo en el k3s local se hizo antes de integrar #66** (la imagen de auth no traía todavía el Circuit Breaker); las suites completas se repitieron después de integrarlo y pasan.
 - **No se probó en AWS:** pendiente de una ventana corta de prueba (un ambiente a la vez por el límite de 5 IP elásticas y el presupuesto).
 - **Los valores de K por ambiente** (por ejemplo 5 en prod y 3 en dev) no se fijaron en `values-*.yaml`: es una decisión de privacidad que debe tomar quien responde por los datos, no una de despliegue.
