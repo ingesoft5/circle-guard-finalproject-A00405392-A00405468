@@ -1,0 +1,776 @@
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵
+Acquiring state lock. This may take a few moments...
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Reading...
+data.aws_caller_identity.current: Reading...
+data.aws_caller_identity.current: Read complete after 0s [id=<ID-CUENTA>]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Read complete after 1s [id=/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_key_pair.this will be created
+  + resource "aws_key_pair" "this" {
+      + arn             = (known after apply)
+      + fingerprint     = (known after apply)
+      + id              = (known after apply)
+      + key_name        = "circleguard-dev-key"
+      + key_name_prefix = (known after apply)
+      + key_pair_id     = (known after apply)
+      + key_type        = (known after apply)
+      + public_key      = "ssh-ed25519 <LLAVE-PUBLICA>"
+      + region          = "us-east-1"
+      + tags_all        = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+    }
+
+  # module.compute.aws_eip.this will be created
+  + resource "aws_eip" "this" {
+      + allocation_id        = (known after apply)
+      + arn                  = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = "vpc"
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + ipam_pool_id         = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + ptr_record           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + region               = "us-east-1"
+      + tags                 = {
+          + "Name" = "circleguard-dev-k3s-eip"
+        }
+      + tags_all             = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-k3s-eip"
+          + "Project"   = "circleguard"
+        }
+    }
+
+  # module.compute.aws_eip_association.this will be created
+  + resource "aws_eip_association" "this" {
+      + allocation_id        = (known after apply)
+      + id                   = (known after apply)
+      + instance_id          = (known after apply)
+      + network_interface_id = (known after apply)
+      + private_ip_address   = (known after apply)
+      + public_ip            = (known after apply)
+      + region               = "us-east-1"
+    }
+
+  # module.compute.aws_iam_instance_profile.this will be created
+  + resource "aws_iam_instance_profile" "this" {
+      + arn         = (known after apply)
+      + create_date = (known after apply)
+      + id          = (known after apply)
+      + name        = "circleguard-dev-k3s-profile"
+      + name_prefix = (known after apply)
+      + path        = "/"
+      + role        = "circleguard-dev-k3s-role"
+      + tags_all    = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + unique_id   = (known after apply)
+    }
+
+  # module.compute.aws_iam_role.this will be created
+  + resource "aws_iam_role" "this" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "circleguard-dev-k3s-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.compute.aws_iam_role_policy.extra[0] will be created
+  + resource "aws_iam_role_policy" "extra" {
+      + id          = (known after apply)
+      + name        = "circleguard-dev-k3s-extra"
+      + name_prefix = (known after apply)
+      + policy      = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "ecr:GetAuthorizationToken",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = [
+                          + "*",
+                        ]
+                    },
+                  + {
+                      + Action   = [
+                          + "ecr:BatchGetImage",
+                          + "ecr:GetDownloadUrlForLayer",
+                          + "ecr:BatchCheckLayerAvailability",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = [
+                          + "arn:aws:ecr:us-east-1:<ID-CUENTA>:repository/circleguard-*",
+                        ]
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + role        = (known after apply)
+    }
+
+  # module.compute.aws_instance.this will be created
+  + resource "aws_instance" "this" {
+      + ami                                  = "ami-08b275ac6cc5dbefb"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + force_destroy                        = false
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = "circleguard-dev-k3s-profile"
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t3.large"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = "circleguard-dev-key"
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_group_id                   = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + region                               = "us-east-1"
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "circleguard-dev-k3s"
+          + "Role" = "k3s"
+        }
+      + tags_all                             = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-k3s"
+          + "Project"   = "circleguard"
+          + "Role"      = "k3s"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+
+      + capacity_reservation_specification (known after apply)
+
+      + cpu_options (known after apply)
+
+      + ebs_block_device (known after apply)
+
+      + enclave_options (known after apply)
+
+      + ephemeral_block_device (known after apply)
+
+      + instance_market_options (known after apply)
+
+      + maintenance_options (known after apply)
+
+      + metadata_options {
+          + http_endpoint               = "enabled"
+          + http_protocol_ipv6          = "disabled"
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = "required"
+          + instance_metadata_tags      = (known after apply)
+        }
+
+      + network_interface (known after apply)
+
+      + primary_network_interface (known after apply)
+
+      + private_dns_name_options (known after apply)
+
+      + root_block_device {
+          + delete_on_termination = true
+          + device_name           = (known after apply)
+          + encrypted             = true
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 40
+          + volume_type           = "gp3"
+        }
+
+      + secondary_network_interface (known after apply)
+    }
+
+  # module.network.aws_internet_gateway.this will be created
+  + resource "aws_internet_gateway" "this" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + region   = "us-east-1"
+      + tags     = {
+          + "Name" = "circleguard-dev-igw"
+        }
+      + tags_all = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-igw"
+          + "Project"   = "circleguard"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # module.network.aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + region           = "us-east-1"
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (12 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "circleguard-dev-public"
+        }
+      + tags_all         = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-public"
+          + "Project"   = "circleguard"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.network.aws_route_table_association.public will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + region         = "us-east-1"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.network.aws_security_group.this will be created
+  + resource "aws_security_group" "this" {
+      + arn                    = (known after apply)
+      + description            = "Security group de circleguard-dev"
+      + egress                 = (known after apply)
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "circleguard-dev-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + region                 = "us-east-1"
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "circleguard-dev-sg"
+        }
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-sg"
+          + "Project"   = "circleguard"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.network.aws_subnet.public will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "us-east-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.10.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "us-east-1"
+      + tags                                           = {
+          + "Name" = "circleguard-dev-public"
+        }
+      + tags_all                                       = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-public"
+          + "Project"   = "circleguard"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.network.aws_vpc.this will be created
+  + resource "aws_vpc" "this" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.10.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + region                               = "us-east-1"
+      + tags                                 = {
+          + "Name" = "circleguard-dev-vpc"
+        }
+      + tags_all                             = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Name"      = "circleguard-dev-vpc"
+          + "Project"   = "circleguard"
+        }
+    }
+
+  # module.network.aws_vpc_security_group_egress_rule.all will be created
+  + resource "aws_vpc_security_group_egress_rule" "all" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "0.0.0.0/0"
+      + description            = "Salida abierta: paquetes, k3s e imagenes"
+      + id                     = (known after apply)
+      + ip_protocol            = "-1"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"] will be created
+  + resource "aws_vpc_security_group_ingress_rule" "this" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "<IP-ADMIN>/32"
+      + description            = "SSH desde administracion y tools"
+      + from_port              = 22
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + to_port                = 22
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["22-44.221.115.232/32"] will be created
+  + resource "aws_vpc_security_group_ingress_rule" "this" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "44.221.115.232/32"
+      + description            = "SSH desde administracion y tools"
+      + from_port              = 22
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + to_port                = 22
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["443-0.0.0.0/0"] will be created
+  + resource "aws_vpc_security_group_ingress_rule" "this" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "0.0.0.0/0"
+      + description            = "HTTPS del Ingress"
+      + from_port              = 443
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + to_port                = 443
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["6443-<IP-ADMIN>/32"] will be created
+  + resource "aws_vpc_security_group_ingress_rule" "this" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "<IP-ADMIN>/32"
+      + description            = "API de Kubernetes desde administracion y tools"
+      + from_port              = 6443
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + to_port                = 6443
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["6443-44.221.115.232/32"] will be created
+  + resource "aws_vpc_security_group_ingress_rule" "this" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "44.221.115.232/32"
+      + description            = "API de Kubernetes desde administracion y tools"
+      + from_port              = 6443
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + to_port                = 6443
+    }
+
+  # module.network.aws_vpc_security_group_ingress_rule.this["80-0.0.0.0/0"] will be created
+  + resource "aws_vpc_security_group_ingress_rule" "this" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "0.0.0.0/0"
+      + description            = "HTTP del Ingress"
+      + from_port              = 80
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "us-east-1"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + to_port                = 80
+    }
+
+  # module.observability.aws_cloudwatch_log_group.this will be created
+  + resource "aws_cloudwatch_log_group" "this" {
+      + arn                         = (known after apply)
+      + deletion_protection_enabled = (known after apply)
+      + id                          = (known after apply)
+      + log_group_class             = (known after apply)
+      + name                        = "/circleguard/dev"
+      + name_prefix                 = (known after apply)
+      + region                      = "us-east-1"
+      + retention_in_days           = 14
+      + skip_destroy                = false
+      + tags_all                    = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+    }
+
+  # module.observability.aws_cloudwatch_metric_alarm.cpu will be created
+  + resource "aws_cloudwatch_metric_alarm" "cpu" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "CPU promedio mayor a 80 % durante 10 minutos"
+      + alarm_name                            = "circleguard-dev-cpu-alta"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/EC2"
+      + ok_actions                            = (known after apply)
+      + period                                = 300
+      + region                                = "us-east-1"
+      + statistic                             = "Average"
+      + tags_all                              = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + threshold                             = 80
+      + treat_missing_data                    = "notBreaching"
+    }
+
+  # module.observability.aws_cloudwatch_metric_alarm.status will be created
+  + resource "aws_cloudwatch_metric_alarm" "status" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "La VM fallo un chequeo de estado de AWS durante 2 minutos"
+      + alarm_name                            = "circleguard-dev-fallo-de-estado"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "StatusCheckFailed"
+      + namespace                             = "AWS/EC2"
+      + ok_actions                            = (known after apply)
+      + period                                = 60
+      + region                                = "us-east-1"
+      + statistic                             = "Maximum"
+      + tags_all                              = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + threshold                             = 0
+      + treat_missing_data                    = "notBreaching"
+    }
+
+  # module.observability.aws_sns_topic.alerts will be created
+  + resource "aws_sns_topic" "alerts" {
+      + arn                         = (known after apply)
+      + beginning_archive_time      = (known after apply)
+      + content_based_deduplication = false
+      + fifo_throughput_scope       = (known after apply)
+      + fifo_topic                  = false
+      + id                          = (known after apply)
+      + maximum_message_size        = (known after apply)
+      + name                        = "circleguard-dev-alerts"
+      + name_prefix                 = (known after apply)
+      + owner                       = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = "us-east-1"
+      + signature_version           = (known after apply)
+      + tags_all                    = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + tracing_config              = (known after apply)
+    }
+
+  # module.observability.aws_sns_topic_subscription.email will be created
+  + resource "aws_sns_topic_subscription" "email" {
+      + arn                             = (known after apply)
+      + confirmation_timeout_in_minutes = 1
+      + confirmation_was_authenticated  = (known after apply)
+      + endpoint                        = "<CORREO-ALARMAS>"
+      + endpoint_auto_confirms          = false
+      + filter_policy_scope             = (known after apply)
+      + id                              = (known after apply)
+      + owner_id                        = (known after apply)
+      + pending_confirmation            = (known after apply)
+      + protocol                        = "email"
+      + raw_message_delivery            = false
+      + region                          = "us-east-1"
+      + topic_arn                       = (known after apply)
+    }
+
+  # module.storage.aws_s3_bucket.this will be created
+  + resource "aws_s3_bucket" "this" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = "circleguard-dev-data-<ID-CUENTA>"
+      + bucket_domain_name          = (known after apply)
+      + bucket_namespace            = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_region               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = "us-east-1"
+      + request_payer               = (known after apply)
+      + tags_all                    = {
+          + "Env"       = "dev"
+          + "ManagedBy" = "terraform"
+          + "Project"   = "circleguard"
+        }
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + cors_rule (known after apply)
+
+      + grant (known after apply)
+
+      + lifecycle_rule (known after apply)
+
+      + logging (known after apply)
+
+      + object_lock_configuration (known after apply)
+
+      + replication_configuration (known after apply)
+
+      + server_side_encryption_configuration (known after apply)
+
+      + versioning (known after apply)
+
+      + website (known after apply)
+    }
+
+  # module.storage.aws_s3_bucket_lifecycle_configuration.this will be created
+  + resource "aws_s3_bucket_lifecycle_configuration" "this" {
+      + bucket                                 = (known after apply)
+      + expected_bucket_owner                  = (known after apply)
+      + id                                     = (known after apply)
+      + region                                 = "us-east-1"
+      + transition_default_minimum_object_size = "all_storage_classes_128K"
+
+      + rule {
+          + id     = "expira-versiones-antiguas"
+          + status = "Enabled"
+            # (1 unchanged attribute hidden)
+
+          + abort_incomplete_multipart_upload {
+              + days_after_initiation = 7
+            }
+
+          + filter {
+                # (1 unchanged attribute hidden)
+            }
+
+          + noncurrent_version_expiration {
+              + noncurrent_days = 30
+            }
+        }
+    }
+
+  # module.storage.aws_s3_bucket_policy.this will be created
+  + resource "aws_s3_bucket_policy" "this" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+      + policy = (known after apply)
+      + region = "us-east-1"
+    }
+
+  # module.storage.aws_s3_bucket_public_access_block.this will be created
+  + resource "aws_s3_bucket_public_access_block" "this" {
+      + block_public_acls       = true
+      + block_public_policy     = true
+      + bucket                  = (known after apply)
+      + id                      = (known after apply)
+      + ignore_public_acls      = true
+      + region                  = "us-east-1"
+      + restrict_public_buckets = true
+    }
+
+  # module.storage.aws_s3_bucket_server_side_encryption_configuration.this will be created
+  + resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+      + region = "us-east-1"
+
+      + rule {
+          + blocked_encryption_types = (known after apply)
+          + bucket_key_enabled       = (known after apply)
+
+          + apply_server_side_encryption_by_default {
+              + kms_master_key_id = (known after apply)
+              + sse_algorithm     = "AES256"
+            }
+        }
+    }
+
+  # module.storage.aws_s3_bucket_versioning.this will be created
+  + resource "aws_s3_bucket_versioning" "this" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+      + region = "us-east-1"
+
+      + versioning_configuration {
+          + mfa_delete = (known after apply)
+          + status     = "Enabled"
+        }
+    }
+
+Plan: 31 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + alerts_topic_arn = (known after apply)
+  + data_bucket      = (known after apply)
+  + instance_id      = (known after apply)
+  + private_ip       = (known after apply)
+  + public_ip        = (known after apply)
+  + ssh              = (known after apply)
+  + vpc_id           = (known after apply)
+Releasing state lock. This may take a few moments...

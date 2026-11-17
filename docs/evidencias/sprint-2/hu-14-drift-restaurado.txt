@@ -1,0 +1,4 @@
+$ ./infra/terraform/run.sh drift dev   (despues de restaurar con apply)
+== drift dev
+OK: dev coincide con el codigo
+codigo de salida: 0

@@ -61,6 +61,8 @@ flowchart LR
 
 La identidad real solo vive en la bóveda de identity (cifrada con `VAULT_SECRET`); el grafo y Redis solo conocen el `anonymousId`.
 
+> **Parte 2:** la infraestructura declarada con Terraform (VPC por ambiente, un nodo k3s por ambiente, ECR, estado remoto) tiene su propio diagrama en [`infra-terraform.md`](infra-terraform.md).
+
 ## 2. Ambientes e infraestructura (Parte 1)
 
 ```mermaid

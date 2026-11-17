@@ -1,0 +1,2 @@
+NAME                    STATUS   ROLES           AGE   VERSION
+circleguard-stage-k3s   Ready    control-plane   28s   v1.37.2+k3s1

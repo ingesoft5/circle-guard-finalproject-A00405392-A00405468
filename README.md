@@ -95,6 +95,7 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 |---|---|
 | Arquitectura, eventos de Kafka y pipeline (diagramas) | [`docs/arquitectura/`](docs/arquitectura/README.md) |
 | Reconstruir la nube (AWS) con un comando, accesos | [`infra/bootstrap/README.md`](infra/bootstrap/README.md) |
+| Infraestructura como código (Terraform): módulos, 4 ambientes, estado remoto, costos | [`infra/terraform/README.md`](infra/terraform/README.md) · [diagrama y decisiones](docs/arquitectura/infra-terraform.md) |
 | Imágenes, compose por ambiente, despliegue y rollback | [`deploy/compose/README.md`](deploy/compose/README.md) |
 | Versionado automático y release notes | [`docs/release-notes/README.md`](docs/release-notes/README.md) |
 | Gestión de cambios: tipos, aprobaciones, RFC, etiquetado | [`docs/change-management/politica.md`](docs/change-management/politica.md) |

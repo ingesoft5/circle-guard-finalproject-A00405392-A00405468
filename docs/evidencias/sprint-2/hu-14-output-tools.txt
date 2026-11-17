@@ -1,0 +1,23 @@
+alerts_topic_arn = "arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-tools-alerts"
+instance_id = "i-<ID-CUENTA>60f1d"
+private_ip = "10.0.1.38"
+public_ip = "184.197.78.124"
+repository_urls = {
+  "circleguard-auth-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-auth-service"
+  "circleguard-dashboard-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-dashboard-service"
+  "circleguard-file-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-file-service"
+  "circleguard-form-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-form-service"
+  "circleguard-gateway-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-gateway-service"
+  "circleguard-identity-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-identity-service"
+  "circleguard-notification-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-notification-service"
+  "circleguard-promotion-service" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-promotion-service"
+  "circleguard-web" = "<ID-CUENTA>.dkr.ecr.us-east-1.amazonaws.com/circleguard-web"
+}
+ssh = "ssh -i infra/bootstrap/.state/circleguard-key.pem ubuntu@184.197.78.124"
+vpc_id = "vpc-0242bff6441009cda"
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵

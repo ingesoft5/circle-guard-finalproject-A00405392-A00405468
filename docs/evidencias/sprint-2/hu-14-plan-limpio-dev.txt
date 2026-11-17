@@ -1,0 +1,48 @@
+╷
+│ Warning: Deprecated Parameter
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile"
+│ instead.
+╵
+Acquiring state lock. This may take a few moments...
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Reading...
+data.aws_caller_identity.current: Reading...
+aws_key_pair.this: Refreshing state... [id=circleguard-dev-key]
+module.compute.aws_eip.this: Refreshing state... [id=eipalloc-08dbcb97adb6449d9]
+module.network.aws_vpc.this: Refreshing state... [id=vpc-0d546950a4517adf9]
+module.observability.aws_cloudwatch_log_group.this: Refreshing state... [id=/circleguard/dev]
+module.compute.aws_iam_role.this: Refreshing state... [id=circleguard-dev-k3s-role]
+module.observability.aws_sns_topic.alerts: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-dev-alerts]
+data.aws_caller_identity.current: Read complete after 0s [id=<ID-CUENTA>]
+module.storage.aws_s3_bucket.this: Refreshing state... [id=circleguard-dev-data-<ID-CUENTA>]
+module.compute.data.aws_ssm_parameter.ubuntu_ami: Read complete after 0s [id=/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id]
+module.observability.aws_sns_topic_subscription.email: Refreshing state... [id=arn:aws:sns:us-east-1:<ID-CUENTA>:circleguard-dev-alerts:3ddbb707-db1b-4444-a59c-8874b6feec74]
+module.compute.aws_iam_instance_profile.this: Refreshing state... [id=circleguard-dev-k3s-profile]
+module.compute.aws_iam_role_policy.extra[0]: Refreshing state... [id=circleguard-dev-k3s-role:circleguard-dev-k3s-extra]
+module.network.aws_internet_gateway.this: Refreshing state... [id=igw-03599be925709921c]
+module.network.aws_security_group.this: Refreshing state... [id=sg-0f71194a6e2e1407f]
+module.network.aws_subnet.public: Refreshing state... [id=subnet-07d1b69e4f893ea61]
+module.network.aws_route_table.public: Refreshing state... [id=rtb-0258cca2efe7fdd66]
+module.network.aws_vpc_security_group_egress_rule.all: Refreshing state... [id=sgr-0dbebfd2e69b03fd0]
+module.network.aws_vpc_security_group_ingress_rule.this["22-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-056eb22cb42fbb178]
+module.network.aws_vpc_security_group_ingress_rule.this["6443-<IP-ADMIN>/32"]: Refreshing state... [id=sgr-098625b713ee72600]
+module.network.aws_vpc_security_group_ingress_rule.this["443-0.0.0.0/0"]: Refreshing state... [id=sgr-037e06f154a6bf514]
+module.network.aws_vpc_security_group_ingress_rule.this["80-0.0.0.0/0"]: Refreshing state... [id=sgr-0d7724ec294f4e856]
+module.network.aws_vpc_security_group_ingress_rule.this["6443-44.221.115.232/32"]: Refreshing state... [id=sgr-0ead5bebb922303ef]
+module.network.aws_vpc_security_group_ingress_rule.this["22-44.221.115.232/32"]: Refreshing state... [id=sgr-0d1c7413436dd19e1]
+module.compute.aws_instance.this: Refreshing state... [id=i-05a7dfd1b6cf085e0]
+module.network.aws_route_table_association.public: Refreshing state... [id=rtbassoc-02b1fbe17c674b9bc]
+module.storage.aws_s3_bucket_versioning.this: Refreshing state... [id=circleguard-dev-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_public_access_block.this: Refreshing state... [id=circleguard-dev-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_server_side_encryption_configuration.this: Refreshing state... [id=circleguard-dev-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_policy.this: Refreshing state... [id=circleguard-dev-data-<ID-CUENTA>]
+module.storage.aws_s3_bucket_lifecycle_configuration.this: Refreshing state... [id=circleguard-dev-data-<ID-CUENTA>]
+module.compute.aws_eip_association.this: Refreshing state... [id=eipassoc-06acdc388892a8d33]
+module.observability.aws_cloudwatch_metric_alarm.status: Refreshing state... [id=circleguard-dev-fallo-de-estado]
+module.observability.aws_cloudwatch_metric_alarm.cpu: Refreshing state... [id=circleguard-dev-cpu-alta]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+Releasing state lock. This may take a few moments...

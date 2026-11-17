@@ -66,3 +66,15 @@ infra/bootstrap/.state/
 
 # Salidas de semantic-release en el pipeline (la versión va a .release/version; el CHANGELOG, a la Release)
 .release/
+
+# Terraform: el estado vive en S3; la configuración local con IP, correo y llaves no se versiona
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+tfplan
+infra/terraform/backend.hcl
+infra/terraform/**/terraform.tfvars
+infra/terraform/**/*.auto.tfvars
+# El .terraform.lock.hcl de los módulos es un artefacto de las pruebas; solo se versiona el de bootstrap/ y envs/*
+infra/terraform/modules/**/.terraform.lock.hcl

@@ -1,0 +1,8 @@
+$ HOSTS_OUT=/tmp/hosts.test ./infra/terraform/scripts/write-hosts-env.sh dev
+  (claves) DEV_INSTANCE_ID=<valor>
+  (claves) DEV_PUBLIC_IP=<valor>
+  (claves) DEV_PRIVATE_IP=<valor>
+--- formato del hosts.env real de la Parte 1 (solo las claves):
+  (claves) DEV_INSTANCE_ID=<valor>
+  (claves) DEV_PUBLIC_IP=<valor>
+  (claves) DEV_PRIVATE_IP=<valor>

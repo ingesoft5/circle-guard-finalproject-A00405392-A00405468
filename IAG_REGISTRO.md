@@ -173,6 +173,21 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 
 ---
 
+## Sprint 2
+
+### 2026-11-13 · `jmrojas06` · Terraform: infraestructura de la Parte 2 en módulos y 4 ambientes (#21)
+
+- **Contenido propio entregado:** el enunciado de la Parte 2 y el plan del proyecto, el código de `infra/bootstrap/` (Bash) y el estado real de la cuenta de AWS (4 VMs apagadas, sin S3, DynamoDB ni ECR).
+- **Prompts (textuales):**
+  1. *"ya entonces si no estoy mal completamos al 100% los dos primeros sprints, inciemos el sprint 2. Revisa el alcance y comencemos con el primer issue"*
+  2. *"acuerdate de ir guardando las decisiones, y el por que en estudio, para asi saber sustentar y explicar estas decisiones que hemos tomado."*
+  3. *"Aprobado, sigue"*, tras revisar el diseño de Terraform.
+  4. *"eso es para un solo issue? no podemos terminarlo de una, y tampoco te puedes poner de co autor en los commits"*
+- **Qué produjo:** una revisión del alcance del Sprint 2 (15 historias, 91 puntos y 2 días de atraso), dos preguntas de arquitectura para el equipo (infraestructura nueva desde cero y un k3s por ambiente, no EKS), el diseño y el plan, y el código de `infra/terraform/`: `run.sh` (Terraform, tflint y Trivy en Docker con versiones fijas), 5 módulos con 22 pruebas `terraform test`, el `bootstrap/` del estado remoto, los ambientes tools, dev, stage y prod, `write-hosts-env.sh`, el comando `drift`, el diagrama y el README.
+- **Verificación / cambios del equipo:** el equipo eligió la estrategia de infraestructura y la topología entre las opciones que propuso la IA, y exigió terminar el issue en un solo PR (la IA había planeado tres). La IA corrigió una cifra de costo suya (un k3s por ambiente no cuesta lo mismo que hoy: con prod en `t3.xlarge` son unos USD 0,50/h de cómputo). La documentación de HashiCorp mostró que el bloqueo con DynamoDB está deprecado, por lo que se configuró también `use_lockfile`. Se validó con `fmt`, `validate`, `terraform test`, `tflint` y Trivy, y con pruebas reales en AWS aprobadas por el usuario antes de crear nada: la primera encontró un límite de la cuenta (5 IP elásticas por región) que ni el código ni las pruebas podían mostrar, y se resolvió probando un ambiente a la vez. _Revisión: pendiente de `pierrecuevas`._
+
+---
+
 ## Reflexión crítica del equipo
 
 _Se completa al cierre de cada sprint (en la retrospectiva): qué aportó la IA, qué errores cometió y cómo se detectaron, qué decisiones se tomaron en contra de su sugerencia y qué aprendimos haciendo el trabajo nosotros._
