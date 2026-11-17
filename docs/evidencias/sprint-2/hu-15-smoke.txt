@@ -1,0 +1,11 @@
+$ ./deploy/helm/local.sh smoke
+[smoke] /healthz                                         HTTP 200
+[smoke] /version                                         HTTP 200
+[smoke] /api/auth/actuator/health/readiness              HTTP 200
+[smoke] /api/identity/actuator/health/readiness          HTTP 200
+[smoke] /api/form/actuator/health/readiness              HTTP 200
+[smoke] /api/promotion/actuator/health/readiness         HTTP 200
+[smoke] /api/gateway/actuator/health/readiness           HTTP 200
+[smoke] version desplegada: local
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK

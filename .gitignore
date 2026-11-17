@@ -78,3 +78,6 @@ infra/terraform/**/terraform.tfvars
 infra/terraform/**/*.auto.tfvars
 # El .terraform.lock.hcl de los módulos es un artefacto de las pruebas; solo se versiona el de bootstrap/ y envs/*
 infra/terraform/modules/**/.terraform.lock.hcl
+
+# Estado local de las pruebas del chart (kubeconfig y secretos aleatorios)
+deploy/helm/.local/

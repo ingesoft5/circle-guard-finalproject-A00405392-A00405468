@@ -1,0 +1,16 @@
+$ ./deploy/helm/run.sh check
+== lint dev
+==> Linting deploy/helm/circleguard
+1 chart(s) linted, 0 chart(s) failed
+== lint local
+==> Linting deploy/helm/circleguard
+1 chart(s) linted, 0 chart(s) failed
+== lint prod
+==> Linting deploy/helm/circleguard
+1 chart(s) linted, 0 chart(s) failed
+== lint stage
+==> Linting deploy/helm/circleguard
+1 chart(s) linted, 0 chart(s) failed
+Charts:      1 passed, 1 total
+Test Suites: 4 passed, 4 total
+Tests:       38 passed, 38 total

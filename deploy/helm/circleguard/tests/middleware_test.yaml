@@ -1,0 +1,113 @@
+suite: middleware (Postgres, Neo4j, Kafka y Redis)
+templates:
+  - templates/postgres.yaml
+  - templates/neo4j.yaml
+  - templates/kafka.yaml
+  - templates/redis.yaml
+set:
+  global:
+    imageTag: "1.2.3"
+tests:
+  - it: postgres crea las bases de los servicios con el mismo init que el compose
+    template: templates/postgres.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - matchRegex:
+          path: data["init-db.sql"]
+          pattern: circleguard_auth
+      - matchRegex:
+          path: data["init-db.sql"]
+          pattern: circleguard_dashboard
+
+  - it: postgres es un StatefulSet con volumen y la imagen del compose
+    template: templates/postgres.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: postgres:16.4-alpine
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 5Gi
+      - equal:
+          path: spec.template.spec.enableServiceLinks
+          value: false
+
+  - it: el Service de postgres se llama postgres
+    template: templates/postgres.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: metadata.name
+          value: postgres
+      - equal:
+          path: spec.ports[0].port
+          value: 5432
+
+  - it: se puede apagar postgres (por ejemplo para usar una base administrada)
+    template: templates/postgres.yaml
+    set:
+      postgres.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: neo4j arma NEO4J_AUTH con la contrasena del Secret
+    template: templates/neo4j.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NEO4J_AUTH
+            value: neo4j/$(CG_NEO4J_PASSWORD)
+
+  - it: neo4j no recibe ninguna variable NEO4J_* que no sea un ajuste valido (la imagen las toma como configuracion)
+    template: templates/neo4j.yaml
+    documentIndex: 0
+    asserts:
+      # Error real visto en la prueba local: NEO4J_PASSWORD -> "Unrecognized setting: PASSWORD".
+      - equal:
+          path: spec.template.spec.containers[0].env[0].name
+          value: CG_NEO4J_PASSWORD
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NEO4J_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: circleguard-secrets
+                key: NEO4J_PASSWORD
+
+  - it: kafka corre en KRaft con un solo nodo y se anuncia con el nombre del Service
+    template: templates/kafka.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KAFKA_ADVERTISED_LISTENERS
+            value: PLAINTEXT://kafka:9092
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KAFKA_CONTROLLER_QUORUM_VOTERS
+            value: 1@localhost:9093
+
+  - it: redis no persiste datos, igual que el compose
+    template: templates/redis.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --appendonly

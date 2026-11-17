@@ -1,0 +1,177 @@
+# Valores por defecto de CircleGuard. Cada ambiente los sobreescribe con values-<ambiente>.yaml;
+# los secretos NUNCA van aqui (ver values-secrets.example.yaml).
+
+global:
+  imageRegistry: ""         # p. ej. <cuenta>.dkr.ecr.us-east-1.amazonaws.com ; vacio = sin prefijo
+  imageTag: ""              # OBLIGATORIO: la version X.Y.Z que publica el pipeline
+  imagePullPolicy: IfNotPresent
+  environment: local        # llega a los servicios como CIRCLEGUARD_ENV
+
+initImage: busybox:1.37.0   # los initContainers esperan a las dependencias con nc -z
+dnsResolver: 10.43.0.10     # kube-dns de k3s; nginx (web) lo necesita porque no usa los dominios de busqueda
+
+# Si se define, el chart no crea el Secret y usa el que ya existe (Sealed/External Secrets, HU-23).
+existingSecret: ""
+secrets:
+  dbPassword: ""
+  neo4jPassword: ""
+  jwtSecret: ""
+  qrSecret: ""
+  vaultSecret: ""
+  vaultSalt: ""
+  vaultHashSalt: ""
+  ldapPassword: "sin-ldap"  # LDAP es opcional: sin servidor, auth usa las cuentas locales
+
+# Configuracion no secreta compartida por los servicios Spring (ConfigMap circleguard-config).
+config:
+  dbUser: circleguard
+  ldapUrl: "ldap://ldap.invalid:389"
+
+ingress:
+  enabled: true
+  className: traefik        # el Ingress controller que trae k3s
+  host: ""                  # vacio = cualquier host
+  annotations: {}
+
+# Valores por defecto de cada servicio. Se copian a cada uno con la clave de fusion de YAML (<<: *svc):
+# Helm sobreescribe por servicio con coalesce (respeta los false), a diferencia de la funcion merge.
+_svc: &svc
+  enabled: true
+  spring: true
+  replicas: 1
+  resources:
+    requests: { cpu: 100m, memory: 384Mi }
+    limits: { memory: 768Mi }
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 70
+  probes:
+    startupPath: /actuator/health/liveness
+    livenessPath: /actuator/health/liveness
+    readinessPath: /actuator/health/readiness
+  waitFor: []
+  env: {}
+  secretEnv: []
+
+services:
+  identity:
+    <<: *svc
+    image: circleguard-identity-service
+    port: 8083
+    waitFor: ["postgres:5432", "kafka:9092"]
+    env: { DB_NAME: circleguard_identity }
+    secretEnv: [DB_PASSWORD, JWT_SECRET, VAULT_SECRET, VAULT_SALT, VAULT_HASH_SALT]
+
+  auth:
+    <<: *svc
+    image: circleguard-auth-service
+    port: 8180
+    waitFor: ["postgres:5432", "identity:8083"]
+    env: { DB_NAME: circleguard_auth, IDENTITY_URL: "http://identity:8083" }
+    secretEnv: [DB_PASSWORD, JWT_SECRET, QR_SECRET, LDAP_PASSWORD]
+
+  form:
+    <<: *svc
+    image: circleguard-form-service
+    port: 8086
+    waitFor: ["postgres:5432", "kafka:9092"]
+    env: { DB_NAME: circleguard_form }
+    secretEnv: [DB_PASSWORD]
+
+  promotion:
+    <<: *svc
+    image: circleguard-promotion-service
+    port: 8088
+    waitFor: ["postgres:5432", "kafka:9092", "neo4j:7687", "redis:6379"]
+    env: { DB_NAME: circleguard_promotion }
+    secretEnv: [DB_PASSWORD, JWT_SECRET, NEO4J_PASSWORD]
+
+  gateway:
+    <<: *svc
+    image: circleguard-gateway-service
+    port: 8087
+    waitFor: ["redis:6379"]
+    secretEnv: [JWT_SECRET, QR_SECRET]
+
+  dashboard:
+    <<: *svc
+    image: circleguard-dashboard-service
+    port: 8084
+    waitFor: ["postgres:5432"]
+    env: { DB_NAME: circleguard_dashboard, PROMOTION_URL: "http://promotion:8088" }
+    secretEnv: [DB_PASSWORD]
+
+  file:
+    <<: *svc
+    image: circleguard-file-service
+    port: 8085
+
+  notification:
+    <<: *svc
+    image: circleguard-notification-service
+    port: 8082
+    waitFor: ["kafka:9092"]
+    env: { AUTH_API_URL: "http://auth:8180" }
+    secretEnv: [JWT_SECRET, QR_SECRET]
+
+  # Cliente web: nginx sirve la app y hace de proxy de /api/<servicio>/ hacia los demas. Resuelve los
+  # nombres en cada peticion, asi que arranca aunque algun servicio este apagado. nginx no usa los
+  # dominios de busqueda del pod, por eso los upstreams llevan el nombre completo (con el namespace).
+  web:
+    <<: *svc
+    spring: false
+    image: circleguard-web
+    port: 8080
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { memory: 128Mi }
+    probes:
+      startupPath: /healthz
+      livenessPath: /healthz
+      readinessPath: /healthz
+    env:
+      NGINX_RESOLVER: "{{ .Values.dnsResolver }}"
+      APP_VERSION: "{{ .Values.global.imageTag }}"
+      AUTH_UPSTREAM: "auth.{{ .Release.Namespace }}.svc.cluster.local:8180"
+      IDENTITY_UPSTREAM: "identity.{{ .Release.Namespace }}.svc.cluster.local:8083"
+      FORM_UPSTREAM: "form.{{ .Release.Namespace }}.svc.cluster.local:8086"
+      PROMOTION_UPSTREAM: "promotion.{{ .Release.Namespace }}.svc.cluster.local:8088"
+      GATEWAY_UPSTREAM: "gateway.{{ .Release.Namespace }}.svc.cluster.local:8087"
+      DASHBOARD_UPSTREAM: "dashboard.{{ .Release.Namespace }}.svc.cluster.local:8084"
+      FILE_UPSTREAM: "file.{{ .Release.Namespace }}.svc.cluster.local:8085"
+      NOTIFICATION_UPSTREAM: "notification.{{ .Release.Namespace }}.svc.cluster.local:8082"
+
+# ------------------------------------------------------------------ middleware
+# Mismas imagenes y variables que deploy/compose/base.yml de la Parte 1.
+postgres:
+  enabled: true
+  image: postgres:16.4-alpine
+  storage: 5Gi
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 512Mi }
+
+neo4j:
+  enabled: true
+  image: neo4j:5.26.0-community
+  storage: 5Gi
+  resources:
+    requests: { cpu: 100m, memory: 768Mi }
+    limits: { memory: 1Gi }
+
+kafka:
+  enabled: true
+  image: apache/kafka:3.8.0
+  storage: 5Gi
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 768Mi }
+
+redis:
+  enabled: true
+  image: redis:7.2.5-alpine
+  resources:
+    requests: { cpu: 50m, memory: 32Mi }
+    limits: { memory: 128Mi }

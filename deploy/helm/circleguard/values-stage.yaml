@@ -1,0 +1,9 @@
+# stage: igual que dev (un nodo t3.large), para ensayar lo que luego va a prod.
+global:
+  environment: stage
+  # imageRegistry (ECR de tools) e imageTag los pasa el pipeline con --set.
+
+services:
+  dashboard: { enabled: false }
+  file: { enabled: false }
+  notification: { enabled: false }

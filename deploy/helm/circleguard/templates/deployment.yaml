@@ -1,0 +1,92 @@
+{{- $root := . }}
+{{- range $name, $s := .Values.services }}
+{{- if $s.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    {{- include "cg.labels" $root | nindent 4 }}
+spec:
+  {{- if not $s.autoscaling.enabled }}
+  replicas: {{ $s.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        {{- include "cg.labels" $root | nindent 8 }}
+      annotations:
+        # Si cambia la configuracion compartida, los pods se reinician solos.
+        checksum/config: {{ include "cg.configChecksum" $root }}
+    spec:
+      enableServiceLinks: false # las variables FOO_PORT de los Service chocan con la configuracion de Kafka y otros
+      {{- if $s.waitFor }}
+      initContainers:
+        {{- range $s.waitFor }}
+        - name: wait-{{ . | replace ":" "-" }}
+          image: {{ $root.Values.initImage }}
+          command: ["sh", "-c", "until nc -z {{ . | replace ":" " " }}; do echo esperando {{ . }}; sleep 3; done"]
+          resources:
+            requests: { cpu: 10m, memory: 8Mi }
+            limits: { memory: 32Mi }
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ $name }}
+          image: {{ include "cg.image" (dict "root" $root "image" $s.image) }}
+          imagePullPolicy: {{ $root.Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $s.port }}
+          {{- if $s.spring }}
+          envFrom:
+            - configMapRef:
+                name: circleguard-config
+          {{- end }}
+          {{- if or $s.env $s.secretEnv }}
+          env:
+            {{- range $key, $value := $s.env }}
+            - name: {{ $key }}
+              value: {{ tpl (toString $value) $root | quote }}
+            {{- end }}
+            {{- range $s.secretEnv }}
+            - name: {{ . }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cg.secretName" $root }}
+                  key: {{ . }}
+            {{- end }}
+          {{- end }}
+          # Arranque lento de Spring: hasta 5 min antes de que las otras sondas empiecen a contar.
+          startupProbe:
+            httpGet:
+              path: {{ $s.probes.startupPath }}
+              port: http
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: {{ $s.probes.livenessPath }}
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ $s.probes.readinessPath }}
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            {{- toYaml $s.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+{{- end }}
+{{- end }}

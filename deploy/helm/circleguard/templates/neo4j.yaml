@@ -1,0 +1,90 @@
+{{- if .Values.neo4j.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: neo4j
+  labels:
+    app.kubernetes.io/name: neo4j
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  serviceName: neo4j
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: neo4j
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: neo4j
+        {{- include "cg.labels" . | nindent 8 }}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: neo4j
+          image: {{ .Values.neo4j.image }}
+          ports:
+            - name: bolt
+              containerPort: 7687
+          env:
+            # OJO: la imagen de Neo4j toma TODA variable NEO4J_* como un ajuste de configuracion, asi que esta
+            # no puede llamarse NEO4J_PASSWORD ("Unrecognized setting: PASSWORD" y el pod no arranca).
+            - name: CG_NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cg.secretName" . }}
+                  key: NEO4J_PASSWORD
+            # Kubernetes expande $(CG_NEO4J_PASSWORD) porque esta definida antes en la lista.
+            - name: NEO4J_AUTH
+              value: neo4j/$(CG_NEO4J_PASSWORD)
+            - name: NEO4J_server_memory_heap_initial__size
+              value: 256m
+            - name: NEO4J_server_memory_heap_max__size
+              value: 512m
+            - name: NEO4J_server_memory_pagecache_size
+              value: 256m
+          startupProbe:
+            tcpSocket:
+              port: bolt
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: bolt
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            tcpSocket:
+              port: bolt
+            periodSeconds: 20
+            failureThreshold: 6
+          resources:
+            {{- toYaml .Values.neo4j.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.neo4j.storage }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j
+  labels:
+    app.kubernetes.io/name: neo4j
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: neo4j
+  ports:
+    - name: bolt
+      port: 7687
+      targetPort: bolt
+{{- end }}
