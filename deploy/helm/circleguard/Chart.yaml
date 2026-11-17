@@ -1,0 +1,7 @@
+apiVersion: v2
+name: circleguard
+description: CircleGuard - los 8 servicios Spring Boot, el cliente web y el middleware (Postgres, Neo4j, Kafka, Redis)
+type: application
+# Version del chart (cambia solo cuando cambian las plantillas). La version de la aplicacion es global.imageTag.
+version: 0.1.0
+appVersion: "0.0.0"

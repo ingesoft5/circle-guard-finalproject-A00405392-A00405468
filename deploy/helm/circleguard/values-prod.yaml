@@ -1,0 +1,19 @@
+# prod: un nodo t3.xlarge (16 GB): los 8 servicios y la web, con al menos 2 replicas de lo nucleo.
+global:
+  environment: prod
+  # imageRegistry (ECR de tools) e imageTag los pasa el pipeline con --set.
+
+postgres:
+  storage: 10Gi
+neo4j:
+  storage: 10Gi
+kafka:
+  storage: 10Gi
+
+services:
+  identity: { autoscaling: { minReplicas: 2, maxReplicas: 4 } }
+  auth: { autoscaling: { minReplicas: 2, maxReplicas: 4 } }
+  form: { autoscaling: { minReplicas: 2, maxReplicas: 4 } }
+  promotion: { autoscaling: { minReplicas: 2, maxReplicas: 4 } }
+  gateway: { autoscaling: { minReplicas: 2, maxReplicas: 4 } }
+  web: { autoscaling: { minReplicas: 2, maxReplicas: 3 } }

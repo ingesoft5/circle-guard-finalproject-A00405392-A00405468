@@ -1,0 +1,203 @@
+suite: deployments de los servicios y de la web
+templates:
+  - templates/deployment.yaml
+set:
+  global:
+    imageRegistry: "123456789012.dkr.ecr.us-east-1.amazonaws.com"
+    imageTag: "1.2.3"
+release:
+  name: circleguard
+  namespace: circleguard-dev
+tests:
+  - it: genera un Deployment por servicio (los 8 y la web)
+    asserts:
+      - hasDocuments:
+          count: 9
+      - isKind:
+          of: Deployment
+
+  - it: no genera el Deployment de un servicio apagado
+    set:
+      services.dashboard.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 8
+
+  - it: la imagen sale del registro, el repositorio y la version
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: 123456789012.dkr.ecr.us-east-1.amazonaws.com/circleguard-auth-service:1.2.3
+
+  - it: sin registro la imagen no lleva prefijo
+    set:
+      global.imageRegistry: ""
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: circleguard-auth-service:1.2.3
+
+  - it: falla si no se indica la version a desplegar
+    set:
+      global.imageTag: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "global.imageTag es obligatorio (la version X.Y.Z publicada por el pipeline)"
+
+  - it: usa las sondas de Actuator en los servicios Spring
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.path
+          value: /actuator/health/liveness
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /actuator/health/liveness
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /actuator/health/readiness
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8180
+
+  - it: la web usa /healthz en las tres sondas
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /healthz
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.path
+          value: /healthz
+
+  - it: el gateway espera a Redis antes de arrancar
+    documentSelector:
+      path: metadata.name
+      value: gateway
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-redis-6379
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: busybox:1.37.0
+
+  - it: cada servicio solo recibe los secretos que usa (gateway no ve la clave de la base)
+    documentSelector:
+      path: metadata.name
+      value: gateway
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.containers[0].env
+          count: 2
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
+          value: JWT_SECRET
+      - equal:
+          path: spec.template.spec.containers[0].env[1].valueFrom.secretKeyRef.name
+          value: circleguard-secrets
+
+  - it: usa un Secret existente cuando se indica existingSecret
+    set:
+      existingSecret: secretos-sellados
+    documentSelector:
+      path: metadata.name
+      value: gateway
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
+          value: secretos-sellados
+
+  - it: los servicios reciben su configuracion no secreta
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_NAME
+            value: circleguard_auth
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[0].configMapRef.name
+          value: circleguard-config
+
+  - it: con autoscaling activo no fija las replicas (las gobierna el HPA)
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - notExists:
+          path: spec.replicas
+
+  - it: sin autoscaling fija las replicas
+    set:
+      services.auth.autoscaling.enabled: false
+      services.auth.replicas: 2
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: no inyecta las variables de los Service de Kubernetes (chocan con Kafka y otros)
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.enableServiceLinks
+          value: false
+
+  - it: el contenedor no puede escalar privilegios
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.capabilities.drop[0]
+          value: ALL
+
+  - it: la web resuelve a los servicios por nombre completo y expone la version
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: AUTH_UPSTREAM
+            value: auth.circleguard-dev.svc.cluster.local:8180
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: APP_VERSION
+            value: "1.2.3"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NGINX_RESOLVER
+            value: 10.43.0.10
+
+  - it: la web no recibe la configuracion de los servicios Spring
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].envFrom

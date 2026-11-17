@@ -1,0 +1,21 @@
+# local: un k3s dentro de Docker en el PC (deploy/helm/local.sh). Imagenes construidas en local y cargadas al
+# clúster (no hay registro), solo los servicios nucleo y la web para no pasarse de memoria.
+global:
+  imageRegistry: local
+  imageTag: local
+  imagePullPolicy: Never
+  environment: local
+
+neo4j:
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 768Mi }
+kafka:
+  resources:
+    requests: { cpu: 100m, memory: 384Mi }
+    limits: { memory: 640Mi }
+
+services:
+  dashboard: { enabled: false }
+  file: { enabled: false }
+  notification: { enabled: false }

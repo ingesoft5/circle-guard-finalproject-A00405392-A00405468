@@ -1,0 +1,75 @@
+suite: services y autoscaling
+templates:
+  - templates/service.yaml
+  - templates/hpa.yaml
+set:
+  global:
+    imageTag: "1.2.3"
+tests:
+  - it: genera un Service por servicio con el mismo nombre que en compose
+    template: templates/service.yaml
+    asserts:
+      - hasDocuments:
+          count: 9
+      - isKind:
+          of: Service
+
+  - it: el Service de auth expone su puerto
+    template: templates/service.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 8180
+      - equal:
+          path: spec.selector["app.kubernetes.io/name"]
+          value: auth
+
+  - it: genera un HPA por servicio con autoscaling
+    template: templates/hpa.yaml
+    asserts:
+      - hasDocuments:
+          count: 9
+      - isKind:
+          of: HorizontalPodAutoscaler
+
+  - it: no genera el HPA de un servicio sin autoscaling
+    template: templates/hpa.yaml
+    set:
+      services.file.autoscaling.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 8
+
+  - it: el HPA escala por CPU y apunta al Deployment
+    template: templates/hpa.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.scaleTargetRef.name
+          value: auth
+      - equal:
+          path: spec.minReplicas
+          value: 1
+      - equal:
+          path: spec.maxReplicas
+          value: 2
+      - equal:
+          path: spec.metrics[0].resource.target.averageUtilization
+          value: 70
+
+  - it: un ambiente puede subir el maximo de replicas de un servicio
+    template: templates/hpa.yaml
+    set:
+      services.promotion.autoscaling.maxReplicas: 4
+    documentSelector:
+      path: metadata.name
+      value: promotion
+    asserts:
+      - equal:
+          path: spec.maxReplicas
+          value: 4

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: circleguard-config
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+data:
+  # Los nombres coinciden con los Service del chart (y con el compose de la Parte 1).
+  DB_HOST: postgres
+  DB_USER: {{ .Values.config.dbUser | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  REDIS_HOST: redis
+  NEO4J_URI: bolt://neo4j:7687
+  LDAP_URL: {{ .Values.config.ldapUrl | quote }}
+  CIRCLEGUARD_ENV: {{ .Values.global.environment | quote }}

@@ -1,0 +1,10 @@
+# dev: un nodo t3.large (8 GB). Solo los servicios nucleo y la web; dashboard, file y notification
+# no caben junto con Neo4j y Kafka, asi que se apagan (se encienden aqui cuando haya mas memoria).
+global:
+  environment: dev
+  # imageRegistry (ECR de tools) e imageTag los pasa el pipeline con --set.
+
+services:
+  dashboard: { enabled: false }
+  file: { enabled: false }
+  notification: { enabled: false }
