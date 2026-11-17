@@ -26,6 +26,11 @@ secrets:
 config:
   dbUser: circleguard
   ldapUrl: "ldap://ldap.invalid:389"
+  # HU-18 (#25): se cambian aqui (o con --set) y `helm upgrade` reinicia los pods solos, sin recompilar nada.
+  features:
+    ldapLoginEnabled: true      # false: el login va directo a la base local sin intentar LDAP (FEATURE_LDAP_LOGIN)
+  privacy:
+    kAnonymity: 5               # K del k-anonimato del dashboard; minimo 1 (PRIVACY_K_ANONYMITY)
 
 ingress:
   enabled: true

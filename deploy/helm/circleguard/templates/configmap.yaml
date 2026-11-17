@@ -13,3 +13,6 @@ data:
   NEO4J_URI: bolt://neo4j:7687
   LDAP_URL: {{ .Values.config.ldapUrl | quote }}
   CIRCLEGUARD_ENV: {{ .Values.global.environment | quote }}
+  # HU-18: configuracion y feature toggles que cambian sin recompilar (los lee application.yml de cada servicio).
+  FEATURE_LDAP_LOGIN: {{ .Values.config.features.ldapLoginEnabled | quote }}
+  PRIVACY_K_ANONYMITY: {{ .Values.config.privacy.kAnonymity | quote }}

@@ -32,6 +32,9 @@ qr:
   expiration: ${QR_EXPIRATION:300000}   # milisegundos (5 min). Antes era 300 = 0.3 s y el QR vencía al instante
 
 circleguard:
+  # HU-18 (#25): feature toggle. Si es false el login va directo a la base local sin intentar LDAP.
+  features:
+    ldap-login-enabled: ${FEATURE_LDAP_LOGIN:true}
   identity-service:
     url: ${IDENTITY_URL:http://localhost:8083}
     timeout: ${IDENTITY_TIMEOUT:2s}             # conexión y lectura; sin timeout el circuito no se entera
