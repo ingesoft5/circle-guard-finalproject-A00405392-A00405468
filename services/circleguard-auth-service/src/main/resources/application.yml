@@ -1,6 +1,9 @@
 # Configuración por variables de entorno. Los secretos no tienen valor por defecto:
 # vienen del .env del ambiente (ver deploy/compose/.env.example).
 spring:
+  config:
+    # HU-17 (#24): Circuit Breaker + Retry en su propio archivo (docs/patrones/resiliencia.md).
+    import: classpath:resilience4j.yml
   application:
     name: circleguard-auth-service
   datasource:
@@ -31,6 +34,7 @@ qr:
 circleguard:
   identity-service:
     url: ${IDENTITY_URL:http://localhost:8083}
+    timeout: ${IDENTITY_TIMEOUT:2s}             # conexión y lectura; sin timeout el circuito no se entera
 
 management:
   endpoints:

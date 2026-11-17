@@ -1,6 +1,7 @@
 package com.circleguard.auth.controller;
 
 import com.circleguard.auth.client.IdentityClient;
+import com.circleguard.auth.client.IdentityServiceUnavailableException;
 import com.circleguard.auth.service.JwtTokenService;
 import com.circleguard.auth.service.CustomUserDetailsService;
 import com.circleguard.auth.security.SecurityConfig;
@@ -116,5 +117,24 @@ public class LoginControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void identityUnavailableDegradesTo503InsteadOf500() throws Exception {
+        // HU-17: con identity caído (o el circuito abierto) las credenciales son válidas,
+        // así que el login responde 503 con Retry-After y no un 500 con la traza del error.
+        Mockito.when(authManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(Mockito.mock(Authentication.class));
+        Mockito.when(identityClient.getAnonymousId("health_user"))
+                .thenThrow(new IdentityServiceUnavailableException(new RuntimeException("caido")));
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\": \"health_user\", \"password\": \"password\"}"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(header().string("Retry-After", "10"))
+                .andExpect(jsonPath("$.message").value("Identity service unavailable, please try again shortly"));
+
+        Mockito.verifyNoInteractions(jwtService);
     }
 }

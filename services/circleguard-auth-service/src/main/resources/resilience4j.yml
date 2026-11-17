@@ -1,0 +1,28 @@
+# Configuración de Resilience4j de auth-service, importada desde application.yml (spring.config.import).
+# Las esperas se pueden cambiar por variable de entorno sin recompilar.
+# HU-17 (#24): Circuit Breaker + Retry de la llamada a identity-service (docs/patrones/resiliencia.md).
+# Retry envuelve al Circuit Breaker: cada intento cuenta en la ventana del circuito.
+resilience4j:
+  circuitbreaker:
+    instances:
+      identity:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10                 # mira las últimas 10 llamadas
+        minimum-number-of-calls: 5              # no decide con menos de 5
+        failure-rate-threshold: 50              # se abre si fallan el 50 % o más
+        wait-duration-in-open-state: ${RESILIENCE_OPEN_WAIT:10s}
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:                      # solo cuentan las caídas, no los errores del cliente (4xx)
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+  retry:
+    instances:
+      identity:
+        max-attempts: 3                         # 1 intento + 2 reintentos
+        wait-duration: ${RESILIENCE_RETRY_WAIT:200ms}
+        enable-exponential-backoff: true        # 200 ms, luego 400 ms
+        exponential-backoff-multiplier: 2
+        retry-exceptions:                       # con el circuito abierto (CallNotPermitted) no se reintenta
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
