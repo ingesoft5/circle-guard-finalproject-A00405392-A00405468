@@ -1,5 +1,8 @@
 # Configuración por variables de entorno. Los secretos no tienen valor por defecto.
 spring:
+  config:
+    # HU-17 (#24): Circuit Breaker + Retry en su propio archivo (docs/patrones/resiliencia.md).
+    import: classpath:resilience4j.yml
   application:
     name: circleguard-dashboard-service
   datasource:
@@ -17,6 +20,7 @@ spring:
 circleguard:
   promotion-service:
     url: ${PROMOTION_URL:http://localhost:8088}
+    timeout: ${PROMOTION_TIMEOUT:2s}             # conexión y lectura; sin timeout el circuito no se entera
 
 management:
   endpoints:

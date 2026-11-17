@@ -171,6 +171,12 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** la sustitución de las capturas de Nexus y de la web de producción del informe por las del equipo (con la barra de direcciones visible), su inserción en el Anexo B y la nueva exportación del PDF (15 páginas).
 - **Verificación / cambios del equipo:** se revisó el PDF y se comprobó que no contiene contraseñas. Las capturas con sesión iniciada en Sonar, EC2 y Discord no se incluyen por decisión del equipo. _Revisión: aprobada por `pierrecuevas` en #63 (8 nov, 20:59)._
 
+### 2026-11-17 · `pierrecuevas` · Patrón de resiliencia: Circuit Breaker + Retry (#24)
+
+- **Prompt:** *"la idea principal es seguir con el sprint 2 y miramos si jose nos ha asignado algun pr"*.
+- **Qué produjo:** Resilience4j en `auth → identity` y `dashboard → promotion` (Retry afuera, Circuit Breaker adentro, timeout de 2 s en los dos `RestTemplate`), el login degradado a 503 con `Retry-After` cuando identity no está, la respuesta `degraded: true` del dashboard, la configuración en un `resilience4j.yml` propio, 10 pruebas con falla inyectada sobre un servidor HTTP local y [`docs/patrones/resiliencia.md`](docs/patrones/resiliencia.md) con los valores elegidos y los trade-offs.
+- **Verificación / cambios del equipo:** auth 26 pruebas y dashboard 6, 0 fallas; la cobertura mínima de auth se sigue cumpliendo. La primera corrida falló 3 de 5 pruebas de auth: el `application.yml` de `src/test/resources` tapaba al principal y Resilience4j usaba sus valores por defecto. Por eso la configuración se movió a `resilience4j.yml`, que importan la app y la prueba. Se comprobó en el compose de dev apagando identity: 503 en 6,9 s y 2,4 s mientras el circuito se abría, luego ~0,2 s sin llamar a identity, y 200 de nuevo al encenderlo, sin reiniciar auth ([evidencia](docs/evidencias/sprint-2/hu-17-resiliencia.md)). Antes de reintentar se confirmó que `POST /identities/map` es idempotente (`getOrCreateAnonymousId`). _Revisión: por completar por el revisor del PR._
+
 ---
 
 ## Sprint 2
