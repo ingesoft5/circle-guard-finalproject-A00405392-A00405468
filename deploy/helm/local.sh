@@ -45,6 +45,8 @@ cmd_images() {
   while read -r img; do
     echo "cargando $img"
     docker save "$img" | docker exec -i "$NAME" ctr -n k8s.io images import - >/dev/null
+    # ctr puede terminar sin error y no importar nada (visto con auth): se comprueba que la imagen quedó en el clúster.
+    docker exec "$NAME" ctr -n k8s.io images ls -q | grep -qx "docker.io/$img" || die "No quedó cargada la imagen $img"
     n=$((n + 1))
   done < <(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^local/circleguard-.*:local$' | sort -u)
   [[ $n -gt 0 ]] || die "No hay imágenes local/circleguard-*:local (constrúyelas con docker build -f services/<svc>/Dockerfile ...)"

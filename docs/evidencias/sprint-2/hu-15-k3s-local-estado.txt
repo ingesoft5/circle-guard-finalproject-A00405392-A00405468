@@ -1,0 +1,44 @@
+$ kubectl get nodes
+NAME           STATUS   ROLES           AGE   VERSION
+97c1532ee668   Ready    control-plane   23m   v1.37.2+k3s1
+
+$ helm list -n circleguard-local
+NAME       	NAMESPACE        	REVISION	UPDATED                                	STATUS  	CHART            	APP VERSION
+circleguard	circleguard-local	2       	2026-11-17 19:56:39.068603184 +0000 UTC	deployed	circleguard-0.1.0	0.0.0      
+
+$ kubectl -n circleguard-local get pods,svc,hpa,ingress,pvc
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/auth-54c4ff4b74-tv9wf        1/1     Running   0          50s
+pod/form-79bc6c688-dpgm7         1/1     Running   0          18m
+pod/gateway-b48687fd9-6gdmk      1/1     Running   0          18m
+pod/identity-649ffb995-mt5s2     1/1     Running   0          18m
+pod/kafka-0                      1/1     Running   0          18m
+pod/neo4j-0                      1/1     Running   0          18m
+pod/postgres-0                   1/1     Running   0          18m
+pod/promotion-7b5487b558-q5prk   1/1     Running   0          18m
+pod/redis-85c9c8b655-5q426       1/1     Running   0          18m
+pod/web-778878df45-nt9hx         1/1     Running   0          18m
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/auth        ClusterIP   10.43.151.86    <none>        8180/TCP   18m
+service/form        ClusterIP   10.43.58.230    <none>        8086/TCP   18m
+service/gateway     ClusterIP   10.43.96.29     <none>        8087/TCP   18m
+service/identity    ClusterIP   10.43.94.22     <none>        8083/TCP   18m
+service/kafka       ClusterIP   10.43.179.36    <none>        9092/TCP   18m
+service/neo4j       ClusterIP   10.43.37.198    <none>        7687/TCP   18m
+service/postgres    ClusterIP   10.43.234.53    <none>        5432/TCP   18m
+service/promotion   ClusterIP   10.43.235.196   <none>        8088/TCP   18m
+service/redis       ClusterIP   10.43.176.247   <none>        6379/TCP   18m
+service/web         ClusterIP   10.43.175.132   <none>        8080/TCP   18m
+NAME                                            REFERENCE              TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/auth        Deployment/auth        cpu: 21%/70%   1         2         1          18m
+horizontalpodautoscaler.autoscaling/form        Deployment/form        cpu: 4%/70%    1         2         1          18m
+horizontalpodautoscaler.autoscaling/gateway     Deployment/gateway     cpu: 4%/70%    1         2         1          18m
+horizontalpodautoscaler.autoscaling/identity    Deployment/identity    cpu: 38%/70%   1         2         1          18m
+horizontalpodautoscaler.autoscaling/promotion   Deployment/promotion   cpu: 11%/70%   1         2         1          18m
+horizontalpodautoscaler.autoscaling/web         Deployment/web         cpu: 2%/70%    1         2         1          18m
+NAME                                    CLASS     HOSTS   ADDRESS      PORTS   AGE
+ingress.networking.k8s.io/circleguard   traefik   *       172.17.0.2   80      18m
+NAME                                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-kafka-0      Bound    pvc-2e04250b-ecef-4da8-bc81-2197d938c76e   5Gi        RWO            local-path     <unset>                 22m
+persistentvolumeclaim/data-neo4j-0      Bound    pvc-9c128dd4-13b9-4b2c-bc46-9cef14cd4487   5Gi        RWO            local-path     <unset>                 22m
+persistentvolumeclaim/data-postgres-0   Bound    pvc-593f8756-14da-4f5c-a5a9-30dabdeb4ca8   5Gi        RWO            local-path     <unset>                 22m

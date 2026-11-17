@@ -192,6 +192,16 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** una revisión del alcance del Sprint 2 (15 historias, 91 puntos y 2 días de atraso), dos preguntas de arquitectura para el equipo (infraestructura nueva desde cero y un k3s por ambiente, no EKS), el diseño y el plan, y el código de `infra/terraform/`: `run.sh` (Terraform, tflint y Trivy en Docker con versiones fijas), 5 módulos con 22 pruebas `terraform test`, el `bootstrap/` del estado remoto, los ambientes tools, dev, stage y prod, `write-hosts-env.sh`, el comando `drift`, el diagrama y el README.
 - **Verificación / cambios del equipo:** el equipo eligió la estrategia de infraestructura y la topología entre las opciones que propuso la IA, y exigió terminar el issue en un solo PR (la IA había planeado tres). La IA corrigió una cifra de costo suya (un k3s por ambiente no cuesta lo mismo que hoy: con prod en `t3.xlarge` son unos USD 0,50/h de cómputo). La documentación de HashiCorp mostró que el bloqueo con DynamoDB está deprecado, por lo que se configuró también `use_lockfile`. Se validó con `fmt`, `validate`, `terraform test`, `tflint` y Trivy, y con pruebas reales en AWS aprobadas por el usuario antes de crear nada: la primera encontró un límite de la cuenta (5 IP elásticas por región) que ni el código ni las pruebas podían mostrar, y se resolvió probando un ambiente a la vez. _Revisión: pendiente de `pierrecuevas`._
 
+### 2026-11-17 · `jmrojas06` · Los 8 servicios y el middleware en Kubernetes con Helm (#22)
+
+- **Contenido propio entregado:** el compose de la Parte 1 (`deploy/compose/`), los Dockerfiles, el `nginx` de la web, la versión de k3s que instala Terraform y la decisión del equipo de validar primero en local por el presupuesto de AWS.
+- **Prompts (textuales):**
+  1. *"ya entonces si no estoy mal completamos al 100% los dos primeros sprints, inciemos el sprint 2. Revisa el alcance y comencemos con el primer issue"*
+  2. *"continuemos con lo que podamos. Con un siguiente issue."*
+  3. Elección entre las opciones propuestas: **HU-15 en local con k3d**, sin gastar AWS.
+- **Qué produjo:** un chart de Helm (`deploy/helm/circleguard`) que genera los 8 servicios y la web desde una sola plantilla, con ConfigMap, Secret, Ingress, HPA y sondas de Actuator, el middleware con las imágenes y variables del compose, 38 pruebas de plantillas (helm-unittest), `run.sh` y `local.sh` (todo por Docker) y el README.
+- **Verificación / cambios del equipo:** se instaló en un k3s local de la misma versión que Terraform, con las imágenes reales, y la prueba de humo pasó: 7 sondas por el Ingress y el login real de `super_admin`. La prueba real encontró tres fallos que las pruebas de plantillas no podían ver: Neo4j no arrancaba porque su imagen toma toda variable `NEO4J_*` como configuración (`NEO4J_PASSWORD` → «Unrecognized setting»), una imagen no se había importado al clúster sin avisar, y Helm dejó la release en `failed` por esperar a ese pod. Los tres se corrigieron y quedó una prueba de regresión para el primero. Se decidió usar anclas de YAML y no la función `merge` porque `merge` pisa los `false`. _Revisión: pendiente de `pierrecuevas`._
+
 ---
 
 ## Reflexión crítica del equipo

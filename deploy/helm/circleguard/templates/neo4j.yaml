@@ -26,14 +26,16 @@ spec:
             - name: bolt
               containerPort: 7687
           env:
-            - name: NEO4J_PASSWORD
+            # OJO: la imagen de Neo4j toma TODA variable NEO4J_* como un ajuste de configuracion, asi que esta
+            # no puede llamarse NEO4J_PASSWORD ("Unrecognized setting: PASSWORD" y el pod no arranca).
+            - name: CG_NEO4J_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "cg.secretName" . }}
                   key: NEO4J_PASSWORD
-            # Kubernetes expande $(NEO4J_PASSWORD) porque esta definida antes en la lista.
+            # Kubernetes expande $(CG_NEO4J_PASSWORD) porque esta definida antes en la lista.
             - name: NEO4J_AUTH
-              value: neo4j/$(NEO4J_PASSWORD)
+              value: neo4j/$(CG_NEO4J_PASSWORD)
             - name: NEO4J_server_memory_heap_initial__size
               value: 256m
             - name: NEO4J_server_memory_heap_max__size
