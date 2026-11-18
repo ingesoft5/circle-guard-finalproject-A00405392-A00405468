@@ -1,0 +1,14 @@
+$ ./deploy/helm/local.sh tls-smoke      # helm upgrade --set ingress.tls.enabled=true --set ingress.host=circleguard.local
+[ok]    HTTPS con la CA propia responde 200 (certificado verificado)
+[tls] certificado entregado por el Ingress (verificado contra la CA propia):
+[tls]   subject=
+[tls]   issuer=CN=circleguard-ca
+[tls]   notBefore=Nov 18 21:40:34 2026 GMT
+[tls]   notAfter=Feb 16 21:40:34 2027 GMT
+[tls]   X509v3 Subject Alternative Name: critical
+[tls]       DNS:circleguard.local
+[tls]   Verification: OK
+[ok]    HTTPS sin la CA se rechaza (el certificado no es de una CA publica)
+[tls] HTTP -> 301 https://circleguard.local/
+[ok]    HTTP redirige a HTTPS (permanente)
+[tls] TODO OK

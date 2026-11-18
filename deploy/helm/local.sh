@@ -123,16 +123,18 @@ cmd_tls_smoke() {
   local host=circleguard.local ca="$STATE/ca.crt" code loc
   kc -n cert-manager get secret circleguard-ca -o jsonpath='{.data.ca\.crt}' | base64 -d > "$ca"
   kc -n "$NS" wait --for=condition=Ready certificate/circleguard-tls --timeout=120s >/dev/null
-  echo "[tls] certificado entregado por el Ingress:"
-  echo | openssl s_client -connect "127.0.0.1:$HTTPS_PORT" -servername "$host" 2>/dev/null \
-    | openssl x509 -noout -subject -issuer -dates -ext subjectAltName 2>/dev/null | sed 's/^/[tls]   /'
   check pasa  "HTTPS con la CA propia responde 200 (certificado verificado)" \
     curl -sf --max-time 15 --retry 5 --retry-delay 3 --retry-all-errors --cacert "$ca" --resolve "$host:$HTTPS_PORT:127.0.0.1" "https://$host:$HTTPS_PORT/healthz"
+  echo "[tls] certificado entregado por el Ingress (verificado contra la CA propia):"
+  echo | openssl s_client -connect "127.0.0.1:$HTTPS_PORT" -servername "$host" -CAfile "$ca" -verify_return_error 2>/dev/null \
+    | { openssl x509 -noout -subject -issuer -dates -ext subjectAltName; } 2>/dev/null | sed 's/^/[tls]   /'
+  echo | openssl s_client -connect "127.0.0.1:$HTTPS_PORT" -servername "$host" -CAfile "$ca" -verify_return_error 2>&1 \
+    | grep -E "Verification:" | sed 's/^/[tls]   /'
   check falla "HTTPS sin la CA se rechaza (el certificado no es de una CA publica)" \
     curl -sf --max-time 15 --resolve "$host:$HTTPS_PORT:127.0.0.1" "https://$host:$HTTPS_PORT/healthz"
   loc="$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 15 -H "Host: $host" "http://127.0.0.1:$HTTP_PORT/")"
   echo "[tls] HTTP -> $loc"
-  [[ "$loc" == "308 https://$host/"* ]] && echo "[ok]    HTTP redirige a HTTPS (308)" || { echo "[FALLA] HTTP no redirige a HTTPS"; SEC_FAIL=1; }
+  [[ "$loc" == 30[18]\ https://"$host"/* ]] && echo "[ok]    HTTP redirige a HTTPS (permanente)" || { echo "[FALLA] HTTP no redirige a HTTPS"; SEC_FAIL=1; }
   [[ $SEC_FAIL -eq 0 ]] && echo "[tls] TODO OK" || { echo "[tls] HAY FALLAS"; return 1; }
 }
 
@@ -156,8 +158,16 @@ cmd_security_smoke() {
   check falla "gateway -> postgres:5432 (bloqueado)"    inpod gateway 'nc -z -w 3 postgres 5432'
   check pasa  "gateway -> promotion:8088 (permitido: llama a /internal)" inpod gateway 'nc -z -w 3 promotion 8088'
   check falla "auth -> promotion:8088 (bloqueado: /internal no es suyo)" inpod auth 'nc -z -w 3 promotion 8088'
-  check falla "un pod cualquiera -> web:8080 (bloqueado: solo el Ingress)" \
-    kc -n "$NS" run np-probe --rm -i --restart=Never --image=busybox:1.37.0 -- nc -z -w 3 web 8080
+  # La ruta interna sin autenticacion (/internal/v1/...): solo la alcanza quien la necesita.
+  check pasa  "gateway -> GET promotion/internal/v1/users/x/status (HTTP real, permitido)" \
+    inpod gateway 'wget -q -T 5 -O /dev/null http://promotion:8088/internal/v1/users/x/status'
+  check falla "auth -> GET promotion/internal/v1/users/x/status (HTTP real, bloqueado)" \
+    inpod auth 'wget -q -T 5 -O /dev/null http://promotion:8088/internal/v1/users/x/status'
+  # Mismo pod de prueba, solo cambia la etiqueta: con la de web llega a auth, sin ella no (el control demuestra que el pod funciona).
+  check pasa  "pod con la etiqueta de web -> auth:8180 (permitido)" \
+    kc -n "$NS" run np-web --rm -i --restart=Never --labels=app.kubernetes.io/name=web --image=busybox:1.37.0 -- nc -z -w 3 auth 8180
+  check falla "pod sin etiqueta -> auth:8180 (bloqueado)" \
+    kc -n "$NS" run np-otro --rm -i --restart=Never --image=busybox:1.37.0 -- nc -z -w 3 auth 8180
   [[ $SEC_FAIL -eq 0 ]] && echo "[seguridad] TODO OK" || { echo "[seguridad] HAY FALLAS"; return 1; }
 }
 

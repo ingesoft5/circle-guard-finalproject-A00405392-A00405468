@@ -2,7 +2,7 @@
 # Escaneos de seguridad dentro de Docker con versiones fijas (como infra/terraform/run.sh): no hay que instalar nada.
 #
 #   ./security/run.sh secrets        gitleaks sobre TODO el historial de git (falla si hay un hallazgo no revisado)
-#   ./security/run.sh secrets-tree   gitleaks sobre los archivos actuales (incluye lo que aún no se commitea)
+#   ./security/run.sh secrets-tree   gitleaks sobre lo que git versionaria hoy (rastreado y nuevo; no mira los archivos ignorados)
 #   ./security/run.sh iac            Trivy sobre Dockerfile, chart de Helm y Terraform (HIGH/CRITICAL bloquea)
 #   ./security/run.sh deps           Trivy sobre las dependencias con lockfile (npm; HIGH/CRITICAL con arreglo bloquea)
 #   ./security/run.sh image [ref..]  Trivy sobre imágenes (HIGH/CRITICAL con arreglo bloquea); sin argumentos, las local/circleguard-*:local
@@ -54,8 +54,14 @@ cmd_secrets() {
 }
 
 cmd_secrets_tree() {
-  echo "== gitleaks: archivos actuales"
-  gitleaks dir /repo --config /repo/.gitleaks.toml --redact --no-banner --exit-code 1
+  echo "== gitleaks: archivos que git versionaria (los rastreados y los nuevos que no estan en .gitignore)"
+  # `gitleaks dir` lee todo el disco, incluidos los archivos ignorados (kubeconfig y secretos de las pruebas locales en
+  # deploy/helm/.local): esos nunca llegan al repositorio y no son lo que hay que vigilar. Se copia solo lo que git versionaria.
+  local tmp; tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' RETURN
+  git -C "$ROOT" ls-files -z --cached --others --exclude-standard | (cd "$ROOT" && tar --null -T - -cf -) | tar -xf - -C "$tmp" 2>/dev/null
+  [[ -n "$(ls -A "$tmp")" ]] || die "No se copio ningun archivo: el resultado no valdria"
+  docker run --rm -v "$tmp:/repo:ro" -v "$ROOT/.gitleaks.toml:/cfg.toml:ro" "$GITLEAKS_IMAGE" \
+    dir /repo --config /cfg.toml --redact --no-banner --exit-code 1
 }
 
 # Mismo criterio que en gitleaks: un escaneo que no miró lo que debía no vale. Se exige que el resumen de Trivy nombre

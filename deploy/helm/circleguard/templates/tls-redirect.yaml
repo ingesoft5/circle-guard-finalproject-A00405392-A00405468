@@ -1,6 +1,6 @@
 {{- if and .Values.ingress.enabled .Values.ingress.tls.enabled }}
 ---
-# HTTP -> HTTPS (308). El desafio de Let's Encrypt (/.well-known/acme-challenge/...) lo atiende otra ruta mas especifica que
+# HTTP -> HTTPS (redireccion permanente). El desafio de Let's Encrypt (/.well-known/acme-challenge/...) lo atiende otra ruta mas especifica que
 # crea cert-manager, asi que no pasa por esta redireccion.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
