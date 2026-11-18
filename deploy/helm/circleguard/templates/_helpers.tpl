@@ -24,3 +24,9 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | quote }}
 {{- define "cg.secretName" -}}
 {{- default "circleguard-secrets" .Values.existingSecret -}}
 {{- end }}
+
+{{/* Identidad de los pods: ServiceAccount sin permisos y sin token (ninguno habla con la API de Kubernetes). */}}
+{{- define "cg.podIdentity" -}}
+serviceAccountName: circleguard-workload
+automountServiceAccountToken: false
+{{- end }}

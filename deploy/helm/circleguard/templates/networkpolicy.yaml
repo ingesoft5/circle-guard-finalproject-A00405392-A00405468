@@ -1,0 +1,74 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- $np := .Values.networkPolicy }}
+---
+# HU-23: la red nace cerrada. Un pod solo recibe trafico si una regla de abajo lo permite (la tabla vive en
+# values.yaml: networkPolicy.allow). Es solo de entrada: la salida (DNS, LDAP, Kafka externo) queda libre.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+{{- range $target, $sources := $np.allow }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-to-{{ $target }}
+  labels:
+    {{- include "cg.labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $target }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- range $sources }}
+        {{- if eq . "ingress-controller" }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ $np.ingressController.namespace }}
+          podSelector:
+            matchLabels:
+              {{- toYaml $np.ingressController.podLabels | nindent 14 }}
+        {{- else }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ . }}
+        {{- end }}
+        {{- end }}
+{{- end }}
+{{- if $np.metricsFromNamespaces }}
+---
+# Prometheus (HU-20) lee /actuator de los servicios Spring desde otro namespace; el middleware y la web no se abren.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-metrics
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          {{- range $name, $s := .Values.services }}
+          {{- if and $s.enabled $s.spring }}
+          - {{ $name }}
+          {{- end }}
+          {{- end }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- range $np.metricsFromNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+        {{- end }}
+{{- end }}
+{{- end }}

@@ -180,3 +180,30 @@ redis:
   resources:
     requests: { cpu: 50m, memory: 32Mi }
     limits: { memory: 128Mi }
+
+# HU-23: la red nace cerrada (templates/networkpolicy.yaml). Cada entrada es "destino: quienes pueden llamarlo".
+# Sale de las URLs entre servicios de los application.yml y de los waitFor de arriba; si un servicio nuevo
+# llama a otro, se agrega aqui o la llamada se rechaza. Solo filtra entrada (puerto y pod, no la ruta HTTP).
+networkPolicy:
+  enabled: true
+  ingressController:            # k3s trae Traefik en kube-system
+    namespace: kube-system
+    podLabels: { app.kubernetes.io/name: traefik }
+  metricsFromNamespaces: [monitoring]   # Prometheus (HU-20) lee /actuator de los servicios Spring
+  allow:
+    web: [ingress-controller]
+    auth: [web, notification]
+    identity: [web, auth]
+    form: [web]
+    promotion: [web, dashboard, gateway]   # /internal/v1/... lo llama gateway; nginx de la web no lo publica
+    gateway: [web]
+    dashboard: [web]
+    file: [web]
+    notification: [web]
+    postgres: [identity, auth, form, promotion, dashboard]
+    kafka: [identity, form, promotion, notification]
+    neo4j: [promotion]
+    redis: [gateway, promotion]
+
+rbac:
+  viewer: true                  # Role de solo lectura (sin Secrets) y su ServiceAccount: circleguard-viewer

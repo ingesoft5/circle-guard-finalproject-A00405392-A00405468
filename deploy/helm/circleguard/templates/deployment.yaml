@@ -26,6 +26,7 @@ spec:
         checksum/config: {{ include "cg.configChecksum" $root }}
     spec:
       enableServiceLinks: false # las variables FOO_PORT de los Service chocan con la configuracion de Kafka y otros
+      {{- include "cg.podIdentity" . | nindent 6 }}
       {{- if $s.waitFor }}
       initContainers:
         {{- range $s.waitFor }}

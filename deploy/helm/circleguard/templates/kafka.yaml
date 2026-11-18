@@ -19,6 +19,7 @@ spec:
         {{- include "cg.labels" . | nindent 8 }}
     spec:
       enableServiceLinks: false # el Service "kafka" inyectaria KAFKA_PORT y la imagen lo leeria como configuracion
+      {{- include "cg.podIdentity" . | nindent 6 }}
       initContainers:
         # El volumen local-path nace como root y Kafka corre como usuario 1000.
         - name: fix-permissions
