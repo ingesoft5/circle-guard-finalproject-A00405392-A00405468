@@ -34,4 +34,8 @@ public interface UserNodeRepository extends Neo4jRepository<UserNode, String> {
            "AND u1 <> u2 " +
            "RETURN count(DISTINCT u2)")
     Long getUnconfirmedConnectionCount(String id);
+
+    /** HU-19: estado de salud leído del grafo (fuente de verdad); vacío si la persona no está en el grafo. */
+    @Query("MATCH (u:User {anonymousId: $id}) RETURN u.status")
+    Optional<String> findStatusByAnonymousId(String id);
 }
