@@ -64,8 +64,14 @@ cmd_seal() {
   local out="${SEALED_OUT:-$ROOT/deploy/sealed/$env.yaml}" bin cert
   bin="$(kubeseal_bin)"
   # Regenerar cambiaria la contrasena de una base ya inicializada: si el Secret existe no se toca.
-  if kubectl -n "$ns" get secret circleguard-secrets >/dev/null 2>&1; then
-    die "El Secret circleguard-secrets ya existe en $ns: no se regenera (cambiaria la contrasena de la base ya inicializada)"
+  # exists <recurso>: 0 si existe, 1 si no. Si no pudo preguntar (kubeconfig malo, API caida) NO se asume que no existe.
+  exists() {
+    local out; out="$(kubectl -n "$ns" get "$1" circleguard-secrets 2>&1)" && return 0
+    grep -qi 'not found' <<<"$out" && return 1
+    die "No pude consultar $1 en $ns (no se genera nada): $out"
+  }
+  if exists secret || exists sealedsecret; then
+    die "circleguard-secrets ya existe en $ns (Secret o SealedSecret): no se regenera (cambiaria la contrasena de la base ya inicializada)"
   fi
   cert="$(mktemp)"; trap 'rm -f "$cert"' RETURN
   kubectl get --raw "/api/v1/namespaces/kube-system/services/http:sealed-secrets-controller:8080/proxy/v1/cert.pem" > "$cert" \

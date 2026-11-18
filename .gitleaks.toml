@@ -24,3 +24,7 @@ paths = ['''(^|/)services/circleguard-identity-service/src/main/resources/applic
 description = "Falso positivo: curl sin credenciales contra la API de estado de SonarQube"
 regexTarget = "line"
 regexes = ['''curl -s localhost:\$SONAR_PORT/api/system/status''']
+
+[[allowlists]]
+description = "SealedSecret generado por deploy/helm/platform.sh seal: son datos CIFRADOS con la llave publica de un cluster (solo ese cluster los abre), pensados para versionarse; gitleaks los lee como claves por su entropia"
+paths = ['''(^|/)deploy/sealed/[^/]+\.yaml$''']

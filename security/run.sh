@@ -58,7 +58,10 @@ cmd_secrets_tree() {
   # `gitleaks dir` lee todo el disco, incluidos los archivos ignorados (kubeconfig y secretos de las pruebas locales en
   # deploy/helm/.local): esos nunca llegan al repositorio y no son lo que hay que vigilar. Se copia solo lo que git versionaria.
   local tmp; tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' RETURN
-  git -C "$ROOT" ls-files -z --cached --others --exclude-standard | (cd "$ROOT" && tar --null -T - -cf -) | tar -xf - -C "$tmp" 2>/dev/null
+  # Se excluyen los rastreados que ya no estan en disco; cualquier otro error de copia aborta el escaneo (no se escanea una copia parcial).
+  # LC_ALL=C: comm exige el mismo orden con el que se ordeno.
+  LC_ALL=C comm -z -23 <(git -C "$ROOT" ls-files -z --cached --others --exclude-standard | LC_ALL=C sort -z -u) \
+                       <(git -C "$ROOT" ls-files -z --deleted | LC_ALL=C sort -z -u) | (cd "$ROOT" && tar --null -T - -cf -) | tar -xf - -C "$tmp"
   [[ -n "$(ls -A "$tmp")" ]] || die "No se copio ningun archivo: el resultado no valdria"
   docker run --rm -v "$tmp:/repo:ro" -v "$ROOT/.gitleaks.toml:/cfg.toml:ro" "$GITLEAKS_IMAGE" \
     dir /repo --config /cfg.toml --redact --no-banner --exit-code 1
