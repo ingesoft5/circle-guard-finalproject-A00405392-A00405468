@@ -54,6 +54,22 @@ jenkins:
             value: "${STAGE_URL}"
           - key: PROD_URL
             value: "${PROD_URL}"
+          # HU-16: Terraform y Kubernetes en AWS. Todas con valor por defecto vacío: un Jenkins sin ellas arranca igual
+          # que antes (los jobs circleguard-infra/drift y TARGET=k8s fallan diciendo qué falta). Ninguna se versiona.
+          - key: TF_STATE_BUCKET
+            value: "${TF_STATE_BUCKET:-}"
+          - key: TF_VAR_admin_cidrs
+            value: "${TF_VAR_admin_cidrs:-}"
+          - key: TF_VAR_tools_cidr
+            value: "${TF_VAR_tools_cidr:-}"
+          - key: TF_VAR_ssh_public_key
+            value: "${TF_VAR_ssh_public_key:-}"
+          - key: TF_VAR_alert_email
+            value: "${TF_VAR_alert_email:-}"
+          - key: ECR_REGISTRY
+            value: "${ECR_REGISTRY:-}"
+          - key: ACME_EMAIL
+            value: "${ACME_EMAIL:-}"
 
 credentials:
   system:
@@ -71,6 +87,12 @@ credentials:
               scope: GLOBAL
               username: "ci"
               password: "${NEXUS_CI_PASSWORD}"
+          - usernamePassword:
+              id: "aws-terraform"
+              description: "AWS: Terraform (jobs circleguard-infra y circleguard-drift) y ECR. Usuario de IAM propio de Jenkins, no el de administración"
+              scope: GLOBAL
+              username: "${AWS_ACCESS_KEY_ID:-sin-configurar}"
+              password: "${AWS_SECRET_ACCESS_KEY:-sin-configurar}"
           - string:
               id: "sonar-token"
               description: "SonarQube: token de análisis"
@@ -166,6 +188,55 @@ jobs:
               }
             }
             scriptPath('jenkins/rollback.Jenkinsfile')
+            lightweight(true)
+          }
+        }
+      }
+  - script: |
+      // HU-16 (#23): Terraform gobernado por Jenkins. plan -> aprobación (prod y destroy) -> apply de UN ambiente.
+      pipelineJob('circleguard-infra') {
+        displayName('CircleGuard · Infraestructura (Terraform)')
+        description('Valida, escanea y aplica Terraform en un ambiente (dev, stage, prod o tools). En prod y en destroy pide aprobación. Corre jenkins/infra.Jenkinsfile de main.')
+        parameters {
+          choiceParam('ENV', ['dev', 'stage', 'prod', 'tools'], 'Ambiente de Terraform')
+          choiceParam('ACTION', ['plan', 'apply', 'destroy'], 'plan solo muestra; apply crea o cambia; destroy borra todo el ambiente')
+          stringParam('TARGET', '', 'Opcional: limita a un recurso o módulo (-target), p. ej. module.registry en tools')
+        }
+        logRotator { numToKeep(20) }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/${GITHUB_REPO}.git')
+                  credentials('github-token')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('jenkins/infra.Jenkinsfile')
+            lightweight(true)
+          }
+        }
+      }
+  - script: |
+      // HU-16 (#23): plan programado que detecta cambios hechos a mano en AWS (drift). Cada día; solo mira lo que está desplegado.
+      pipelineJob('circleguard-drift') {
+        displayName('CircleGuard · Drift de Terraform')
+        description('Plan programado (cada día) de cada ambiente desplegado: avisa si alguien cambió algo a mano en la consola. Corre jenkins/drift.Jenkinsfile de main.')
+        logRotator { numToKeep(30) }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/${GITHUB_REPO}.git')
+                  credentials('github-token')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('jenkins/drift.Jenkinsfile')
             lightweight(true)
           }
         }
