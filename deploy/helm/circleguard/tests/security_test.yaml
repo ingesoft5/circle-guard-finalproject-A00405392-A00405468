@@ -314,3 +314,29 @@ tests:
               mountPath: /tmp
             - name: w1
               mountPath: /app/uploads
+
+  # ---- La tabla de red no puede quedar atras de lo que los servicios esperan al arrancar ----
+  - it: falla si un servicio espera a un destino que la tabla no le permite (su initContainer se quedaria esperando para siempre)
+    template: templates/networkpolicy.yaml
+    set:
+      services.dashboard.waitFor: ["redis:6379"]
+    asserts:
+      - failedTemplate:
+          errorPattern: "networkPolicy.allow.redis"
+
+  - it: falla si un servicio espera a un destino que no tiene ninguna regla
+    template: templates/networkpolicy.yaml
+    set:
+      services.dashboard.waitFor: ["mysql:3306"]
+    asserts:
+      - failedTemplate:
+          errorPattern: "networkPolicy.allow.mysql"
+
+  - it: un servicio apagado no obliga a nada
+    template: templates/networkpolicy.yaml
+    set:
+      services.dashboard.enabled: false
+      services.dashboard.waitFor: ["redis:6379"]
+    asserts:
+      - isKind:
+          of: NetworkPolicy

@@ -14,7 +14,8 @@ RUN npx expo export -p web --output-dir dist
 # --- Etapa 2: nginx sin privilegios (usuario nginx, puerto 8080) ------------------
 FROM nginxinc/nginx-unprivileged:1.30-alpine
 # Parches de seguridad del sistema que la imagen base aun no trae (Trivy bloquea los HIGH/CRITICAL con arreglo). Se hace como
-# root y se vuelve a nginx (101) al final del archivo.
+# root y se vuelve a nginx (101) al final del archivo. Costo: dos construcciones de la misma version en fechas distintas pueden
+# traer paquetes distintos; la alternativa es fijar el digest de una base ya parchada.
 USER root
 RUN apk upgrade --no-cache
 # Upstreams por variable: la misma imagen sirve en dev, stage y prod (y en Kubernetes con otro resolver).

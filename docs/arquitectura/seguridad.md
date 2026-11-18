@@ -6,7 +6,7 @@ Qué protege cada capa, cómo se comprueba y qué riesgos se aceptaron. Evidenci
 |---|---|---|---|
 | Secretos en el repositorio | gitleaks sobre todo el historial y sobre lo que git versionaría; las excepciones están revisadas una por una | [`security/run.sh`](../../security/run.sh), [`.gitleaks.toml`](../../.gitleaks.toml) | `./security/run.sh check` (con control negativo) |
 | Secretos en el cluster | **Sealed Secrets**: los secretos se generan al azar, se sellan con la llave pública del cluster y solo el controlador los abre | [`platform.sh`](../../deploy/helm/platform.sh), chart (`existingSecret`) | el archivo sellado solo tiene datos cifrados; el Secret lo crea el controlador |
-| Red | **NetworkPolicies**: todo el tráfico de entrada se rechaza salvo la tabla `networkPolicy.allow` | [`networkpolicy.yaml`](../../deploy/helm/circleguard/templates/networkpolicy.yaml) | 73 pruebas del chart y `local.sh security-smoke` en un k3s real |
+| Red | **NetworkPolicies**: todo el tráfico de entrada se rechaza salvo la tabla `networkPolicy.allow` | [`networkpolicy.yaml`](../../deploy/helm/circleguard/templates/networkpolicy.yaml) | 76 pruebas del chart y `local.sh security-smoke` en un k3s real |
 | Pods | sin root, usuario numérico de la imagen, seccomp por defecto, disco de solo lectura, sin capacidades | [`deployment.yaml`](../../deploy/helm/circleguard/templates/deployment.yaml) | Trivy (KSV-0014 y KSV-0118) y el mismo `security-smoke` |
 | RBAC en Kubernetes | ServiceAccount de los pods **sin permisos ni token**; rol de solo lectura sin Secrets para operar y para el docente | [`rbac.yaml`](../../deploy/helm/circleguard/templates/rbac.yaml) | `kubectl auth can-i` (`security-smoke`) |
 | RBAC en Jenkins | tres niveles: administrador, desarrollador (lanza y aprueba, no administra) y lectura (docente); el anónimo no tiene nada | [`jenkins.yaml`](../../infra/tools/jenkins/casc/jenkins.yaml) | se aplica al reiniciar Jenkins; se comprueba en la ventana de HU-16 |
@@ -15,7 +15,9 @@ Qué protege cada capa, cómo se comprueba y qué riesgos se aceptaron. Evidenci
 
 ## Quién puede llamar a quién
 
-La red nace cerrada: `default-deny-ingress` rechaza toda entrada y cada flecha de abajo es una regla `allow-to-<destino>`. La tabla sale de las URLs entre servicios de los `application.yml` y de las dependencias que cada servicio espera al arrancar; si un servicio nuevo llama a otro, se agrega a `networkPolicy.allow` o la llamada se rechaza.
+La red nace cerrada: `default-deny-ingress` rechaza toda entrada y cada flecha de abajo es una regla `allow-to-<destino>`. La tabla sale de las URLs entre servicios de los `application.yml` y de las dependencias que cada servicio espera al arrancar; si un servicio nuevo llama a otro, se agrega a `networkPolicy.allow` o la llamada se rechaza. Para lo que un servicio espera al arrancar (`waitFor`) hay una guarda: si falta en la tabla, **`helm template` falla** en vez de dejar al pod esperando para siempre.
+
+**Aviso para la observabilidad (HU-20 a HU-22):** `default-deny-ingress` cubre **todo** el namespace de la aplicación. Prometheus puede leer `/actuator` desde el namespace `monitoring` (`metricsFromNamespaces`), pero cualquier pod que se despliegue *dentro* del namespace de la app (Jaeger, un collector de OpenTelemetry, Loki) queda aislado hasta agregarlo a `networkPolicy.allow`. Lo más simple es desplegar esos componentes en `monitoring`.
 
 ```mermaid
 flowchart LR
