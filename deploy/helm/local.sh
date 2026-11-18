@@ -8,6 +8,10 @@
 #                                     los argumentos extra van a helm (p. ej. --set config.privacy.kAnonymity=8)
 #   ./deploy/helm/local.sh secrets    imprime la ruta del archivo de secretos aleatorios de la prueba (lo crea si falta)
 #   ./deploy/helm/local.sh smoke      comprueba la web, las sondas y el login a través del Ingress
+#   ./deploy/helm/local.sh platform   instala cert-manager y Sealed Secrets (platform.sh); antes de `deploy` si se usa TLS o SEALED=1
+#   ./deploy/helm/local.sh seal       genera y sella los secretos de la prueba (Secret circleguard-secrets); luego SEALED=1 ... deploy
+#   ./deploy/helm/local.sh tls-smoke  comprueba HTTPS con la CA propia, la redireccion de HTTP y que sin la CA se rechaza
+#   ./deploy/helm/local.sh security-smoke  comprueba RBAC, NetworkPolicies y el endurecimiento de los pods en el cluster real
 #   ./deploy/helm/local.sh kubectl .. kubectl dentro del clúster (p. ej. kubectl get pods -A)
 #   ./deploy/helm/local.sh down       destruye el clúster
 set -euo pipefail
@@ -16,6 +20,7 @@ K3S_IMAGE="rancher/k3s:v1.37.2-k3s1"
 NAME="cg-k3s"
 NS="circleguard-local"
 HTTP_PORT="${HOST_HTTP_PORT:-8088}"
+HTTPS_PORT="${HOST_HTTPS_PORT:-8443}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STATE="$HERE/.local"   # ignorado por git: kubeconfig y secretos de la prueba
@@ -28,7 +33,7 @@ kc() { docker exec "$NAME" kubectl "$@"; }
 cmd_up() {
   docker inspect "$NAME" >/dev/null 2>&1 && die "Ya existe el clúster $NAME (./deploy/helm/local.sh down para borrarlo)"
   docker run -d --name "$NAME" --privileged --tmpfs /run --tmpfs /var/run \
-    -p 127.0.0.1:6443:6443 -p "127.0.0.1:$HTTP_PORT:80" \
+    -p 127.0.0.1:6443:6443 -p "127.0.0.1:$HTTP_PORT:80" -p "127.0.0.1:$HTTPS_PORT:443" \
     "$K3S_IMAGE" server --tls-san 127.0.0.1 >/dev/null
   echo "Esperando al nodo..."
   local i
@@ -71,10 +76,12 @@ secrets_file() {
 
 cmd_deploy() {
   [[ -f "$STATE/kubeconfig" ]] || die "No hay clúster: corre primero ./deploy/helm/local.sh up"
-  secrets_file >/dev/null
+  # SEALED=1: los secretos los crea Sealed Secrets (local.sh seal) y el chart usa el Secret que ya existe.
+  local secrets=(-f "deploy/helm/.local/values-secrets.yaml")
+  if [[ "${SEALED:-}" == 1 ]]; then secrets=(--set existingSecret=circleguard-secrets); else secrets_file >/dev/null; fi
   KUBECONFIG_FILE="$STATE/kubeconfig" "$HERE/run.sh" helm upgrade --install circleguard "$CHART" \
     --namespace "$NS" --create-namespace \
-    -f "$CHART/values-local.yaml" -f "deploy/helm/.local/values-secrets.yaml" \
+    -f "$CHART/values-local.yaml" "${secrets[@]}" \
     --wait --timeout 10m "$@"
   kc -n "$NS" get pods,hpa,ingress
 }
@@ -97,6 +104,63 @@ cmd_smoke() {
   [[ $fail -eq 0 ]] && echo "[smoke] TODO OK" || { echo "[smoke] HAY FALLAS"; return 1; }
 }
 
+cmd_platform() { KUBECONFIG_FILE="$STATE/kubeconfig" "$HERE/platform.sh" install; }
+cmd_seal() { SEALED_OUT="$STATE/sealed.yaml" KUBECONFIG_FILE="$STATE/kubeconfig" "$HERE/platform.sh" seal local "$NS"; }
+
+# Un resultado esperado por linea: "pasa" si el comando termina bien, "falla" si termina mal (un bloqueo cuenta como exito).
+SEC_FAIL=0
+check() {
+  local want="$1" what="$2" rc=0; shift 2
+  "$@" >/dev/null 2>&1 || rc=$?
+  if [[ ( "$want" == pasa && $rc -eq 0 ) || ( "$want" == falla && $rc -ne 0 ) ]]; then printf '[ok]    %s\n' "$what"
+  else printf '[FALLA] %s\n' "$what"; SEC_FAIL=1; fi
+}
+inpod() { local d="$1"; shift; kc -n "$NS" exec "deploy/$d" -- sh -c "$*"; }
+
+# TLS de verdad: la CA propia firma el certificado; con ella se verifica, sin ella se rechaza.
+# Requiere desplegar con: --set ingress.tls.enabled=true --set ingress.host=circleguard.local
+cmd_tls_smoke() {
+  local host=circleguard.local ca="$STATE/ca.crt" code loc
+  kc -n cert-manager get secret circleguard-ca -o jsonpath='{.data.ca\.crt}' | base64 -d > "$ca"
+  kc -n "$NS" wait --for=condition=Ready certificate/circleguard-tls --timeout=120s >/dev/null
+  echo "[tls] certificado entregado por el Ingress:"
+  echo | openssl s_client -connect "127.0.0.1:$HTTPS_PORT" -servername "$host" 2>/dev/null \
+    | openssl x509 -noout -subject -issuer -dates -ext subjectAltName 2>/dev/null | sed 's/^/[tls]   /'
+  check pasa  "HTTPS con la CA propia responde 200 (certificado verificado)" \
+    curl -sf --max-time 15 --retry 5 --retry-delay 3 --retry-all-errors --cacert "$ca" --resolve "$host:$HTTPS_PORT:127.0.0.1" "https://$host:$HTTPS_PORT/healthz"
+  check falla "HTTPS sin la CA se rechaza (el certificado no es de una CA publica)" \
+    curl -sf --max-time 15 --resolve "$host:$HTTPS_PORT:127.0.0.1" "https://$host:$HTTPS_PORT/healthz"
+  loc="$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 15 -H "Host: $host" "http://127.0.0.1:$HTTP_PORT/")"
+  echo "[tls] HTTP -> $loc"
+  [[ "$loc" == "308 https://$host/"* ]] && echo "[ok]    HTTP redirige a HTTPS (308)" || { echo "[FALLA] HTTP no redirige a HTTPS"; SEC_FAIL=1; }
+  [[ $SEC_FAIL -eq 0 ]] && echo "[tls] TODO OK" || { echo "[tls] HAY FALLAS"; return 1; }
+}
+
+# RBAC, NetworkPolicies y endurecimiento comprobados contra el cluster real (no contra el YAML).
+cmd_security_smoke() {
+  local viewer="--as=system:serviceaccount:$NS:circleguard-viewer" workload="--as=system:serviceaccount:$NS:circleguard-workload"
+  echo "== RBAC"
+  check pasa  "viewer puede leer pods"                  kc -n "$NS" auth can-i get pods "$viewer"
+  check falla "viewer NO puede leer Secrets"            kc -n "$NS" auth can-i get secrets "$viewer"
+  check falla "viewer NO puede borrar pods"             kc -n "$NS" auth can-i delete pods "$viewer"
+  check falla "viewer NO puede crear Deployments"       kc -n "$NS" auth can-i create deployments "$viewer"
+  check falla "los pods (circleguard-workload) NO pueden leer pods" kc -n "$NS" auth can-i get pods "$workload"
+  check falla "los pods NO pueden leer Secrets"         kc -n "$NS" auth can-i get secrets "$workload"
+  echo "== Endurecimiento de los pods"
+  check falla "auth no tiene el token de la API de Kubernetes montado" inpod auth 'ls /var/run/secrets/kubernetes.io/serviceaccount'
+  check falla "auth no puede escribir en su imagen (disco de solo lectura)" inpod auth 'touch /app/x'
+  check pasa  "auth si puede escribir en /tmp (volumen efimero)"        inpod auth 'touch /tmp/x'
+  check pasa  "auth corre como usuario 100 (no root)"   inpod auth '[ "$(id -u)" = 100 ]'
+  echo "== NetworkPolicies (quien puede llamar a quien)"
+  check pasa  "auth -> postgres:5432 (permitido)"       inpod auth 'nc -z -w 3 postgres 5432'
+  check falla "gateway -> postgres:5432 (bloqueado)"    inpod gateway 'nc -z -w 3 postgres 5432'
+  check pasa  "gateway -> promotion:8088 (permitido: llama a /internal)" inpod gateway 'nc -z -w 3 promotion 8088'
+  check falla "auth -> promotion:8088 (bloqueado: /internal no es suyo)" inpod auth 'nc -z -w 3 promotion 8088'
+  check falla "un pod cualquiera -> web:8080 (bloqueado: solo el Ingress)" \
+    kc -n "$NS" run np-probe --rm -i --restart=Never --image=busybox:1.37.0 -- nc -z -w 3 web 8080
+  [[ $SEC_FAIL -eq 0 ]] && echo "[seguridad] TODO OK" || { echo "[seguridad] HAY FALLAS"; return 1; }
+}
+
 cmd_down() {
   docker rm -f "$NAME" >/dev/null 2>&1 || true
   rm -f "$STATE/kubeconfig"
@@ -109,6 +173,10 @@ case "${1:-}" in
   secrets) secrets_file ;;
   deploy)  shift; cmd_deploy "$@" ;;
   smoke)   cmd_smoke ;;
+  platform) cmd_platform ;;
+  seal)    cmd_seal ;;
+  tls-smoke) cmd_tls_smoke ;;
+  security-smoke) cmd_security_smoke ;;
   kubectl) shift; kc "$@" ;;
   down)    cmd_down ;;
   *) sed -n '2,/^set -euo/p' "$0" | sed '$d'; exit 2 ;;
