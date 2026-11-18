@@ -1,0 +1,17 @@
+gitleaks v8.30.1 sobre el historial completo ANTES de la configuración (15 hallazgos; los valores no se imprimen)
+archivo | línea | commit | regla | clasificación
+infra/bootstrap/bootstrap-tools.sh | 106 | 940b6c9 | curl-auth-user | falso positivo: curl sin credenciales (localhost:$SONAR_PORT se leyó como usuario:clave)
+infra/bootstrap/bootstrap-tools.sh | 110 | 9e4c645 | curl-auth-user | falso positivo: curl sin credenciales (localhost:$SONAR_PORT se leyó como usuario:clave)
+services/circleguard-auth-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-dashboard-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-file-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-form-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-gateway-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-identity-service/bin/main/application.yml | 20 | 8703c1a | generic-api-key | valor de prueba en la salida compilada que dejó el import original (ya no está en main)
+services/circleguard-identity-service/bin/test/application.yml | 18 | 8703c1a | generic-api-key | valor de prueba en la salida compilada que dejó el import original (ya no está en main)
+services/circleguard-identity-service/src/main/resources/application.yml | 20 | 8703c1a | generic-api-key | valor de prueba que el import original dejó como secreto por defecto en identity; hoy lee ${VAULT_SECRET} sin valor por defecto
+services/circleguard-identity-service/src/test/java/com/circleguard/identity/util/IdentityEncryptionConverterTest.java | 10 | 8703c1a | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-identity-service/src/test/resources/application.yml | 18 | 8703c1a | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-identity-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-notification-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas
+services/circleguard-promotion-service/src/test/resources/config/application.yml | 8 | 2d6f7fa | generic-api-key | valor de prueba, solo lo usan las pruebas

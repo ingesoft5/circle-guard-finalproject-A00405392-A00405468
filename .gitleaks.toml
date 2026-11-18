@@ -1,0 +1,26 @@
+title = "CircleGuard: reglas de gitleaks (HU-23)"
+
+[extend]
+useDefault = true
+
+# Falsos positivos revisados uno por uno (ver docs/evidencias/sprint-2/hu-23-secretos.md). Cada entrada explica por qué es
+# segura; cualquier hallazgo que no esté aquí hace fallar el escaneo.
+
+[[allowlists]]
+description = "Valores de prueba: texto legible tipo «test-secret-…» que solo usan las pruebas; y la salida compilada (bin/) que el import original dejó versionada"
+paths = [
+  '''(^|/)services/[^/]+/src/test/resources/(config/)?application\.yml$''',
+  '''(^|/)services/circleguard-identity-service/src/test/java/com/circleguard/identity/util/IdentityEncryptionConverterTest\.java$''',
+  '''(^|/)services/[^/]+/bin/''',
+]
+
+[[allowlists]]
+description = "application.yml de identity en el commit del import original: traía el mismo valor de prueba como secreto por defecto; hoy lee ${VAULT_SECRET} sin valor por defecto"
+condition = "AND"
+commits = ["8703c1a091e5062e429771de7cc5659bc47d7182"]
+paths = ['''(^|/)services/circleguard-identity-service/src/main/resources/application\.yml$''']
+
+[[allowlists]]
+description = "Falso positivo: curl sin credenciales contra la API de estado de SonarQube"
+regexTarget = "line"
+regexes = ['''curl -s localhost:\$SONAR_PORT/api/system/status''']

@@ -226,6 +226,13 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** `deploy/helm/release.sh` con `deploy` (`--atomic`, motivo en el historial), `rollback` (elige la última revisión buena con otra versión; `--yes` en prod), `history --md` (registro con la versión de cada revisión) y un `selftest` de 8 casos que corre con `run.sh check`; la nota del chart y la política de cambios (§4 y §7) y la evidencia de una demo en k3s local.
 - **Verificación / cambios del equipo:** la demo desplegó dos versiones, intentó una inexistente (`--atomic` la revirtió sola y el comando salió con código 1) y ejecutó un rollback manual; cada paso se contrastó con `GET /version`. La primera idea de la IA (volver a la revisión inmediata anterior) fallaba tras un rollback porque esa revisión es la misma versión que ya corre; se cambió a «última revisión buena con otra versión». Se descubrió que Helm guarda solo 10 revisiones por defecto, que `helm history` no trae la versión de cada revisión y que `helm rollback` no acepta `--description`; las tres cosas quedaron en la evidencia. _Revisión: pendiente de `pierrecuevas`._
 
+### 2026-11-17 · `jmrojas06` · Seguridad: secretos en el repositorio y su historial (#30, primer tramo)
+
+- **Contenido propio entregado:** el código base y su historial (91 commits), `deploy.sh` y `lib.sh` que generan los secretos reales, y el criterio de la rúbrica («eliminados del historial o rotados»).
+- **Prompts (textuales):** *"continuemos, asi haya o no haya aprobado, continuemos con lo que se pueda"*; la IA eligió empezar HU-23 por los secretos porque no necesita AWS ni un PR abierto.
+- **Qué produjo:** `security/run.sh` (gitleaks v8.30.1 en Docker: historial, archivos actuales y un control negativo), `.gitleaks.toml` con excepciones acotadas y justificadas, la clasificación de los 15 hallazgos y la evidencia.
+- **Verificación / cambios del equipo:** la primera corrida dijo «no leaks found» con **0 commits escaneados** (dentro de un worktree gitleaks no encuentra el repositorio); la IA lo detectó al leer el log y el runner ahora falla si escanea 0 commits. Los 15 hallazgos se clasificaron comparando huellas (sin imprimir valores): 2 falsos positivos de `curl`, 12 valores de prueba legibles y 1 caso con consecuencias (el mismo valor de prueba como secreto por defecto de identity en el import original). La IA propuso no reescribir el historial por los SHA citados en el informe y las evidencias. _Revisión: pendiente de `pierrecuevas`._
+
 ---
 
 ## Reflexión crítica del equipo
