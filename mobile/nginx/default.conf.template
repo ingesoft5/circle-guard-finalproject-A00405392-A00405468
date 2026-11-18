@@ -36,6 +36,13 @@ server {
         return 200 "${APP_VERSION}\n";
     }
 
+    # Las rutas /internal/ son solo entre servicios (p. ej. el estado de salud que el gateway pide a
+    # promotion, HU-19): no se publican hacia afuera. Va antes del bloque /api/ porque nginx usa la
+    # primera expresión regular que coincide.
+    location ~ ^/api/[^/]+/internal/ {
+        return 404;
+    }
+
     # /api/<servicio>/<ruta>  ->  http://<upstream>/<ruta>
     # Se quita el prefijo con rewrite y proxy_pass va SIN ruta: así nginx vuelve a codificar la ruta
     # (espacios, tildes) y conserva el query string. Con proxy_pass http://$up/$captura la ruta llegaba

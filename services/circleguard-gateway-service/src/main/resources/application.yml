@@ -15,6 +15,15 @@ qr:
   secret: ${QR_SECRET}
   expiration: ${QR_EXPIRATION:300000}   # milisegundos (5 min). Antes era 300 = 0.3 s y el QR vencía al instante
 
+# HU-19 (#26): cache-aside del estado de salud (docs/patrones/cache-aside.md). Si el estado no está
+# en Redis, se pide a promotion (que lo lee de Neo4j) y se guarda en Redis con este TTL.
+circleguard:
+  promotion-service:
+    url: ${PROMOTION_URL:http://promotion:8088}   # nombre del servicio en compose y en Kubernetes
+    timeout: ${PROMOTION_TIMEOUT:2s}
+  status-cache:
+    ttl: ${STATUS_CACHE_TTL:5m}
+
 management:
   endpoints:
     web:
