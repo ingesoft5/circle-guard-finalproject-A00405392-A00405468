@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Tag;
+import com.circleguard.promotion.controller.InternalStatusController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,6 +76,9 @@ class SurveySubmittedIntegrationTest {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private InternalStatusController internalStatus;
+
     /** Productor con la configuración de form-service (application.yml: StringSerializer + JsonSerializer). */
     private KafkaTemplate<String, Object> formServiceProducer() {
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(Map.of(
@@ -112,6 +116,10 @@ class SurveySubmittedIntegrationTest {
         JsonNode statusChanged = readStatusChangedEvent(anonymousId);
         assertThat(statusChanged.path("anonymousId").asText()).isEqualTo(anonymousId);
         assertThat(statusChanged.path("status").asText()).isEqualTo("SUSPECT");
+        // HU-19: si Redis pierde la clave, el gateway pregunta a esta ruta, que lee el grafo
+        redisTemplate.delete("user:status:" + anonymousId);
+        assertThat(internalStatus.getStatus(anonymousId)).containsEntry("status", "SUSPECT");
+        assertThat(internalStatus.getStatus(UUID.randomUUID().toString())).containsEntry("status", "ACTIVE");
     }
 
     @Test

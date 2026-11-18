@@ -148,6 +148,7 @@ services:
     image: ${REGISTRY:-local}/circleguard/circleguard-gateway-service:${IMAGE_TAG:?Define IMAGE_TAG}
     environment:
       <<: *spring-env
+      PROMOTION_URL: http://promotion:8088   # HU-19: cache-aside del estado cuando no está en Redis
     depends_on:
       redis: { condition: service_healthy }
 

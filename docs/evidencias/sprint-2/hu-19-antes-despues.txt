@@ -1,0 +1,31 @@
+######## ANTES: imagenes construidas desde main (6c0f71b)
+health_user = 24dd8a65-283e-4ae7-8f08-2a3751a48fd9
+## 1. el centro de salud confirma el caso (POST /api/v1/health/confirmed como super_admin)
+neo4j antes: "ACTIVE"
+HTTP 200
+neo4j: "CONFIRMED" | redis: CONFIRMED
+puerta: {"valid":false,"status":"RED","message":"Access Denied: Health Risk Detected"}
+## 2. se reinicia Redis (sin persistencia en el compose: pierde los datos)
+neo4j: "CONFIRMED" | redis: ''
+puerta: {"valid":true,"status":"GREEN","message":"Welcome to Campus"}
+redis despues de validar: '' ttl=-2
+## 3. la ruta interna no se publica por el nginx
+GET /api/promotion/internal/v1/users/<id>/status -> HTTP 404
+## 4. limpieza: el caso se resuelve
+resolve HTTP 200
+
+######## DESPUES: imagenes de la rama feat/26-cache-aside
+health_user = 9d55564c-2f07-4e2b-9473-1ebb4864dc1a
+## 1. el centro de salud confirma el caso (POST /api/v1/health/confirmed como super_admin)
+neo4j antes: "ACTIVE"
+HTTP 200
+neo4j: "CONFIRMED" | redis: CONFIRMED
+puerta: {"valid":false,"status":"RED","message":"Access Denied: Health Risk Detected"}
+## 2. se reinicia Redis (sin persistencia en el compose: pierde los datos)
+neo4j: "CONFIRMED" | redis: ''
+puerta: {"valid":false,"status":"RED","message":"Access Denied: Health Risk Detected"}
+redis despues de validar: 'CONFIRMED' ttl=299
+## 3. la ruta interna no se publica por el nginx
+GET /api/promotion/internal/v1/users/<id>/status -> HTTP 404
+## 4. limpieza: el caso se resuelve
+resolve HTTP 200
