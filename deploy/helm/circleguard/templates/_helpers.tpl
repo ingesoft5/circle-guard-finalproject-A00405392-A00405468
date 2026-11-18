@@ -47,3 +47,13 @@ readOnlyRootFilesystem: true
 capabilities:
   drop: ["ALL"]
 {{- end }}
+
+{{/* El Ingress controller como origen permitido en una NetworkPolicy (k3s: Traefik en kube-system). */}}
+{{- define "cg.ingressControllerPeer" -}}
+- namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: {{ .namespace }}
+  podSelector:
+    matchLabels:
+      {{- toYaml .podLabels | nindent 6 }}
+{{- end }}

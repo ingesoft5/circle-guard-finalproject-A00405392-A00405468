@@ -29,12 +29,7 @@ spec:
     - from:
         {{- range $sources }}
         {{- if eq . "ingress-controller" }}
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ $np.ingressController.namespace }}
-          podSelector:
-            matchLabels:
-              {{- toYaml $np.ingressController.podLabels | nindent 14 }}
+        {{- include "cg.ingressControllerPeer" $np.ingressController | nindent 8 }}
         {{- else }}
         - podSelector:
             matchLabels:
@@ -70,5 +65,23 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: {{ . }}
         {{- end }}
+{{- end }}
+{{- if .Values.ingress.tls.enabled }}
+---
+# cert-manager levanta un pod temporal en este namespace para el desafio HTTP-01; Traefik tiene que poder llegar a el.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-acme-solver
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      acme.cert-manager.io/http01-solver: "true"
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- include "cg.ingressControllerPeer" $np.ingressController | nindent 8 }}
 {{- end }}
 {{- end }}

@@ -37,6 +37,10 @@ ingress:
   className: traefik        # el Ingress controller que trae k3s
   host: ""                  # vacio = cualquier host
   annotations: {}
+  tls:
+    enabled: false          # true: cert-manager emite el certificado y Traefik atiende solo HTTPS (exige ingress.host)
+    clusterIssuer: circleguard-ca   # circleguard-ca (CA propia, local) o letsencrypt (nube; ver deploy/helm/platform)
+    secretName: circleguard-tls
 
 # Valores por defecto de cada servicio. Se copian a cada uno con la clave de fusion de YAML (<<: *svc):
 # Helm sobreescribe por servicio con coalesce (respeta los false), a diferencia de la funcion merge.

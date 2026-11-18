@@ -1,16 +1,31 @@
 {{- if .Values.ingress.enabled }}
+{{- $tls := .Values.ingress.tls }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: circleguard
   labels:
     {{- include "cg.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- if or .Values.ingress.annotations $tls.enabled }}
   annotations:
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if $tls.enabled }}
+    # cert-manager pide el certificado a este emisor y lo guarda en spec.tls[].secretName; Traefik solo escucha en HTTPS
+    # (el HTTP se redirige en tls-redirect.yaml).
+    cert-manager.io/cluster-issuer: {{ $tls.clusterIssuer }}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    {{- end }}
   {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if $tls.enabled }}
+  tls:
+    - hosts:
+        - {{ required "ingress.host es obligatorio cuando ingress.tls.enabled=true (un certificado necesita un nombre)" .Values.ingress.host | quote }}
+      secretName: {{ $tls.secretName }}
+  {{- end }}
   rules:
     - {{- with .Values.ingress.host }}
       host: {{ . }}

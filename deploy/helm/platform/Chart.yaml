@@ -1,0 +1,6 @@
+apiVersion: v2
+name: circleguard-platform
+description: Emisores de certificados de cert-manager (HU-23). Se instala despues de cert-manager con deploy/helm/platform.sh.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

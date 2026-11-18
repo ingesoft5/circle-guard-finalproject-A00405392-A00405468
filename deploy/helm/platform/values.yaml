@@ -1,0 +1,5 @@
+# Sin correo solo existe la CA propia (local, y ambientes donde no hay un dominio publico).
+# Con un correo se crean tambien letsencrypt-staging y letsencrypt (HTTP-01 por el Ingress de Traefik).
+acme:
+  email: ""
+  ingressClass: traefik
