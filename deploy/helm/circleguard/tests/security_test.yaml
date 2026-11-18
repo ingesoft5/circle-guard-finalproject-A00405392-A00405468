@@ -225,3 +225,92 @@ tests:
       - equal:
           path: spec.template.spec.automountServiceAccountToken
           value: false
+
+  # ---- Contexto de seguridad de los pods de la aplicacion (Trivy: KSV-0118 y KSV-0014) ----
+  - it: los servicios Spring corren sin root, con el usuario de su imagen y el perfil seccomp por defecto
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsNonRoot: true
+            runAsUser: 100
+            runAsGroup: 101
+            seccompProfile: { type: RuntimeDefault }
+
+  - it: la web corre como nginx (101)
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 101
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: el sistema de archivos del contenedor y el de los initContainers es de solo lectura
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext
+          value:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+
+  - it: lo que un servicio necesita escribir va en volumenes efimeros, no en la imagen
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: w0
+              emptyDir: {}
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: w0
+              mountPath: /tmp
+
+  - it: nginx escribe en /tmp y en /etc/nginx/conf.d (ahi genera su configuracion al arrancar)
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: w0
+              mountPath: /tmp
+            - name: w1
+              mountPath: /etc/nginx/conf.d
+
+  - it: el servicio de archivos puede guardar subidas en su directorio de trabajo
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: file
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: w0
+              mountPath: /tmp
+            - name: w1
+              mountPath: /app/uploads

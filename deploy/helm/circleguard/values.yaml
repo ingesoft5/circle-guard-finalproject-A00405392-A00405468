@@ -56,6 +56,9 @@ _svc: &svc
     startupPath: /actuator/health/liveness
     livenessPath: /actuator/health/liveness
     readinessPath: /actuator/health/readiness
+  runAsUser: 100               # `app` en las imagenes Spring (alpine: adduser -S); runAsNonRoot no acepta nombres
+  runAsGroup: 101
+  writablePaths: [/tmp]        # el resto del disco del contenedor es de solo lectura; Tomcat y la JVM escriben en /tmp
   waitFor: []
   env: {}
   secretEnv: []
@@ -112,6 +115,7 @@ services:
     <<: *svc
     image: circleguard-file-service
     port: 8085
+    writablePaths: [/tmp, /app/uploads]
 
   notification:
     <<: *svc
@@ -129,6 +133,9 @@ services:
     spring: false
     image: circleguard-web
     port: 8080
+    runAsUser: 101               # nginx (nginx-unprivileged)
+    runAsGroup: 101
+    writablePaths: [/tmp, /etc/nginx/conf.d]   # nginx genera default.conf desde la plantilla al arrancar
     resources:
       requests: { cpu: 50m, memory: 64Mi }
       limits: { memory: 128Mi }
