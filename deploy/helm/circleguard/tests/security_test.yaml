@@ -1,0 +1,342 @@
+suite: seguridad de red y RBAC (HU-23)
+templates:
+  - templates/networkpolicy.yaml
+  - templates/rbac.yaml
+  - templates/deployment.yaml
+  - templates/postgres.yaml
+  - templates/kafka.yaml
+  - templates/neo4j.yaml
+  - templates/redis.yaml
+set:
+  global:
+    imageTag: "1.2.3"
+tests:
+  # ---- NetworkPolicy: quien puede llamar a quien ----
+  - it: rechaza por defecto todo el trafico de entrada del namespace
+    template: templates/networkpolicy.yaml
+    documentSelector:
+      path: metadata.name
+      value: default-deny-ingress
+    asserts:
+      - equal:
+          path: spec.podSelector
+          value: {}
+      - equal:
+          path: spec.policyTypes
+          value: [Ingress]
+      - notExists:
+          path: spec.ingress
+
+  - it: la ruta interna de promotion solo la alcanzan web, dashboard y gateway
+    template: templates/networkpolicy.yaml
+    documentSelector:
+      path: metadata.name
+      value: allow-to-promotion
+    asserts:
+      - equal:
+          path: spec.podSelector.matchLabels["app.kubernetes.io/name"]
+          value: promotion
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - podSelector: { matchLabels: { app.kubernetes.io/name: web } }
+            - podSelector: { matchLabels: { app.kubernetes.io/name: dashboard } }
+            - podSelector: { matchLabels: { app.kubernetes.io/name: gateway } }
+
+  - it: Postgres solo lo alcanzan los servicios que lo usan (ni web ni gateway)
+    template: templates/networkpolicy.yaml
+    documentSelector:
+      path: metadata.name
+      value: allow-to-postgres
+    asserts:
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - podSelector: { matchLabels: { app.kubernetes.io/name: identity } }
+            - podSelector: { matchLabels: { app.kubernetes.io/name: auth } }
+            - podSelector: { matchLabels: { app.kubernetes.io/name: form } }
+            - podSelector: { matchLabels: { app.kubernetes.io/name: promotion } }
+            - podSelector: { matchLabels: { app.kubernetes.io/name: dashboard } }
+
+  - it: la web solo la alcanza el Ingress controller, no otros pods del namespace
+    template: templates/networkpolicy.yaml
+    documentSelector:
+      path: metadata.name
+      value: allow-to-web
+    asserts:
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+              podSelector: { matchLabels: { app.kubernetes.io/name: traefik } }
+
+  - it: cada pieza del middleware tiene su propia regla de entrada
+    template: templates/networkpolicy.yaml
+    asserts:
+      - hasDocuments:
+          count: 15 # default-deny + 13 destinos + metricas
+      - isKind:
+          of: NetworkPolicy
+
+  - it: con networkPolicy.enabled=false no se crea ninguna
+    template: templates/networkpolicy.yaml
+    set:
+      networkPolicy.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: Prometheus solo puede leer los servicios Spring que estan encendidos
+    template: templates/networkpolicy.yaml
+    set:
+      services.file.enabled: false
+    documentSelector:
+      path: metadata.name
+      value: allow-metrics
+    asserts:
+      - equal:
+          path: spec.podSelector.matchExpressions[0].values
+          value: [auth, dashboard, form, gateway, identity, notification, promotion]
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: monitoring } }
+
+  - it: sin namespaces de metricas no se abre nada para Prometheus
+    template: templates/networkpolicy.yaml
+    set:
+      networkPolicy.metricsFromNamespaces: []
+    asserts:
+      - hasDocuments:
+          count: 14
+
+  # ---- RBAC ----
+  - it: la identidad de los pods no tiene token
+    template: templates/rbac.yaml
+    documentSelector:
+      path: metadata.name
+      value: circleguard-workload
+    asserts:
+      - isKind:
+          of: ServiceAccount
+      - equal:
+          path: automountServiceAccountToken
+          value: false
+
+  - it: el rol de solo lectura no incluye Secrets ni verbos de escritura
+    template: templates/rbac.yaml
+    documentSelector:
+      path: kind
+      value: Role
+    asserts:
+      - notContains:
+          path: rules[0].resources
+          content: secrets
+      - equal:
+          path: rules[0].verbs
+          value: [get, list, watch]
+      - equal:
+          path: rules[1].verbs
+          value: [get, list, watch]
+      - equal:
+          path: rules[2].verbs
+          value: [get, list, watch]
+      - equal:
+          path: rules[3].verbs
+          value: [get, list, watch]
+      - lengthEqual:
+          path: rules
+          count: 4
+
+  - it: el rol de solo lectura se liga a su ServiceAccount
+    template: templates/rbac.yaml
+    documentSelector:
+      path: kind
+      value: RoleBinding
+    asserts:
+      - equal:
+          path: subjects[0].name
+          value: circleguard-viewer
+      - equal:
+          path: roleRef.name
+          value: circleguard-viewer
+
+  - it: sin rbac.viewer solo queda la identidad sin permisos
+    template: templates/rbac.yaml
+    set:
+      rbac.viewer: false
+    asserts:
+      - hasDocuments:
+          count: 1
+
+  # ---- Ningun pod monta el token de la API de Kubernetes ----
+  - it: los Deployments de los servicios usan la identidad sin token
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: circleguard-workload
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  - it: Postgres usa la identidad sin token
+    template: templates/postgres.yaml
+    documentSelector:
+      path: kind
+      value: StatefulSet
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: circleguard-workload
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  - it: Kafka usa la identidad sin token
+    template: templates/kafka.yaml
+    documentSelector:
+      path: kind
+      value: StatefulSet
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  - it: Neo4j usa la identidad sin token
+    template: templates/neo4j.yaml
+    documentSelector:
+      path: kind
+      value: StatefulSet
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  - it: Redis usa la identidad sin token
+    template: templates/redis.yaml
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  # ---- Contexto de seguridad de los pods de la aplicacion (Trivy: KSV-0118 y KSV-0014) ----
+  - it: los servicios Spring corren sin root, con el usuario de su imagen y el perfil seccomp por defecto
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsNonRoot: true
+            runAsUser: 100
+            runAsGroup: 101
+            seccompProfile: { type: RuntimeDefault }
+
+  - it: la web corre como nginx (101)
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 101
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: el sistema de archivos del contenedor y el de los initContainers es de solo lectura
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext
+          value:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+
+  - it: lo que un servicio necesita escribir va en volumenes efimeros, no en la imagen
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: auth
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: w0
+              emptyDir: {}
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: w0
+              mountPath: /tmp
+
+  - it: nginx escribe en /tmp y en /etc/nginx/conf.d (ahi genera su configuracion al arrancar)
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: web
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: w0
+              mountPath: /tmp
+            - name: w1
+              mountPath: /etc/nginx/conf.d
+
+  - it: el servicio de archivos puede guardar subidas en su directorio de trabajo
+    template: templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: file
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: w0
+              mountPath: /tmp
+            - name: w1
+              mountPath: /app/uploads
+
+  # ---- La tabla de red no puede quedar atras de lo que los servicios esperan al arrancar ----
+  - it: falla si un servicio espera a un destino que la tabla no le permite (su initContainer se quedaria esperando para siempre)
+    template: templates/networkpolicy.yaml
+    set:
+      services.dashboard.waitFor: ["redis:6379"]
+    asserts:
+      - failedTemplate:
+          errorPattern: "networkPolicy.allow.redis"
+
+  - it: falla si un servicio espera a un destino que no tiene ninguna regla
+    template: templates/networkpolicy.yaml
+    set:
+      services.dashboard.waitFor: ["mysql:3306"]
+    asserts:
+      - failedTemplate:
+          errorPattern: "networkPolicy.allow.mysql"
+
+  - it: un servicio apagado no obliga a nada
+    template: templates/networkpolicy.yaml
+    set:
+      services.dashboard.enabled: false
+      services.dashboard.waitFor: ["redis:6379"]
+    asserts:
+      - isKind:
+          of: NetworkPolicy

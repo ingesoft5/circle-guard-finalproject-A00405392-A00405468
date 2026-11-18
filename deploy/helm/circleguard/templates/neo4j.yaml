@@ -19,6 +19,7 @@ spec:
         {{- include "cg.labels" . | nindent 8 }}
     spec:
       enableServiceLinks: false
+      {{- include "cg.podIdentity" . | nindent 6 }}
       containers:
         - name: neo4j
           image: {{ .Values.neo4j.image }}

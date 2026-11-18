@@ -1,0 +1,23 @@
+$ ./security/run.sh image   # las 9 imágenes construidas del código actual; exit 0 = nada nuevo sin revisar
+== trivy image: local/circleguard-auth-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-dashboard-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-file-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-form-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-gateway-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-identity-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-notification-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-promotion-service:local (HIGH/CRITICAL con arreglo bloquea)
+== trivy image: local/circleguard-web:local (HIGH/CRITICAL con arreglo bloquea)
+exit=0
+
+Línea base medida SIN el archivo de excepciones (HIGH/CRITICAL con arreglo) — servicio | hallazgos | de ellos CRITICAL | en el sistema operativo:
+auth|48|11|0
+identity|51|11|0
+form|48|9|0
+promotion|58|12|0
+gateway|50|10|0
+dashboard|44|9|0
+file|43|9|0
+notification|73|12|0
+CVE únicos en los 8 servicios: 74
+web (nginx 1.30 + apk upgrade): 0 hallazgos (antes, con nginx 1.27: 68 = 65 HIGH + 3 CRITICAL, todos del sistema operativo)

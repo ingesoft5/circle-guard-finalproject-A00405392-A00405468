@@ -1,0 +1,51 @@
+suite: emisores de certificados (HU-23)
+templates:
+  - templates/issuers.yaml
+tests:
+  - it: por defecto hay una CA propia (autofirmada -> CA -> emisor) y ningun emisor de Let's Encrypt
+    asserts:
+      - hasDocuments:
+          count: 3
+      - equal:
+          path: spec.ca.secretName
+          value: circleguard-ca
+        documentSelector:
+          path: spec.ca.secretName
+          value: circleguard-ca
+      - equal:
+          path: spec.isCA
+          value: true
+        documentSelector:
+          path: kind
+          value: Certificate
+
+  - it: con un correo se agregan los emisores de Let's Encrypt (prueba y real) por HTTP-01 a traves de Traefik
+    set:
+      acme.email: equipo@example.com
+    asserts:
+      - hasDocuments:
+          count: 5
+      - equal:
+          path: spec.acme.server
+          value: https://acme-v02.api.letsencrypt.org/directory
+        documentSelector:
+          path: metadata.name
+          value: letsencrypt
+      - equal:
+          path: spec.acme.server
+          value: https://acme-staging-v02.api.letsencrypt.org/directory
+        documentSelector:
+          path: metadata.name
+          value: letsencrypt-staging
+      - equal:
+          path: spec.acme.email
+          value: equipo@example.com
+        documentSelector:
+          path: metadata.name
+          value: letsencrypt
+      - equal:
+          path: spec.acme.solvers[0].http01.ingress.ingressClassName
+          value: traefik
+        documentSelector:
+          path: metadata.name
+          value: letsencrypt

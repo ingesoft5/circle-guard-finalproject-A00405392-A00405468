@@ -1,0 +1,147 @@
+$ TRIVY_SKIP_DB_UPDATE=true ./security/run.sh check   # 18 nov 2026, rama feat/30-seguridad-secretos
+== gitleaks: historial completo de git (todas las ramas, incluidas las locales sin subir)
+9:47PM INF Unknown SCM platform. Use --platform to include links in findings. host=
+9:47PM INF 87 commits scanned.
+9:47PM INF scanned ~2955845 bytes (2.96 MB) in 574ms
+9:47PM INF no leaks found
+== gitleaks: archivos que git versionaria (los rastreados y los nuevos que no estan en .gitignore)
+9:47PM INF scanned ~1944506 bytes (1.94 MB) in 345ms
+9:47PM INF no leaks found
+== trivy config: Dockerfile, chart de Helm y Terraform (HIGH/CRITICAL bloquea)
+2026-11-18T21:47:52Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-11-18T21:47:52Z	INFO	[checks-client] Using existing checks from cache	path="/cache/policy/content"
+2026-11-18T21:47:53Z	INFO	[terraform scanner] Scanning root module	file_path="infra/terraform/bootstrap"
+2026-11-18T21:47:53Z	INFO	[terraform scanner] Scanning root module	file_path="infra/terraform/envs/dev"
+2026-11-18T21:47:53Z	INFO	[terraform scanner] Scanning root module	file_path="infra/terraform/envs/prod"
+2026-11-18T21:47:53Z	INFO	[terraform scanner] Scanning root module	file_path="infra/terraform/envs/stage"
+2026-11-18T21:47:53Z	INFO	[terraform scanner] Scanning root module	file_path="infra/terraform/envs/tools"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-dynamodb-table-customer-key" range="infra/terraform/bootstrap/main.tf:78-95"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="infra/terraform/bootstrap/main.tf:21-27"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="infra/terraform/bootstrap/main.tf:39-47"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="infra/terraform/modules/network/main.tf:81"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="infra/terraform/modules/storage/main.tf:3-5"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="infra/terraform/modules/storage/main.tf:17-25"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="infra/terraform/modules/observability/main.tf:4-6"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="infra/terraform/modules/network/main.tf:81"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="infra/terraform/modules/storage/main.tf:3-5"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="infra/terraform/modules/storage/main.tf:17-25"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="infra/terraform/modules/observability/main.tf:4-6"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="infra/terraform/modules/network/main.tf:81"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="infra/terraform/modules/storage/main.tf:3-5"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="infra/terraform/modules/storage/main.tf:17-25"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="infra/terraform/modules/observability/main.tf:4-6"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="infra/terraform/modules/network/main.tf:81"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="infra/terraform/modules/observability/main.tf:4-6"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="infra/terraform/modules/registry/main.tf:14"
+2026-11-18T21:47:53Z	ERROR	[kubernetes scanner] Failed to parse file	file_path="deploy/helm/platform/templates/issuers.yaml" err="unmarshal yaml: yaml: line 8: could not find expected ':'"
+2026-11-18T21:47:54Z	INFO	Detected config files	num=33
+
+Report Summary
+
+┌──────────────────────────────────────────────────────┬────────────┬───────────────────┐
+│                        Target                        │    Type    │ Misconfigurations │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/configmap.yaml     │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/deployment.yaml    │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/hpa.yaml           │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/ingress.yaml       │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/kafka.yaml         │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/neo4j.yaml         │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/networkpolicy.yaml │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/postgres.yaml      │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/rbac.yaml          │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/redis.yaml         │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/secret.yaml        │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/circleguard/templates/service.yaml       │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ deploy/helm/platform/templates/issuers.yaml          │    helm    │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/bootstrap                            │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/bootstrap/main.tf                    │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/envs/dev                             │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/envs/prod                            │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/envs/stage                           │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/envs/tools                           │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/modules/network/main.tf              │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/modules/observability/main.tf        │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/modules/registry/main.tf             │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/terraform/modules/storage/main.tf              │ terraform  │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ infra/tools/jenkins/Dockerfile                       │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ mobile/Dockerfile                                    │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-auth-service/Dockerfile         │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-dashboard-service/Dockerfile    │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-file-service/Dockerfile         │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-form-service/Dockerfile         │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-gateway-service/Dockerfile      │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-identity-service/Dockerfile     │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-notification-service/Dockerfile │ dockerfile │         0         │
+├──────────────────────────────────────────────────────┼────────────┼───────────────────┤
+│ services/circleguard-promotion-service/Dockerfile    │ dockerfile │         0         │
+└──────────────────────────────────────────────────────┴────────────┴───────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+== trivy fs: dependencias con lockfile (HIGH/CRITICAL con arreglo bloquea)
+2026-11-18T21:47:54Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-18T21:47:54Z	INFO	[npm] Run "npm install" to collect the license information of packages	dir="mobile/node_modules"
+2026-11-18T21:47:54Z	INFO	[npm] Run "npm install" to collect the license information of packages	dir="tests/e2e-playwright/node_modules"
+2026-11-18T21:47:54Z	INFO	Suppressing dependencies for development and testing. To display them, try the '--include-dev-deps' flag.
+2026-11-18T21:47:54Z	INFO	Number of language-specific files	num=2
+2026-11-18T21:47:54Z	INFO	[npm] Detecting vulnerabilities...
+
+Report Summary
+
+┌──────────────────────────┬──────┬─────────────────┐
+│          Target          │ Type │ Vulnerabilities │
+├──────────────────────────┼──────┼─────────────────┤
+│ mobile/package-lock.json │ npm  │        0        │
+└──────────────────────────┴──────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+2026-11-18T21:47:54Z	INFO	Some vulnerabilities have been ignored/suppressed. Use the "--show-suppressed" flag to display them.
+ok   un token falso hace fallar gitleaks
+ok   un directorio sin secretos pasa gitleaks
+ok   un Dockerfile sin USER hace fallar trivy config
+ok   un Dockerfile con USER pasa trivy config
+ok   una dependencia crítica hace fallar trivy fs
+ok   un directorio sin dependencias pasa trivy fs

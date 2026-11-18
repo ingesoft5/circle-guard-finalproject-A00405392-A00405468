@@ -30,6 +30,7 @@ spec:
         {{- include "cg.labels" . | nindent 8 }}
     spec:
       enableServiceLinks: false
+      {{- include "cg.podIdentity" . | nindent 6 }}
       containers:
         - name: postgres
           image: {{ .Values.postgres.image }}

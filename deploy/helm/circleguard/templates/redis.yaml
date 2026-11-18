@@ -18,6 +18,7 @@ spec:
         {{- include "cg.labels" . | nindent 8 }}
     spec:
       enableServiceLinks: false
+      {{- include "cg.podIdentity" . | nindent 6 }}
       containers:
         - name: redis
           image: {{ .Values.redis.image }}
