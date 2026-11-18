@@ -3,9 +3,10 @@
 # que instala Terraform en los nodos (infra/terraform), así que lo que funciona aquí funciona allá.
 #
 #   ./deploy/helm/local.sh up         crea el clúster y espera a que el nodo esté Ready
-#   ./deploy/helm/local.sh images     carga en el clúster las imágenes local/circleguard-*:local (se construyen aparte)
+#   ./deploy/helm/local.sh images [etiqueta]  carga en el clúster las imágenes local/circleguard-*:<etiqueta> (por defecto local; se construyen aparte)
 #   ./deploy/helm/local.sh deploy [..] helm upgrade --install con values-local.yaml y secretos aleatorios;
 #                                     los argumentos extra van a helm (p. ej. --set config.privacy.kAnonymity=8)
+#   ./deploy/helm/local.sh secrets    imprime la ruta del archivo de secretos aleatorios de la prueba (lo crea si falta)
 #   ./deploy/helm/local.sh smoke      comprueba la web, las sondas y el login a través del Ingress
 #   ./deploy/helm/local.sh kubectl .. kubectl dentro del clúster (p. ej. kubectl get pods -A)
 #   ./deploy/helm/local.sh down       destruye el clúster
@@ -42,15 +43,15 @@ cmd_up() {
 }
 
 cmd_images() {
-  local img n=0
+  local img n=0 tag="${1:-local}"
   while read -r img; do
     echo "cargando $img"
     docker save "$img" | docker exec -i "$NAME" ctr -n k8s.io images import - >/dev/null
     # ctr puede terminar sin error y no importar nada (visto con auth): se comprueba que la imagen quedó en el clúster.
     docker exec "$NAME" ctr -n k8s.io images ls -q | grep -qx "docker.io/$img" || die "No quedó cargada la imagen $img"
     n=$((n + 1))
-  done < <(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^local/circleguard-.*:local$' | sort -u)
-  [[ $n -gt 0 ]] || die "No hay imágenes local/circleguard-*:local (constrúyelas con docker build -f services/<svc>/Dockerfile ...)"
+  done < <(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E "^local/circleguard-.*:${tag}\$" | sort -u)
+  [[ $n -gt 0 ]] || die "No hay imágenes local/circleguard-*:$tag (constrúyelas con docker build -f services/<svc>/Dockerfile ...)"
   echo "$n imágenes cargadas"
 }
 
@@ -104,10 +105,11 @@ cmd_down() {
 
 case "${1:-}" in
   up)      cmd_up ;;
-  images)  cmd_images ;;
+  images)  shift; cmd_images "$@" ;;
+  secrets) secrets_file ;;
   deploy)  shift; cmd_deploy "$@" ;;
   smoke)   cmd_smoke ;;
   kubectl) shift; kc "$@" ;;
   down)    cmd_down ;;
-  *) sed -n '2,10p' "$0"; exit 2 ;;
+  *) sed -n '2,/^set -euo/p' "$0" | sed '$d'; exit 2 ;;
 esac
