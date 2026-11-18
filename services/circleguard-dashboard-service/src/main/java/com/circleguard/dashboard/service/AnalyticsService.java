@@ -38,11 +38,12 @@ public class AnalyticsService {
         
         List<Map<String, Object>> rows = jdbc.queryForList(query, locationId);
         
-        // Apply K-Anonymity
+        // Apply K-Anonymity con el mismo K que el filtro (antes aquí había un 5 propio)
+        int k = kAnonymityFilter.k();
         rows.forEach(row -> {
             long count = (long) row.get("entry_count");
-            if (count < 5) {
-                row.put("entry_count", "<5");
+            if (count < k) {
+                row.put("entry_count", "<" + k);
                 row.put("note", "Insufficient data for privacy");
             }
         });

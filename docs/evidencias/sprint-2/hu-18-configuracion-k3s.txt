@@ -1,0 +1,45 @@
+HU-18 (#25) - Configuracion externa y feature toggle, probado en k3s local (2026-11-17)
+Misma imagen local/circleguard-auth-service:local en las dos corridas; solo cambian los valores del chart.
+
+=== 1) helm upgrade --install con los valores por defecto (values.yaml)
+--- ConfigMap circleguard-config (lo que ve Kubernetes)
+FEATURE_LDAP_LOGIN=true
+PRIVACY_K_ANONYMITY=5
+--- Variables dentro del pod de auth (lo que ve el proceso)
+true 5
+--- Log de arranque de auth (lo que decidio la aplicacion)
+2026-11-17T20:37:39.634Z  INFO 1 --- [circleguard-auth-service] [           main] c.c.a.s.DualChainAuthenticationProvider  : Feature toggle circleguard.features.ldap-login-enabled = true
+--- Smoke (web, sondas y login real a traves del Ingress)
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+
+=== 2) helm upgrade --set config.features.ldapLoginEnabled=false --set config.privacy.kAnonymity=8
+--- ConfigMap circleguard-config (lo que ve Kubernetes)
+FEATURE_LDAP_LOGIN=false
+PRIVACY_K_ANONYMITY=8
+--- Variables dentro del pod de auth (lo que ve el proceso)
+false 8
+--- Log de arranque de auth (lo que decidio la aplicacion)
+2026-11-17T20:38:05.071Z  INFO 1 --- [circleguard-auth-service] [           main] c.c.a.s.DualChainAuthenticationProvider  : Feature toggle circleguard.features.ldap-login-enabled = false
+--- Smoke (web, sondas y login real a traves del Ingress)
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+
+--- helm history (dos revisiones del mismo release; mismas imagenes, ningun cambio de codigo entre ellas)
+REVISION  UPDATED                   STATUS      CHART             DESCRIPTION
+1         Tue Nov 17 20:32:46 2026  superseded  circleguard-0.1.0 Install complete
+2         Tue Nov 17 20:37:49 2026  deployed    circleguard-0.1.0 Upgrade complete
+
+--- pods un minuto despues de la revision 2 (los que leen el ConfigMap se reiniciaron solos por la anotacion checksum/config)
+auth-544857c477-bhg5m        1/1  Running  AGE 70s
+form-d4fd697d5-48k4x         1/1  Running  AGE 70s
+gateway-78496765b-4lppw      1/1  Running  AGE 70s
+identity-dcbbc59d6-flnqr     1/1  Running  AGE 70s
+promotion-54cf68945c-7q5pg   1/1  Running  AGE 70s
+web-b48f655f8-7dg4c          1/1  Running  AGE 69s
+postgres-0 / neo4j-0 / kafka-0 / redis-...   Running  AGE 6m12s   <- el middleware NO se reinicio: no lee el ConfigMap
+
+Notas:
+- Se quitaron las lineas 'Defaulted container' y 'Found 2 pods' que kubectl escribe en stderr; el resto es la salida tal cual.
+- El helm history y la lista de pods se tomaron con comandos aparte justo despues, porque el script de la demo fallo al llamar a helm history (ruta relativa del kubeconfig dentro de Docker).
+- Dashboard no esta en el k3s local (values-local.yaml lo desactiva por memoria): el K se comprueba en el ConfigMap y en las pruebas de KAnonymityConfigTest, no en un pod.

@@ -48,7 +48,7 @@ docker build -f mobile/Dockerfile -t local/circleguard-web:local .
 
 ./deploy/helm/local.sh up        # crea el clúster
 ./deploy/helm/local.sh images    # carga las imágenes local/circleguard-*:local
-./deploy/helm/local.sh deploy    # helm upgrade --install con values-local.yaml y secretos aleatorios
+./deploy/helm/local.sh deploy    # helm upgrade --install con values-local.yaml y secretos aleatorios (los argumentos extra van a helm: --set config.privacy.kAnonymity=8)
 ./deploy/helm/local.sh smoke     # web, sondas, versión y login a través del Ingress
 ./deploy/helm/local.sh down      # lo borra
 ```

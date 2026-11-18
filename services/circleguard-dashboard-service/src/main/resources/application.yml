@@ -18,6 +18,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 circleguard:
+  # HU-18 (#25): K del k-anonimato como configuración externa (ConfigMap).
+  privacy:
+    k-anonymity: ${PRIVACY_K_ANONYMITY:5}
   promotion-service:
     url: ${PROMOTION_URL:http://localhost:8088}
     timeout: ${PROMOTION_TIMEOUT:2s}             # conexión y lectura; sin timeout el circuito no se entera

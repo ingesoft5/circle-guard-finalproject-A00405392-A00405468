@@ -4,7 +4,8 @@
 #
 #   ./deploy/helm/local.sh up         crea el clúster y espera a que el nodo esté Ready
 #   ./deploy/helm/local.sh images     carga en el clúster las imágenes local/circleguard-*:local (se construyen aparte)
-#   ./deploy/helm/local.sh deploy     helm upgrade --install con values-local.yaml y secretos aleatorios
+#   ./deploy/helm/local.sh deploy [..] helm upgrade --install con values-local.yaml y secretos aleatorios;
+#                                     los argumentos extra van a helm (p. ej. --set config.privacy.kAnonymity=8)
 #   ./deploy/helm/local.sh smoke      comprueba la web, las sondas y el login a través del Ingress
 #   ./deploy/helm/local.sh kubectl .. kubectl dentro del clúster (p. ej. kubectl get pods -A)
 #   ./deploy/helm/local.sh down       destruye el clúster
@@ -73,7 +74,7 @@ cmd_deploy() {
   KUBECONFIG_FILE="$STATE/kubeconfig" "$HERE/run.sh" helm upgrade --install circleguard "$CHART" \
     --namespace "$NS" --create-namespace \
     -f "$CHART/values-local.yaml" -f "deploy/helm/.local/values-secrets.yaml" \
-    --wait --timeout 10m
+    --wait --timeout 10m "$@"
   kc -n "$NS" get pods,hpa,ingress
 }
 
@@ -104,7 +105,7 @@ cmd_down() {
 case "${1:-}" in
   up)      cmd_up ;;
   images)  cmd_images ;;
-  deploy)  cmd_deploy ;;
+  deploy)  shift; cmd_deploy "$@" ;;
   smoke)   cmd_smoke ;;
   kubectl) shift; kc "$@" ;;
   down)    cmd_down ;;
