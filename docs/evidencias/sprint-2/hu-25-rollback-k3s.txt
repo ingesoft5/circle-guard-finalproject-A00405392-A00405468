@@ -1,0 +1,86 @@
+
+HU-25 (#32) - despliegue, rollback y registro de cambios con release.sh, en k3s local (17 nov 2026, las horas de Helm van en UTC)
+
+== 1. Primer despliegue: version 'local' (revision 1)
+$ deploy/helm/release.sh deploy local local --commit 1111111 --build 1
+== local: desplegando local (--atomic, espera hasta 10m)
+Release "circleguard" does not exist. Installing it now.
+NAME: circleguard
+LAST DEPLOYED: Wed Nov 18 01:47:17 2026
+NAMESPACE: circleguard-local
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+CircleGuard local instalado en el namespace circleguard-local (ambiente local).
+
+  kubectl -n circleguard-local get pods,hpa,ingress
+  kubectl -n circleguard-local rollout status deployment/web
+
+La web queda en el Ingress "circleguard": GET /version devuelve local.
+Volver a la version anterior: helm rollback circleguard -n circleguard-local
+
+version activa segun la web: local
+
+== 2. Segundo despliegue: version 'v2' (revision 2)
+$ deploy/helm/release.sh deploy local v2 --commit 2222222 --build 2
+== local: desplegando v2 (--atomic, espera hasta 10m)
+Release "circleguard" has been upgraded. Happy Helming!
+NAME: circleguard
+LAST DEPLOYED: Wed Nov 18 01:52:22 2026
+NAMESPACE: circleguard-local
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NOTES:
+CircleGuard v2 instalado en el namespace circleguard-local (ambiente local).
+
+  kubectl -n circleguard-local get pods,hpa,ingress
+  kubectl -n circleguard-local rollout status deployment/web
+
+La web queda en el Ingress "circleguard": GET /version devuelve v2.
+Volver a la version anterior: helm rollback circleguard -n circleguard-local
+
+version activa segun la web: v2
+
+== 3. Despliegue que falla: la version 'v404' no existe, los pods nunca quedan listos (HELM_TIMEOUT=100s)
+$ deploy/helm/release.sh deploy local v404 --commit 3333333 --build 3
+== local: desplegando v404 (--atomic, espera hasta 100s)
+Error: UPGRADE FAILED: release circleguard failed, and has been rolled back due to atomic being set: context deadline exceeded
+
+exit del despliegue: 1 (distinto de 0 = fallo, como debe ser)
+
+version activa tras el fallo (--atomic revirtio solo): v2
+
+historial tras el intento fallido:
+$ deploy/helm/release.sh history local
+REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCRIPTION                                            
+1       	Wed Nov 18 01:47:17 2026	superseded	circleguard-0.1.0	0.0.0      	deploy local · commit 1111111 · build #1               
+2       	Wed Nov 18 01:52:22 2026	superseded	circleguard-0.1.0	0.0.0      	deploy v2 · commit 2222222 · build #2                  
+3       	Wed Nov 18 01:52:56 2026	failed    	circleguard-0.1.0	0.0.0      	Upgrade "circleguard" failed: context deadline exceeded
+4       	Wed Nov 18 01:54:38 2026	deployed  	circleguard-0.1.0	0.0.0      	Rollback to 2                                          
+
+== 4. Rollback manual sin indicar revision: vuelve a la ultima revision buena con otra version
+$ deploy/helm/release.sh rollback local
+== local: revisión actual 4 -> volver a la 1
+Rollback was a success! Happy Helming!
+== local: versión activa: local
+REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCRIPTION                                            
+3       	Wed Nov 18 01:52:56 2026	failed    	circleguard-0.1.0	0.0.0      	Upgrade "circleguard" failed: context deadline exceeded
+4       	Wed Nov 18 01:54:38 2026	superseded	circleguard-0.1.0	0.0.0      	Rollback to 2                                          
+5       	Wed Nov 18 01:54:45 2026	deployed  	circleguard-0.1.0	0.0.0      	Rollback to 1                                          
+
+version activa segun la web: local
+
+== 5. Registro de cambios del ambiente (release.sh history local --md)
+# Registro de cambios: local
+
+Namespace `circleguard-local` · release `circleguard` · generado con `release.sh history local --md` el 2026-11-18 01:55Z.
+
+| Revisión | Fecha | Estado | Versión | Motivo |
+|---|---|---|---|---|
+| 1 | Wed Nov 18 01:47:17 2026 | superseded | local | deploy local · commit 1111111 · build #1 |
+| 2 | Wed Nov 18 01:52:22 2026 | superseded | v2 | deploy v2 · commit 2222222 · build #2 |
+| 3 | Wed Nov 18 01:52:56 2026 | failed | v404 | Upgrade "circleguard" failed: context deadline exceeded |
+| 4 | Wed Nov 18 01:54:38 2026 | superseded | v2 | Rollback to 2 |
+| 5 | Wed Nov 18 01:54:45 2026 | deployed | local | Rollback to 1 |

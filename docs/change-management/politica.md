@@ -36,6 +36,7 @@ El tipo lo decide el autor al abrir el PR (plantilla de PR, sección *Tipo de ca
 | Versión | `vMAJOR.MINOR.PATCH` (tag de Git + GitHub Release). `fix`/`perf` → PATCH, `feat` → MINOR, `!`/`BREAKING CHANGE` → MAJOR. Primera versión `v1.0.0` | semantic-release en `main` ([detalle](../release-notes/README.md)) |
 | Imágenes | `<registro>/circleguard/<servicio>:X.Y.Z` y `:sha-<7 caracteres>`; **nunca `latest`**. Labels OCI `version`, `revision`, `source` | `dockerPublish` en el pipeline |
 | Ambientes | `/opt/circleguard/RELEASES`: fecha, versión, motivo (`deploy` o `rollback`), commit, URL del build | `deploy.sh` en cada despliegue |
+| Ambientes en Kubernetes | El historial de Helm del namespace `circleguard-<ambiente>`: revisión, fecha, estado, versión y motivo (`deploy <versión> · commit · build` o `Rollback to N`). Se exporta con `release.sh history <ambiente> --md` | `release.sh deploy` y `release.sh rollback` ([detalle](../../deploy/helm/README.md#desplegar-revertir-y-registro-de-cambios)) |
 | Ramas | `<tipo>/<issue>-<descripcion>` (`feat/15-entrega-continua`, `hotfix/<descripcion>`) | Autor ([CONTRIBUTING §1](../../CONTRIBUTING.md)) |
 | Issues y PR | `resp: A (jmrojas06)` / `resp: B (pierrecuevas)`, entregable `E1.x`/`E2.x`, `change-request`, `bug` | Autor |
 
@@ -58,3 +59,5 @@ Con una versión en la mano se puede llegar al commit, al PR, al issue, a la RFC
 ## 7. Rollback
 
 El *rollback* no es un camino especial: es volver a desplegar una versión anterior, ya publicada e inmutable, con el job `circleguard-rollback` (`ENV`, `VERSION`). Se dispara cuando el *smoke test* falla tras un despliegue, cuando los E2E fallan en stage o cuando un usuario reporta una regresión en prod. Queda registrado en `RELEASES` con el motivo `rollback`, en el build del job y en Discord. Si el problema es de datos (migración incompatible), el rollback requiere además una RFC de emergencia con el plan de recuperación de datos.
+
+**En Kubernetes (Parte 2)** es lo mismo con otra herramienta: `release.sh rollback <ambiente>` ejecuta `helm rollback` a la última revisión buena con **otra versión** que la activa (o a la que se indique), y deja una revisión nueva con el motivo `Rollback to N` en el registro del ambiente. Un despliegue que no deja los pods listos a tiempo se revierte **solo** (`--atomic`), sin esperar a que alguien lo note. En `prod` el comando exige `--yes` (o la aprobación del paso en el pipeline). Evidencia: [`hu-25-rollback.md`](../evidencias/sprint-2/hu-25-rollback.md).
