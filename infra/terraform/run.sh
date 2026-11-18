@@ -21,17 +21,27 @@ mkdir -p "$CACHE/terraform-plugins" "$CACHE/tflint" "$CACHE/trivy"
 
 die() { printf 'run.sh: %s\n' "$*" >&2; exit 1; }
 command -v docker >/dev/null || die "Falta Docker"
+# Jenkins corre en un contenedor: las rutas de los -v se traducen a las del host (scripts/hostpath.sh).
+source "$ROOT/scripts/hostpath.sh"
 
 # Terraform en un contenedor. $1 = carpeta relativa al repo; el resto, argumentos de terraform.
+#   Credenciales: AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY del entorno (Jenkins) o, si no están, el perfil de ~/.aws
+#   (portátil), montado en solo lectura.
+#   TF_VAR_* (admin_cidrs, ssh_public_key...) entran al contenedor: sustituyen a terraform.tfvars, que no se versiona.
 tf() {
   local dir="$1"; shift
-  local tty=()
+  local tty=() cred=() vars=() v
   [[ -t 0 && -t 1 ]] && tty=(-it)
-  docker run --rm "${tty[@]}" -u "$(id -u):$(id -g)" \
+  if [[ -n "${AWS_ACCESS_KEY_ID:-}" ]]; then
+    cred=(-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN)
+  else
+    cred=(-e AWS_SHARED_CREDENTIALS_FILE=/aws/credentials -e AWS_CONFIG_FILE=/aws/config -v "$(hostpath "$HOME/.aws"):/aws:ro")
+  fi
+  while IFS= read -r v; do vars+=(-e "$v"); done < <(compgen -e | grep '^TF_VAR_' || true)
+  docker run --rm "${tty[@]}" -u "$(id -u):$(id -g)" "${cred[@]}" "${vars[@]}" \
     -e HOME=/tmp -e TF_IN_AUTOMATION=1 -e TF_PLUGIN_CACHE_DIR=/plugin-cache \
-    -e AWS_SHARED_CREDENTIALS_FILE=/aws/credentials -e AWS_CONFIG_FILE=/aws/config \
     -e AWS_REGION="${AWS_REGION:-us-east-1}" \
-    -v "$ROOT:/work" -v "$HOME/.aws:/aws:ro" -v "$CACHE/terraform-plugins:/plugin-cache" \
+    -v "$(hostpath "$ROOT"):/work" -v "$(hostpath "$CACHE/terraform-plugins"):/plugin-cache" \
     -w "/work/$dir" "hashicorp/terraform:$TF_VERSION" "$@"
 }
 
@@ -63,7 +73,7 @@ cmd_test() {
 
 cmd_lint() {
   local run=(docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -e TFLINT_PLUGIN_DIR=/plugins
-    -v "$ROOT:/data" -v "$CACHE/tflint:/plugins" -w /data/infra/terraform
+    -v "$(hostpath "$ROOT"):/data" -v "$(hostpath "$CACHE/tflint"):/plugins" -w /data/infra/terraform
     "ghcr.io/terraform-linters/tflint:$TFLINT_VERSION")
   "${run[@]}" --init --config=/data/.tflint.hcl
   "${run[@]}" --recursive --config=/data/.tflint.hcl
@@ -71,7 +81,7 @@ cmd_lint() {
 
 cmd_scan() {
   docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -e TRIVY_CACHE_DIR=/cache \
-    -v "$ROOT:/work" -v "$CACHE/trivy:/cache" -w /work \
+    -v "$(hostpath "$ROOT"):/work" -v "$(hostpath "$CACHE/trivy"):/cache" -w /work \
     "aquasec/trivy:$TRIVY_VERSION" config --severity HIGH,CRITICAL --exit-code 1 \
     --skip-dirs '**/.terraform' infra/terraform
 }
@@ -86,6 +96,11 @@ run_env() {
   if [[ "$rel" == bootstrap ]]; then
     tf "$dir" init -input=false >/dev/null
   else
+    # En Jenkins no hay un backend.hcl guardado: se arma con variables (la cuenta de AWS no va al repositorio).
+    if [[ -n "${TF_STATE_BUCKET:-}" ]]; then
+      printf 'bucket         = "%s"\nregion         = "%s"\ndynamodb_table = "%s"\nuse_lockfile   = true\nencrypt        = true\n' \
+        "$TF_STATE_BUCKET" "${AWS_REGION:-us-east-1}" "${TF_STATE_LOCK_TABLE:-circleguard-tflock}" > "$HERE/backend.hcl"
+    fi
     [[ -f "$HERE/backend.hcl" ]] || die "Falta infra/terraform/backend.hcl. Crealo con: ./infra/terraform/run.sh bootstrap output -raw backend_config > infra/terraform/backend.hcl"
     tf "$dir" init -input=false -reconfigure -backend-config=../../backend.hcl >/dev/null
   fi

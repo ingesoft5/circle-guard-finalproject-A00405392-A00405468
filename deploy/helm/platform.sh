@@ -26,11 +26,13 @@ CACHE="${CIRCLEGUARD_CACHE:-$HOME/.cache/circleguard-iac}"
 die() { printf 'platform.sh: %s\n' "$*" >&2; exit 1; }
 command -v docker >/dev/null || die "Falta Docker"
 [[ -n "${KUBECONFIG_FILE:-}" && -f "$KUBECONFIG_FILE" ]] || die "Pasa KUBECONFIG_FILE=<ruta al kubeconfig del cluster>"
+# Jenkins corre en un contenedor: las rutas de los -v se traducen a las del host (scripts/hostpath.sh).
+source "$ROOT/scripts/hostpath.sh"
 
 helm() { "$HERE/run.sh" helm "$@"; }
 kubectl() {
-  docker run --rm -i --network host -v "$KUBECONFIG_FILE:/kube/config:ro" -e KUBECONFIG=/kube/config \
-    -v "$ROOT:/work:ro" -w /work --entrypoint kubectl "$K3S_IMAGE" "$@"
+  docker run --rm -i --network host -v "$(hostpath "$KUBECONFIG_FILE"):/kube/config:ro" -e KUBECONFIG=/kube/config \
+    -v "$(hostpath "$ROOT"):/work:ro" -w /work --entrypoint kubectl "$K3S_IMAGE" "$@"
 }
 
 cmd_install() {
