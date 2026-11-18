@@ -1,0 +1,97 @@
+# Excepciones de Trivy, revisadas una por una (HU-23). Todo hallazgo que no este aqui hace fallar el escaneo.
+misconfigurations:
+  - id: DS-0031
+    paths: ["mobile/Dockerfile"]
+    statement: "Falso positivo: las variables *_UPSTREAM son direcciones host:puerto de los servicios (p. ej. AUTH_UPSTREAM=auth:8180), no secretos; Trivy marca cualquier ENV cuyo nombre contenga AUTH."
+
+  # Middleware con imagenes oficiales (Postgres, Kafka, Neo4j, Redis). Los 9 servicios propios SI cumplen estas dos reglas.
+  # Arrancan como root para ajustar la propiedad del volumen local-path (es hostPath: kubelet no le aplica fsGroup) y bajan
+  # privilegios ellas mismas (postgres, redis y neo4j en su entrypoint; kafka con el initContainer fix-permissions del chart),
+  # y escriben fuera de sus volumenes (/var/run/postgresql, config de Kafka, conf y logs de Neo4j), asi que con el disco de
+  # solo lectura no arrancan. Riesgo acotado por: NetworkPolicy (solo sus clientes llegan), sin token de la API de Kubernetes,
+  # allowPrivilegeEscalation=false y capabilities=drop ALL donde la imagen lo admite. La salida real es usar volumenes CSI
+  # con fsGroup y correr con el usuario de la imagen; vence el 2027-01-31 para obligar a revisarla.
+  - id: KSV-0014
+    paths:
+      - deploy/helm/circleguard/templates/postgres.yaml
+      - deploy/helm/circleguard/templates/kafka.yaml
+      - deploy/helm/circleguard/templates/neo4j.yaml
+      - deploy/helm/circleguard/templates/redis.yaml
+    expired_at: 2027-01-31
+    statement: "Middleware con imagen oficial que arranca como root y escribe fuera de sus volumenes; ver el comentario de arriba."
+  - id: KSV-0118
+    paths:
+      - deploy/helm/circleguard/templates/postgres.yaml
+      - deploy/helm/circleguard/templates/kafka.yaml
+      - deploy/helm/circleguard/templates/neo4j.yaml
+      - deploy/helm/circleguard/templates/redis.yaml
+    expired_at: 2027-01-31
+    statement: "Middleware con imagen oficial que arranca como root para ajustar el volumen local-path; ver el comentario de arriba."
+
+vulnerabilities:
+  # Dependencias npm de la web (mobile/package-lock.json), revisadas el 2026-11-18: 74 hallazgos (73 HIGH, 1 CRITICAL) en 17 paquetes.
+  # Todos vienen de la cadena de compilacion de Expo (empaquetador, servidor de desarrollo, utilidades de archivos): corren en la
+  # etapa build del Dockerfile con expo export y NO viajan en la imagen final, que solo lleva nginx y el dist estatico. La correccion
+  # pide subir Expo (npm audit fix --force propone expo 58, un cambio mayor) y npm audit fix reescribe ~9.000 lineas del lockfile:
+  # va en una historia propia con prueba de la app. Un CVE NUEVO, aunque sea del mismo paquete, sigue bloqueando. Vence el
+  # 2027-01-31 para obligar a revisarlas.
+  - {id: CVE-2025-71329, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2025-71330, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-101898, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-101901, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-101906, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-101909, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-102276, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-102278, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-111755, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-111756, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-116689, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-118664, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-118779, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-118782, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-119187, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-119188, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-119190, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-119191, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-119192, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-12143, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-13149, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-13311, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-14257, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-33671, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-34601, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-41672, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-41673, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-41674, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-41675, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-42264, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44486, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44487, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44488, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44492, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44494, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44495, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-44496, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-45623, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-48779, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-59869, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-67213, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-67214, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-69152, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-73086, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-73088, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-73089, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-73646, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83605, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83607, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83608, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83613, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83614, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83615, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83616, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-83619, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-84375, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-87776, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-9277, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: CVE-2026-93749, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
+  - {id: GHSA-5p4m-2wfm-xmqj, paths: ["mobile/package-lock.json"], expired_at: 2027-01-31, statement: "cadena de compilacion de Expo, no viaja en la imagen"}
