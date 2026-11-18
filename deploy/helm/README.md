@@ -22,17 +22,12 @@ Valores por ambiente: [`values-dev.yaml`](circleguard/values-dev.yaml), [`values
 ## Usarlo
 
 ```bash
-./deploy/helm/run.sh check                     # helm lint de cada ambiente + 37 pruebas de las plantillas
+./deploy/helm/run.sh check                     # helm lint de cada ambiente + pruebas de las plantillas + selftest de release.sh
 ./deploy/helm/run.sh template dev              # muestra lo que se instalaría en dev
 
-# Instalar en un clúster (el pipeline hará esto en HU-16):
-KUBECONFIG_FILE=/ruta/al/kubeconfig ./deploy/helm/run.sh helm upgrade --install circleguard deploy/helm/circleguard \
-  --namespace circleguard-dev --create-namespace \
-  -f deploy/helm/circleguard/values-dev.yaml -f /ruta/a/values-secrets.yaml \
-  --set global.imageRegistry=<cuenta>.dkr.ecr.us-east-1.amazonaws.com --set global.imageTag=1.2.0 --wait
-
-# Volver a la versión anterior (HU-25):
-KUBECONFIG_FILE=/ruta/al/kubeconfig ./deploy/helm/run.sh helm rollback circleguard -n circleguard-dev
+# Instalar en un clúster (el pipeline hará esto en HU-16): ver «Desplegar, revertir y registro de cambios»
+KUBECONFIG_FILE=/ruta/absoluta/al/kubeconfig SECRETS_FILE=deploy/helm/.local/values-secrets.yaml \
+  ./deploy/helm/release.sh deploy dev 1.2.0 --commit "$(git rev-parse HEAD)" --build 42
 ```
 
 Los secretos **no** van en el repo: [`values-secrets.example.yaml`](circleguard/values-secrets.example.yaml) es solo un ejemplo con `CAMBIAR`.
@@ -54,6 +49,23 @@ docker build -f mobile/Dockerfile -t local/circleguard-web:local .
 ```
 
 `values-local.yaml` despliega los 5 servicios núcleo y la web (la memoria del PC no alcanza para los 8). Los otros tres se validan con `helm template` y las pruebas de plantillas, pero no se ejecutan localmente.
+
+## Desplegar, revertir y registro de cambios
+
+[`release.sh`](release.sh) es la única puerta para cambiar un ambiente (HU-25); lo usa el operador y, desde HU-16, el pipeline. Necesita `KUBECONFIG_FILE` (ruta absoluta) y, para desplegar, `SECRETS_FILE` (valores secretos dentro del repo y fuera de git).
+
+| Comando | Qué hace |
+|---|---|
+| `release.sh deploy <ambiente> <versión> [--commit <sha>] [--build <n>]` | `helm upgrade --install` con `--atomic`: si los pods no quedan listos en `HELM_TIMEOUT` (10 min), Helm **revierte solo** a la revisión anterior. El motivo queda en el historial: `deploy 1.2.0 · commit abc1234 · build #42` |
+| `release.sh rollback <ambiente> [<revisión>] [--yes]` | `helm rollback` a la revisión indicada o, sin número, a la **última revisión buena con una versión distinta de la activa**. En `prod` exige `--yes` |
+| `release.sh history <ambiente> [--md]` | El registro de cambios del ambiente: revisión, fecha, estado, **versión** y motivo |
+| `release.sh selftest` | Pruebas de la lógica que elige la revisión de destino (no necesitan clúster; corren en `run.sh check`) |
+
+**Por qué el registro es el historial de Helm** y no un archivo aparte: ya vive en el clúster de cada ambiente (un historial por namespace, así que ya es *por ambiente*), no se puede olvidar de escribir porque Helm lo crea con cada cambio, y se puede volver a cualquier revisión. Se sube el límite de revisiones a 50 (`--history-max`; el valor por defecto de Helm es 10 y borraría el registro demasiado pronto). Qué versión corría en cada revisión no viene en `helm history`; sale de los valores de esa revisión y por eso `history --md` la agrega.
+
+**Por qué «versión distinta de la activa»:** después de un rollback, la revisión anterior suele ser la misma versión que ya corre; volver a ella no arreglaría nada.
+
+Probado en el k3s local con un despliegue, una versión que falla (se revierte sola) y un rollback manual: [`hu-25-rollback.md`](../../docs/evidencias/sprint-2/hu-25-rollback.md). El rollback de la **aplicación** (imágenes) no deshace cambios de **datos**: una migración incompatible sigue necesitando la RFC de emergencia de la [política de cambios](../../docs/change-management/politica.md#7-rollback).
 
 ## Decisiones
 

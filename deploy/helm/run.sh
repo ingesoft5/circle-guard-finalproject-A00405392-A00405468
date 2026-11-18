@@ -4,7 +4,7 @@
 #   ./deploy/helm/run.sh lint                       helm lint del chart con cada values-<ambiente>.yaml
 #   ./deploy/helm/run.sh test                       pruebas de las plantillas (helm-unittest)
 #   ./deploy/helm/run.sh template <ambiente> [...]  renderiza el chart (stdout); argumentos extra van a helm
-#   ./deploy/helm/run.sh check                      lint + test
+#   ./deploy/helm/run.sh check                      lint + test + selftest de release.sh
 #   ./deploy/helm/run.sh helm <argumentos>          cualquier comando de helm (para el pipeline y las pruebas locales)
 set -euo pipefail
 
@@ -51,7 +51,7 @@ case "${1:-}" in
   lint)     cmd_lint ;;
   test)     cmd_test ;;
   template) shift; cmd_template "$@" ;;
-  check)    cmd_lint; cmd_test ;;
+  check)    cmd_lint; cmd_test; "$HERE/release.sh" selftest ;;
   helm)     shift; helm "$@" ;;
   *) sed -n '2,9p' "$0"; exit 2 ;;
 esac

@@ -4,4 +4,4 @@ CircleGuard {{ .Values.global.imageTag }} instalado en el namespace {{ .Release.
   kubectl -n {{ .Release.Namespace }} rollout status deployment/web
 
 La web queda en el Ingress "circleguard"{{ with .Values.ingress.host }} (host {{ . }}){{ end }}: GET /version devuelve {{ .Values.global.imageTag }}.
-Volver a la version anterior: helm rollback {{ .Release.Name }} -n {{ .Release.Namespace }}
+Volver a una version anterior: ./deploy/helm/release.sh rollback {{ .Values.global.environment }}   (el registro de cambios: release.sh history {{ .Values.global.environment }})
