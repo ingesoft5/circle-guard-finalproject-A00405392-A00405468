@@ -1,0 +1,1 @@
+> **Nota sobre los datos.** Del 9 al 18 de noviembre no se tomó la foto diaria: el Sprint 2 empezó a trabajarse el 13 y las fotos no se agendaron (lección de la retro). Esas filas se **reconstruyeron** al cierre de cada día con la fecha real de cierre (`closedAt`) de cada issue en GitHub, en hora de Colombia. A partir del 19 las toma `burndown.sh` desde el tablero.

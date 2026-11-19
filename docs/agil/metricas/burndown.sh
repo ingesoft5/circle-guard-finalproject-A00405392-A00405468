@@ -53,6 +53,8 @@ cat >"$MD" <<EOF
 
 Generado con \`docs/agil/metricas/burndown.sh\` a partir del tablero de GitHub Projects. Datos en [\`$SLUG.csv\`]($SLUG.csv).
 
+$(cat "$DIR/$SLUG-nota.md" 2>/dev/null || true)
+
 \`\`\`mermaid
 xychart-beta
     title "$SPRINT: puntos pendientes"
