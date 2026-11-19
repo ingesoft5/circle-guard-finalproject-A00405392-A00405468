@@ -1,0 +1,59 @@
+# HU-16 · las herramientas del pipeline dentro del contenedor de Jenkins (simulado, sin nube)
+# Simulador: scripts/sim-jenkins.sh (contenedor con docker CLI + socket del host + volumen jenkins_home + el usuario de Jenkins)
+
+## 1) Con la traducción de rutas (scripts/hostpath.sh): helm check + secrets-tree + iac + deps + selftest -> salida 0
+[sim] workspace listo: /var/jenkins_home/workspace/circleguard_sim
+== lint dev
+== lint local
+== lint prod
+== lint stage
+== lint platform
+Charts:      2 passed, 2 total
+Tests:       76 passed, 76 total
+ok   vuelve a la revisión inmediata anterior
+ok   salta el primer intento fallido y toma la última buena
+ok   no toma una revisión fallida
+ok   con una sola revisión no hay a dónde volver
+ok   con la primera fallida y la segunda activa no hay a dónde volver
+ok   ordena por número y no por posición
+ok   lista los candidatos de la más nueva a la más vieja
+ok   la revisión actual es la más alta
+selftest: todo OK
+== gitleaks: archivos que git versionaria (los rastreados y los nuevos que no estan en .gitignore)
+11:33PM INF no leaks found
+== trivy config: Dockerfile, chart de Helm y Terraform (HIGH/CRITICAL bloquea)
+== trivy fs: dependencias con lockfile (HIGH/CRITICAL con arreglo bloquea)
+ok   un token falso hace fallar gitleaks
+ok   un directorio sin secretos pasa gitleaks
+ok   un Dockerfile sin USER hace fallar trivy config
+ok   un Dockerfile con USER pasa trivy config
+ok   una dependencia crítica hace fallar trivy fs
+ok   un directorio sin dependencias pasa trivy fs
+real	0m31,529s
+
+## 2) CONTROL: el código ANTERIOR (sin hostpath) en el mismo simulador -> debe FALLAR (monta una carpeta vacía)
+[sim] workspace listo: /var/jenkins_home/workspace/circleguard_sim
+2026-11-18T23:33:50Z	FATAL	Fatal error	flag error: unable to convert flags to options: ignore file not found: .trivyignore.yaml
+salida del control: distinta de 0 (falló, como debía)
+
+## 3) terraform fmt + validate con credenciales por variables de entorno (sin ~/.aws) -> salida 0
+== validate infra/terraform/bootstrap
+Success! The configuration is valid.
+== validate infra/terraform/modules/compute
+Success! The configuration is valid.
+== validate infra/terraform/modules/network
+Success! The configuration is valid.
+== validate infra/terraform/modules/observability
+Success! The configuration is valid.
+== validate infra/terraform/modules/registry
+Success! The configuration is valid.
+== validate infra/terraform/modules/storage
+Success! The configuration is valid.
+== validate infra/terraform/envs/dev
+Success! The configuration is valid.
+== validate infra/terraform/envs/prod
+Success! The configuration is valid.
+== validate infra/terraform/envs/stage
+Success! The configuration is valid.
+== validate infra/terraform/envs/tools
+Success! The configuration is valid.
