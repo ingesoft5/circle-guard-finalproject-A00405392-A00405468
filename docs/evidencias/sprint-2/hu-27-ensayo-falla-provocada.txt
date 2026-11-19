@@ -1,0 +1,52 @@
+# HU-27 · Ensayo de la falla provocada en un k3s REAL local (19 nov 2026)
+# Mismo chart y misma version de k3s que instala Terraform; imagenes locales. Script: demo-falla.sh (apaga identity y la restaura siempre).
+
+[t+0s] inicio 18:47:59 UTC
+[t+12s] cluster k3s listo
+[t+89s] 9 imágenes cargadas
+[t+89s] promote: plataforma + secretos + despliegue + humo
+== [promote] dev <- local
+== cert-manager v1.21.1
+STATUS: deployed
+REVISION: 1
+== Sealed Secrets (chart 2.22.0)
+STATUS: deployed
+REVISION: 1
+== emisores de certificados
+STATUS: deployed
+REVISION: 1
+== dev: desplegando local (--atomic, espera hasta 10m)
+STATUS: deployed
+REVISION: 1
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+[t+458s] promote terminado
+################ FALLA PROVOCADA ################
+== 1) Estado sano: identity con 1 réplica(s)
+NAME                        READY   STATUS    RESTARTS   AGE
+identity-6c9d57748f-hs7gk   1/1     Running   0          5m
+login: 200 0.725393s Retry-After=
+== 2) FALLA: se apaga identity (scale a 0)
+deployment.apps/identity scaled
+NAME                        READY   STATUS    RESTARTS   AGE
+== 3) El login degrada, no se cae: 503 claro con Retry-After; con el circuito abierto responde rápido
+intento 1: 503 7.355204s Retry-After=10
+intento 2: 503 0.707036s Retry-After=10
+intento 3: 503 0.689951s Retry-After=10
+intento 4: 503 0.682959s Retry-After=10
+intento 5: 503 0.693900s Retry-After=10
+intento 6: 503 0.702117s Retry-After=10
+== 4) RECUPERACIÓN: se vuelve a encender identity (1 réplica(s))
+deployment "identity" successfully rolled out
+login: 200 0.579419s Retry-After=
+recuperado en 17 s, sin reiniciar auth
+== 5) Estado final
+NAME                        READY   STATUS     RESTARTS   AGE
+auth-7844d44cc4-rfzhx       0/1     Init:1/2   0          24s
+auth-7844d44cc4-xxjpm       1/1     Running    0          5m39s
+identity-6c9d57748f-lvrfp   1/1     Running    0          17s
+[t+498s] ensayo terminado
+[t+501s] cluster destruido
+
+# Lectura: 1er 503 en 7,4 s (los reintentos esperan); despues ~0,7 s con el circuito abierto (Retry-After=10); login sano 0,7 s;
+# recuperacion en 17 s al volver identity, con auth sin reiniciar (RESTARTS 0). El 2o pod de auth con 24 s es el HPA.
