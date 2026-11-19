@@ -43,11 +43,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus   # HU-20: Prometheus lee /actuator/prometheus (el nginx no lo publica)
   endpoint:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}   # cada serie lleva el servicio que la produce
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true             # buckets para calcular el p95 en Prometheus (métricas RED)
 
 server:
   port: ${SERVER_PORT:8180}
