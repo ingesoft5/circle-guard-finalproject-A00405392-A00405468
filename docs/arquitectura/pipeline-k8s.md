@@ -9,6 +9,7 @@ Cómo Jenkins controla la infraestructura y el despliegue en Kubernetes, qué se
 | **`circleguard`** (multibranch, el de siempre) | CI de cada PR y, en `main`, versión → imágenes → Trivy → dev → stage → prod | PR, merge a `main` | prod (`input`, como en la Parte 1) |
 | **`circleguard-infra`** | `terraform plan` y `apply`/`destroy` de **un** ambiente | a mano, con parámetros `ENV`, `ACTION`, `TARGET` | prod y cualquier `destroy` |
 | **`circleguard-drift`** | `terraform plan` de cada ambiente **desplegado**, para detectar cambios hechos a mano | cada día (cron) | ninguna: no cambia nada |
+| **`circleguard-k8s`** | despliega (o devuelve) una **versión ya publicada** en un ambiente de Kubernetes: ECR → kubeconfig → `promote.sh`. Sirve para levantar un ambiente recién creado y para volver a una versión anterior | a mano, con `ENV` y `VERSION` | prod |
 | `circleguard-rollback` | volver dev/stage/prod (compose) a una versión anterior | a mano | prod |
 
 ```mermaid

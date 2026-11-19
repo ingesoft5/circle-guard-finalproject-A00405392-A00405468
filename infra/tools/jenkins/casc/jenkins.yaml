@@ -241,3 +241,30 @@ jobs:
           }
         }
       }
+  - script: |
+      // HU-16 (#23): despliega o revierte una versión ya publicada en un ambiente de Kubernetes en AWS.
+      pipelineJob('circleguard-k8s') {
+        displayName('CircleGuard · Despliegue en Kubernetes')
+        description('Despliega (o devuelve) una versión ya publicada en Nexus en dev, stage o prod de Kubernetes. En prod pide aprobación. Corre jenkins/k8s.Jenkinsfile de main.')
+        parameters {
+          choiceParam('ENV', ['dev', 'stage', 'prod'], 'Ambiente de Kubernetes (debe existir: circleguard-infra)')
+          stringParam('VERSION', '', 'Versión a desplegar, sin la v (p. ej. 1.4.0)')
+          choiceParam('TLS_ISSUER', ['letsencrypt-staging', 'letsencrypt'], 'Emisor del certificado')
+        }
+        logRotator { numToKeep(20) }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/${GITHUB_REPO}.git')
+                  credentials('github-token')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('jenkins/k8s.Jenkinsfile')
+            lightweight(true)
+          }
+        }
+      }
