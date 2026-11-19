@@ -43,6 +43,12 @@ server {
         return 404;
     }
 
+    # Las métricas (HU-20) las lee Prometheus directo de cada servicio, dentro de la red; hacia afuera
+    # no se publican. /actuator/health sí pasa: lo usa la prueba de humo del pipeline.
+    location ~ ^/api/[^/]+/actuator/prometheus {
+        return 404;
+    }
+
     # /api/<servicio>/<ruta>  ->  http://<upstream>/<ruta>
     # Se quita el prefijo con rewrite y proxy_pass va SIN ruta: así nginx vuelve a codificar la ruta
     # (espacios, tildes) y conserva el query string. Con proxy_pass http://$up/$captura la ruta llegaba

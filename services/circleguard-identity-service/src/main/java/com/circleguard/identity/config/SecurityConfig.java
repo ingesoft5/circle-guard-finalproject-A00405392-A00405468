@@ -34,6 +34,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/identities/visitor", "/api/v1/identities/map").permitAll()
                 .requestMatchers("/actuator/health/**").permitAll()   // healthcheck del contenedor
+                .requestMatchers("/actuator/prometheus").permitAll()   // HU-20: lo lee Prometheus dentro de la red
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exceptions -> exceptions

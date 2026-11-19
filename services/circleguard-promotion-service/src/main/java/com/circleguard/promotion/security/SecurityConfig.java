@@ -32,6 +32,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health/**").permitAll()   // healthcheck del contenedor
+                .requestMatchers("/actuator/prometheus").permitAll()   // HU-20: lo lee Prometheus dentro de la red
                 .requestMatchers("/api/v1/health/**").authenticated()
                 .anyRequest().permitAll()
             )
