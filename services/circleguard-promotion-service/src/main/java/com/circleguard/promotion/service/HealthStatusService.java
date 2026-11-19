@@ -23,6 +23,7 @@ public class HealthStatusService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final com.circleguard.promotion.repository.jpa.SystemSettingsRepository systemSettingsRepository;
     private final com.circleguard.promotion.repository.graph.CircleNodeRepository circleNodeRepository;
+    private final com.circleguard.promotion.metrics.PromotionMetrics metrics;
 
     private static final String STATUS_KEY_PREFIX = "user:status:";
     private static final String TOPIC_STATUS_CHANGED = "promotion.status.changed";
@@ -112,6 +113,14 @@ public class HealthStatusService {
 
             log.info("Batch updating {} Redis entries based on consolidated propagation", cacheUpdates.size());
             updateRedisInBatches(cacheUpdates);
+
+            // HU-20: promociones por estado (la persona que reporta y cada contacto que cambió)
+            metrics.promoted(status, 1);
+            if (affected != null) {
+                affected.stream().filter(m -> m != null && m.get("id") != null && m.get("status") != null)
+                        .collect(java.util.stream.Collectors.groupingBy(m -> m.get("status"), java.util.stream.Collectors.counting()))
+                        .forEach((contactStatus, people) -> metrics.promoted(contactStatus, people.intValue()));
+            }
 
             // Broadcast change
             Map<String, Object> payload = new HashMap<>();

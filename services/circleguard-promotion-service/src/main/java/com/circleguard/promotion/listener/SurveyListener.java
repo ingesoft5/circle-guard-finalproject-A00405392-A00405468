@@ -1,5 +1,6 @@
 package com.circleguard.promotion.listener;
 
+import com.circleguard.promotion.metrics.PromotionMetrics;
 import com.circleguard.promotion.service.HealthStatusService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import java.util.Map;
 @Slf4j
 public class SurveyListener {
     private final HealthStatusService healthStatusService;
+    private final PromotionMetrics metrics;
 
     @KafkaListener(topics = "survey.submitted", groupId = "promotion-service-group")
     public void onSurveySubmitted(Map<String, Object> event) {
@@ -24,6 +26,10 @@ public class SurveyListener {
             if (anonymousId != null && Boolean.TRUE.equals(hasSymptoms)) {
                 log.info("Promoting user {} to SUSPECT due to symptoms", anonymousId);
                 healthStatusService.updateStatus(anonymousId, "SUSPECT");
+                // HU-20: tiempo de contención, desde que form registró el cuestionario hasta aquí
+                if (event.get("timestamp") instanceof Number reportedAt) {
+                    metrics.containedSince(reportedAt.longValue());
+                }
             }
         } catch (Exception e) {
             log.error("Failed to process survey event: {}", event, e);

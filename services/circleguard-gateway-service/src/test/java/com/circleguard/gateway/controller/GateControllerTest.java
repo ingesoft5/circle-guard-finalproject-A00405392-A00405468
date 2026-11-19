@@ -1,5 +1,6 @@
 package com.circleguard.gateway.controller;
 
+import com.circleguard.gateway.metrics.GateMetrics;
 import com.circleguard.gateway.service.QrValidationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,6 +22,9 @@ public class GateControllerTest {
     @MockBean
     private QrValidationService validationService;
 
+    @MockBean
+    private GateMetrics metrics;
+
     @Test
     void shouldReturnValidationResult() throws Exception {
         String token = "mock-token";
@@ -35,5 +39,7 @@ public class GateControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valid").value(true))
                 .andExpect(jsonPath("$.status").value("GREEN"));
+
+        Mockito.verify(metrics).checkIn(mockResult);   // HU-20: cada validación cuenta como check-in
     }
 }
