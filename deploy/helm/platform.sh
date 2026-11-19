@@ -8,6 +8,8 @@
 #                                                                       genera los secretos de la aplicacion al azar, los sella
 #                                                                       con la llave publica del cluster, escribe
 #                                                                       deploy/sealed/<ambiente>.yaml (o $SEALED_OUT) y lo aplica
+#   KUBECONFIG_FILE=<ruta> ./deploy/helm/platform.sh ensure <ambiente> [correo]
+#                                                                       lo que llama el pipeline: install y seal SOLO si faltan
 #
 # El texto plano de los secretos solo existe en una tuberia: nunca se escribe en disco ni se imprime. Con el Secret
 # circleguard-secrets ya en el cluster, el chart se despliega con --set existingSecret=circleguard-secrets.
@@ -61,21 +63,39 @@ kubeseal_bin() {
   echo "$bin"
 }
 
+# exists <namespace> <recurso>: 0 si circleguard-secrets existe, 1 si no. Si no pudo preguntar (kubeconfig malo, API caida)
+# NO se asume que no existe: se aborta, porque regenerar cambiaria la contrasena de una base ya inicializada.
+exists() {
+  local res; res="$(kubectl -n "$1" get "$2" circleguard-secrets 2>&1)" && return 0
+  grep -qi 'not found' <<<"$res" && return 1
+  die "No pude consultar $2 en $1 (no se genera nada): $res"
+}
+secrets_present() { exists "$1" secret || exists "$1" sealedsecret; }
+
+# Lo que llama el pipeline en cada despliegue: idempotente. Instala la plataforma y sella los secretos SOLO si faltan
+# (un cluster nuevo); en uno que ya los tiene no toca nada.
+cmd_ensure() {
+  local env="${1:?Uso: ensure <ambiente> [correo]}" email="${2:-}" ns="circleguard-${1}"
+  if kubectl -n cert-manager get deploy cert-manager >/dev/null 2>&1 \
+     && kubectl -n kube-system get deploy sealed-secrets-controller >/dev/null 2>&1; then
+    echo "plataforma: cert-manager y Sealed Secrets ya estan instalados"
+  else
+    cmd_install "$email"
+  fi
+  if secrets_present "$ns"; then echo "secretos: circleguard-secrets ya existe en $ns"; else cmd_seal "$env"; fi
+}
+
 cmd_seal() {
   local env="${1:?Uso: seal <ambiente> [namespace]}" ns="${2:-circleguard-${1}}"
   local out="${SEALED_OUT:-$ROOT/deploy/sealed/$env.yaml}" bin cert
   bin="$(kubeseal_bin)"
   # Regenerar cambiaria la contrasena de una base ya inicializada: si el Secret existe no se toca.
-  # exists <recurso>: 0 si existe, 1 si no. Si no pudo preguntar (kubeconfig malo, API caida) NO se asume que no existe.
-  exists() {
-    local out; out="$(kubectl -n "$ns" get "$1" circleguard-secrets 2>&1)" && return 0
-    grep -qi 'not found' <<<"$out" && return 1
-    die "No pude consultar $1 en $ns (no se genera nada): $out"
-  }
-  if exists secret || exists sealedsecret; then
+  if secrets_present "$ns"; then
     die "circleguard-secrets ya existe en $ns (Secret o SealedSecret): no se regenera (cambiaria la contrasena de la base ya inicializada)"
   fi
-  cert="$(mktemp)"; trap 'rm -f "$cert"' RETURN
+  # La trampa RETURN sobrevive a esta función: al volver quien la llamó (cmd_ensure) `cert` ya no existe y, con `set -u`,
+  # reventaba con «cert: unbound variable». Por eso usa ${cert:-} y se desarma sola al dispararse una vez.
+  cert="$(mktemp)"; trap 'rm -f "${cert:-}"; trap - RETURN' RETURN
   kubectl get --raw "/api/v1/namespaces/kube-system/services/http:sealed-secrets-controller:8080/proxy/v1/cert.pem" > "$cert" \
     || die "No pude leer la llave publica del controlador (corre primero: platform.sh install)"
   mkdir -p "$(dirname "$out")"
@@ -101,5 +121,6 @@ cmd_seal() {
 case "${1:-}" in
   install) shift; cmd_install "$@" ;;
   seal)    shift; cmd_seal "$@" ;;
-  *) sed -n '2,12p' "$0"; exit 2 ;;
+  ensure)  shift; cmd_ensure "$@" ;;
+  *) sed -n '2,/^set -euo/p' "$0" | sed '$d'; exit 2 ;;
 esac

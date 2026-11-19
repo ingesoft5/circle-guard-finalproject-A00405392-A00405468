@@ -59,19 +59,27 @@ current_revision() {
 # --- Comandos -----------------------------------------------------------------------------------------------------
 
 cmd_deploy() {
-  local env="${1:?Uso: deploy <ambiente> <versión> [--commit sha] [--build n]}" version="${2:?Falta la versión}"; shift 2
-  local commit="" build=""
+  local env="${1:?Uso: deploy <ambiente> <versión> [--commit sha] [--build n] [--set clave=valor]...}" version="${2:?Falta la versión}"; shift 2
+  local commit="" build="" extra=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --commit) commit="${2:?}"; shift 2 ;;
       --build)  build="${2:?}"; shift 2 ;;
+      --set)    extra+=(--set "${2:?}"); shift 2 ;;   # valores propios del ambiente (host del Ingress, TLS...)
       *) die "Argumento desconocido: $1" ;;
     esac
   done
   need_cluster; env_ok "$env"
-  local secrets="${SECRETS_FILE:-}"
-  [[ -n "$secrets" ]] || die "Falta SECRETS_FILE (valores secretos; ruta dentro del repo y fuera de git)"
-  [[ -f "$ROOT/$secrets" ]] || die "No existe $secrets dentro del repo"
+  # SEALED=1: Sealed Secrets (platform.sh seal) ya creó el Secret en el cluster y el chart lo usa; no hay archivo de secretos.
+  local secrets=()
+  if [[ "${SEALED:-}" == 1 ]]; then
+    secrets=(--set existingSecret=circleguard-secrets)
+  else
+    local file="${SECRETS_FILE:-}"
+    [[ -n "$file" ]] || die "Falta SECRETS_FILE (valores secretos; ruta dentro del repo y fuera de git) o SEALED=1"
+    [[ -f "$ROOT/$file" ]] || die "No existe $file dentro del repo"
+    secrets=(-f "$file")
+  fi
 
   local desc="deploy $version"
   [[ -n "$commit" ]] && desc+=" · commit ${commit:0:7}"
@@ -82,7 +90,7 @@ cmd_deploy() {
 
   echo "== $env: desplegando $version (--atomic, espera hasta $TIMEOUT)"
   helm upgrade --install "$RELEASE" "$CHART" --namespace "circleguard-$env" --create-namespace \
-    -f "$CHART/values-$env.yaml" -f "$secrets" --set "global.imageTag=$version" "${registry[@]}" \
+    -f "$CHART/values-$env.yaml" "${secrets[@]}" --set "global.imageTag=$version" "${registry[@]}" "${extra[@]}" \
     --atomic --timeout "$TIMEOUT" --history-max "$HISTORY_MAX" --description "$desc"
 }
 
