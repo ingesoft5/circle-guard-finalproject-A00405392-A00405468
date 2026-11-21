@@ -21,6 +21,16 @@ server {
     client_max_body_size 20m;
     resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
 
+    # Cabeceras de seguridad (HU-24: hallazgos del ZAP baseline). Van en el server y ningún location usa add_header:
+    # en nginx, un add_header dentro de un location ANULA todos los heredados, por eso la caché se fija con `expires`.
+    #   CSP: solo scripts propios más el único script en línea que genera Expo (por su hash, no 'unsafe-inline');
+    #   los estilos en línea los inyecta React Native Web. frame-ancestors 'none' = sin clickjacking.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=()" always;
+
     location = /healthz {
         access_log off;
         default_type text/plain;
@@ -32,7 +42,7 @@ server {
     location = /version {
         access_log off;
         default_type text/plain;
-        add_header Cache-Control "no-store" always;
+        expires -1;   # sin caché (con add_header se perderían las cabeceras de seguridad del server)
         return 200 "${APP_VERSION}\n";
     }
 
@@ -64,11 +74,12 @@ server {
     # Archivos generados por Expo (llevan hash en el nombre): caché larga.
     location /_expo/ {
         expires 1y;
-        add_header Cache-Control "public, immutable";
     }
 
-    # Rutas de la app: Expo genera un .html por ruta; lo demás cae en index.html.
+    # Rutas de la app: Expo genera un .html por ruta; lo demás cae en index.html. Sin caché: así un despliegue
+    # nuevo se ve al recargar (los .js con hash sí se cachean arriba).
     location / {
+        expires -1;
         try_files $uri $uri.html $uri/ /index.html;
     }
 }
