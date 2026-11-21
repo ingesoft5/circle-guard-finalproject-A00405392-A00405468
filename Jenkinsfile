@@ -157,6 +157,18 @@ pipeline {
                     }
                 }
 
+                stage('ZAP baseline contra dev') {
+                    // HU-24 (#31): análisis pasivo de seguridad; una cabecera de seguridad que se pierda frena la promoción.
+                    when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
+                    steps { zapBaseline('dev') }
+                    post {
+                        always {
+                            publishHTML([reportDir: 'tests/security/zap/reports/pipeline', reportFiles: 'informe.html',
+                                         reportName: 'ZAP baseline (dev)', allowMissing: true, keepAll: true, alwaysLinkToLastBuild: true])
+                        }
+                    }
+                }
+
                 stage('Deploy stage') {
                     when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
                     steps {
