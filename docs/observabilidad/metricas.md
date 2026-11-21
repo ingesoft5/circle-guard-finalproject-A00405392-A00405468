@@ -47,6 +47,7 @@ Los dashboards se generan con [`generate_dashboards.py`](../../deploy/observabil
 |---|---|
 | **CircleGuard · Servicios (RED)** | Una fila por servicio (variable `Servicio`, con *repeat*): Rate por ruta, % de 5xx, p95 y p50, instancias, memoria heap y CPU |
 | **CircleGuard · Negocio** | Promociones por minuto por estado, tiempo de contención (p95 y promedio), check-ins por minuto por resultado, cuestionarios por minuto y totales de la última hora |
+| **CircleGuard · Resiliencia** | Estado de cada circuito de Resilience4j en el tiempo (CERRADO, SEMIABIERTO, ABIERTO), tasa de fallas, llamadas rechazadas con el circuito abierto, reintentos y respuestas del login por código (503 = degradado). Las métricas `resilience4j_*` las publica Resilience4j solo, porque `resilience4j-micrometer` viene con `resilience4j-spring-boot3` (HU-17) |
 
 ## Cómo verlo en local
 

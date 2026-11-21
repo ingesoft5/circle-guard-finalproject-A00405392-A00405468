@@ -44,7 +44,15 @@ Latencia p95 en los últimos 5 minutos: gateway 6 ms, auth 8 ms, form 13 ms, pro
 
 **Capturas:** en [`hu-20-grafana-negocio.png`](hu-20-grafana-negocio.png) se ven las curvas de promociones, check-ins y cuestionarios por minuto, y el tiempo de contención. En [`hu-20-grafana-servicios.png`](hu-20-grafana-servicios.png), las filas de los 5 servicios; en promotion aparece la ruta interna `/internal/v1/users/{anonymousId}/status` que usa el cache-aside de HU-19. Los totales de la última hora salen con un decimal (27,3 y 79,4) porque `increase()` extrapola; después de la captura se configuraron para mostrarse enteros.
 
-## 3. Hallazgos
+## 3. Dashboard de resiliencia con una falla provocada
+
+Con el compose arriba se hizo un login cada 3 s durante 4 minutos: identity se apagó a los 60 s y se encendió a los 150 s. Resultado: 17 logins con 200, luego 22 con 503 (degradado, sin llamar a identity con el circuito abierto) y de nuevo 16 con 200 al recuperarse, sin reiniciar auth.
+
+[`hu-20-grafana-resiliencia.png`](hu-20-grafana-resiliencia.png): el circuito `identity` pasa de **CERRADO** a **ABIERTO** y vuelve a **CERRADO**. La tasa de fallas sube al 100 %, las llamadas rechazadas con el circuito abierto llegan a 12 por minuto, y en el login los 200 se convierten en 503 y luego vuelven a 200.
+
+La primera versión del panel de estado salía vacía: sumaba `state="open"` con `state="half_open"` sin agrupar antes por nombre, y como las etiquetas no coinciden no emparejaba ninguna serie. Se corrigió agrupando antes de sumar, comprobado contra la API de Prometheus.
+
+## 4. Hallazgos
 
 - **El detector de síntomas solo entendía inglés.** `SymptomMapper` buscaba `fever`, `cough` y `breathing`, pero el cuestionario de la app está en español ("¿Tienes fiebre?"). **Ningún cuestionario real detectaba síntomas**, así que nadie entraba al cerco por esa vía. Se vio porque `circleguard_promotions_total` no subía después de enviar cuestionarios con síntomas. Los E2E no lo notaban, porque solo comprueban que el envío funcione. Se corrigió con palabras en español, sin tildes y como palabra completa ("tos" no coincide con "datos").
 - **Los contadores nacían con el primer evento** y Prometheus no contaba ese primer salto: los totales de la última hora salían en 0. Ahora se registran en 0 al arrancar.

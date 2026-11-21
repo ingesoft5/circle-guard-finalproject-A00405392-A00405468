@@ -112,8 +112,50 @@ def business_dashboard():
                      desc="Métricas de negocio propias (Micrometer): promociones, tiempo de contención, check-ins y cuestionarios.")
 
 
+def resilience_dashboard():
+    # Resilience4j (HU-17) publica sus métricas en Micrometer: estado de cada circuito, tasa de fallas y llamadas.
+    # Rangos y no valores exactos: el valor llega como número decimal y así el texto aplica siempre.
+    state_map = [
+        {"type": "range", "options": {"from": -0.5, "to": 0.5, "result": {"text": "CERRADO", "color": "green", "index": 0}}},
+        {"type": "range", "options": {"from": 0.5, "to": 1.5, "result": {"text": "SEMIABIERTO", "color": "yellow", "index": 1}}},
+        {"type": "range", "options": {"from": 1.5, "to": 2.5, "result": {"text": "ABIERTO", "color": "red", "index": 2}}},
+    ]
+    state = panel(1, "Estado del circuito (identity y promotion)",
+                  # Se agrega por nombre ANTES de sumar: las series de open y half_open tienen distinta etiqueta
+                  # state y una suma directa no empareja ninguna (el panel quedaba vacío).
+                  [('2 * max by (name) (resilience4j_circuitbreaker_state{state="open"}) '
+                    '+ max by (name) (resilience4j_circuitbreaker_state{state="half_open"})', "{{name}}")],
+                  0, 0, w=24, h=6, kind="state-timeline",
+                  desc="Cerrado: se llama al servicio. Abierto: se responde al instante sin llamarlo. Semiabierto: llamadas de prueba.")
+    # El color sale del mapeo (sin umbrales: con umbrales Grafana mostraba "< 1" y "2+" en vez del texto).
+    state["fieldConfig"]["defaults"].update({"mappings": state_map, "color": {"mode": "fixed", "fixedColor": "green"}})
+    state["options"] = {"showValue": "always", "mergeValues": True, "legend": {"showLegend": False}}
+    p = [
+        state,
+        panel(2, "Tasa de fallas en la ventana del circuito",
+              [('max by (name) (resilience4j_circuitbreaker_failure_rate >= 0)', "{{name}}")],
+              0, 6, w=12, unit="percent", desc="Se abre al llegar al 50 % con al menos 5 llamadas (-1 = aún sin datos suficientes)."),
+        panel(3, "Llamadas rechazadas con el circuito abierto (por minuto)",
+              [('sum by (name) (rate(resilience4j_circuitbreaker_not_permitted_calls_total[1m])) * 60', "{{name}}")],
+              12, 6, w=12, desc="Cada una es una petición que no esperó un timeout: se degradó al instante."),
+        panel(4, "Reintentos (por minuto)",
+              [('sum by (name, kind) (rate(resilience4j_retry_calls_total[1m])) * 60', "{{name}} {{kind}}")],
+              0, 14, w=12),
+        panel(5, "Login: respuestas por código (por minuto)",
+              [('sum by (status) (rate(http_server_requests_seconds_count{application="circleguard-auth-service", '
+                'uri="/api/v1/auth/login"}[1m])) * 60', "HTTP {{status}}")],
+              12, 14, w=12, desc="Con identity caído el login responde 503 (degradado) en lugar de 500."),
+    ]
+    d = dashboard("circleguard-resiliencia", "CircleGuard · Resiliencia (Circuit Breaker)", p,
+                  desc="Estado de los circuitos de Resilience4j de auth → identity y dashboard → promotion (HU-17).")
+    d["refresh"] = "10s"
+    d["time"] = {"from": "now-15m", "to": "now"}
+    return d
+
+
 if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
-    for name, d in [("servicios-red.json", services_dashboard()), ("negocio.json", business_dashboard())]:
+    for name, d in [("servicios-red.json", services_dashboard()), ("negocio.json", business_dashboard()),
+                    ("resiliencia.json", resilience_dashboard())]:
         (OUT / name).write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print("escrito", OUT / name)
