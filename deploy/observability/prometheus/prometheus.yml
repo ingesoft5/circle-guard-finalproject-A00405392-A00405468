@@ -5,6 +5,15 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# HU-21: reglas de alerta y Alertmanager.
+rule_files:
+  - /etc/prometheus/alertas.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: [alertmanager:9093]
+
 scrape_configs:
   - job_name: circleguard
     metrics_path: /actuator/prometheus
@@ -18,3 +27,9 @@ scrape_configs:
         labels:
           environment: compose
       # dashboard, file y notification no corren en el compose de la Parte 1; en Kubernetes sí.
+
+  # HU-21: lag de los grupos de consumidores de Kafka, medido desde el broker. Un consumidor detenido
+  # no puede reportar su propio atraso, por eso no basta con las métricas de los servicios.
+  - job_name: kafka
+    static_configs:
+      - targets: [kafka-exporter:9308]
