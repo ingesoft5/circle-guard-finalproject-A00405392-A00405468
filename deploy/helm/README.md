@@ -14,6 +14,9 @@ Todo se ejecuta por Docker con versiones fijas, como `infra/terraform/run.sh`: n
 | **Ingress** | `templates/ingress.yaml` | Todo entra por la web (nginx), que hace de proxy de `/api/<servicio>/`. Usa el Traefik que trae k3s |
 | **HPA** | `templates/hpa.yaml` | `autoscaling/v2` por CPU (70 %), mínimo y máximo por servicio y por ambiente |
 | **Sondas de Actuator** | `templates/deployment.yaml` | `startup` (hasta 5 min), `liveness` y `readiness` contra `/actuator/health/...`; la web usa `/healthz` |
+| **NetworkPolicies** | `templates/networkpolicy.yaml` | La red nace cerrada (`default-deny-ingress`); cada destino lista quién puede llamarlo en `networkPolicy.allow` (HU-23) |
+| **RBAC** | `templates/rbac.yaml` | ServiceAccount de los pods sin permisos ni token, y un rol de solo lectura sin Secrets (`circleguard-viewer`) |
+| **TLS** | `templates/ingress.yaml`, `tls-redirect.yaml`, [`../platform`](platform) | `ingress.tls.enabled`: cert-manager emite el certificado, Traefik atiende solo HTTPS y redirige el HTTP |
 | Middleware | `templates/postgres.yaml`, `neo4j.yaml`, `kafka.yaml`, `redis.yaml` | StatefulSet con volumen (Postgres, Neo4j, Kafka en KRaft) y Deployment (Redis), con las imágenes y variables del compose |
 | Espera de dependencias | `initContainers` | Cada servicio espera (`nc -z`) a lo que necesita antes de arrancar, en lugar del `depends_on` del compose |
 
@@ -22,7 +25,7 @@ Valores por ambiente: [`values-dev.yaml`](circleguard/values-dev.yaml), [`values
 ## Usarlo
 
 ```bash
-./deploy/helm/run.sh check                     # helm lint de cada ambiente + pruebas de las plantillas + selftest de release.sh
+./deploy/helm/run.sh check                     # helm lint de cada ambiente + pruebas de las plantillas de los dos charts + selftest de release.sh
 ./deploy/helm/run.sh template dev              # muestra lo que se instalaría en dev
 
 # Instalar en un clúster (el pipeline hará esto en HU-16): ver «Desplegar, revertir y registro de cambios»
@@ -31,6 +34,16 @@ KUBECONFIG_FILE=/ruta/absoluta/al/kubeconfig SECRETS_FILE=deploy/helm/.local/val
 ```
 
 Los secretos **no** van en el repo: [`values-secrets.example.yaml`](circleguard/values-secrets.example.yaml) es solo un ejemplo con `CAMBIAR`.
+
+## Seguridad: cert-manager, Sealed Secrets y pruebas (HU-23)
+
+```bash
+KUBECONFIG_FILE=... ./deploy/helm/platform.sh install [correo]   # cert-manager, Sealed Secrets y los emisores (con correo, Let's Encrypt)
+KUBECONFIG_FILE=... ./deploy/helm/platform.sh seal dev           # genera y sella los secretos; deja el Secret circleguard-secrets
+# ... helm upgrade --install ... --set existingSecret=circleguard-secrets --set ingress.tls.enabled=true --set ingress.host=<host>
+```
+
+En el k3s local: `local.sh platform`, `local.sh seal`, `SEALED=1 local.sh deploy`, y para comprobarlo contra el cluster real `local.sh security-smoke` (RBAC, NetworkPolicies, pods) y `local.sh tls-smoke` (certificado verificado con la CA, rechazo sin ella, redirección). Modelo completo: [`docs/arquitectura/seguridad.md`](../../docs/arquitectura/seguridad.md).
 
 ## Probarlo sin gastar nada de AWS
 
@@ -79,4 +92,5 @@ Probado en el k3s local con un despliegue, una versión que falla (se revierte s
 ## Limitaciones
 
 - La instalación real en AWS queda para una ventana corta y planeada (el presupuesto de nube casi se agotó); el mismo chart se probó en un k3s local de la misma versión.
-- TLS (cert-manager), RBAC y NetworkPolicies llegan en HU-23.
+- El TLS con Let's Encrypt (certificado de confianza pública) solo se puede comprobar en la nube, con una IP pública y el puerto 80 abierto; en local se usa una CA propia (`circleguard-ca`).
+- Las NetworkPolicies son solo de entrada y el middleware corre con las excepciones de seguridad descritas en [`seguridad.md`](../../docs/arquitectura/seguridad.md#los-pods).

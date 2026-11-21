@@ -16,6 +16,11 @@ jenkins:
           password: "${JENKINS_PIERRECUEVAS_PASSWORD}"
         - id: "docente"
           password: "${JENKINS_DOCENTE_PASSWORD}"
+  # RBAC (HU-23): tres niveles y nada para el anonimo (sin entrada en la matriz no puede ni ver Jenkins).
+  #   Administrador (admin, jmrojas06): configura Jenkins, plugins, credenciales y nodos.
+  #   Desarrollo (pierrecuevas): lanza, cancela y repite builds, lee logs y aprueba el paso a prod (el `input` del Jenkinsfile
+  #     lo limita a submitter jmrojas06,pierrecuevas); NO administra ni ve credenciales.
+  #   Lectura (docente): jobs, ejecuciones y reportes.
   authorizationStrategy:
     globalMatrix:
       entries:
@@ -27,7 +32,7 @@ jenkins:
             permissions: ["Overall/Administer"]
         - user:
             name: "pierrecuevas"
-            permissions: ["Overall/Administer"]
+            permissions: ["Overall/Read", "Job/Read", "Job/Build", "Job/Cancel", "Job/Workspace", "Run/Replay", "View/Read"]
         # Docente: solo lectura de jobs, ejecuciones y reportes.
         - user:
             name: "docente"

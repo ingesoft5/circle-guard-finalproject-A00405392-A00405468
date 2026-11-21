@@ -24,3 +24,36 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | quote }}
 {{- define "cg.secretName" -}}
 {{- default "circleguard-secrets" .Values.existingSecret -}}
 {{- end }}
+
+{{/* Identidad de los pods: ServiceAccount sin permisos y sin token (ninguno habla con la API de Kubernetes). */}}
+{{- define "cg.podIdentity" -}}
+serviceAccountName: circleguard-workload
+automountServiceAccountToken: false
+{{- end }}
+
+{{/* Contexto de seguridad del pod de un servicio: sin root, con el usuario (numerico) de su imagen y seccomp por defecto. */}}
+{{- define "cg.podSecurityContext" -}}
+runAsNonRoot: true
+runAsUser: {{ .runAsUser }}
+runAsGroup: {{ .runAsGroup }}
+seccompProfile:
+  type: RuntimeDefault
+{{- end }}
+
+{{/* Contexto de cada contenedor (tambien los initContainers): sin escalar privilegios, sin capacidades y con el disco de solo lectura. */}}
+{{- define "cg.containerSecurityContext" -}}
+allowPrivilegeEscalation: false
+readOnlyRootFilesystem: true
+capabilities:
+  drop: ["ALL"]
+{{- end }}
+
+{{/* El Ingress controller como origen permitido en una NetworkPolicy (k3s: Traefik en kube-system). */}}
+{{- define "cg.ingressControllerPeer" -}}
+- namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: {{ .namespace }}
+  podSelector:
+    matchLabels:
+      {{- toYaml .podLabels | nindent 6 }}
+{{- end }}

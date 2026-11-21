@@ -1,0 +1,35 @@
+$ ./deploy/helm/local.sh smoke            # k3s local v1.37.2, aplicación endurecida, secretos sellados
+[smoke] /healthz                                         HTTP 200
+[smoke] /version                                         HTTP 200
+[smoke] /api/auth/actuator/health/readiness              HTTP 200
+[smoke] /api/identity/actuator/health/readiness          HTTP 200
+[smoke] /api/form/actuator/health/readiness              HTTP 200
+[smoke] /api/promotion/actuator/health/readiness         HTTP 200
+[smoke] /api/gateway/actuator/health/readiness           HTTP 200
+[smoke] version desplegada: local
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+
+$ ./deploy/helm/local.sh security-smoke
+== RBAC
+[ok]    viewer puede leer pods
+[ok]    viewer NO puede leer Secrets
+[ok]    viewer NO puede borrar pods
+[ok]    viewer NO puede crear Deployments
+[ok]    los pods (circleguard-workload) NO pueden leer pods
+[ok]    los pods NO pueden leer Secrets
+== Endurecimiento de los pods
+[ok]    auth no tiene el token de la API de Kubernetes montado
+[ok]    auth no puede escribir en su imagen (disco de solo lectura)
+[ok]    auth si puede escribir en /tmp (volumen efimero)
+[ok]    auth corre como usuario 100 (no root)
+== NetworkPolicies (quien puede llamar a quien)
+[ok]    auth -> postgres:5432 (permitido)
+[ok]    gateway -> postgres:5432 (bloqueado)
+[ok]    gateway -> promotion:8088 (permitido: llama a /internal)
+[ok]    auth -> promotion:8088 (bloqueado: /internal no es suyo)
+[ok]    gateway -> GET promotion/internal/v1/users/x/status (HTTP real, permitido)
+[ok]    auth -> GET promotion/internal/v1/users/x/status (HTTP real, bloqueado)
+[ok]    pod con la etiqueta de web -> auth:8180 (permitido)
+[ok]    pod sin etiqueta -> auth:8180 (bloqueado)
+[seguridad] TODO OK

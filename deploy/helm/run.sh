@@ -35,10 +35,13 @@ cmd_lint() {
     echo "== lint $e"
     helm lint "$CHART" -f "$CHART/values-$e.yaml" -f "$SECRETS_EXAMPLE" --set global.imageTag=0.0.0 --strict
   done
+  echo "== lint platform"
+  helm lint deploy/helm/platform --strict
+  helm lint deploy/helm/platform --strict --set acme.email=equipo@example.com
 }
 
-cmd_test() {
-  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$ROOT:/apps" -w /apps "$UNITTEST_IMAGE" "$CHART"
+cmd_test() {   # el chart de la aplicacion y el de los emisores de certificados
+  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$ROOT:/apps" -w /apps "$UNITTEST_IMAGE" "$CHART" deploy/helm/platform
 }
 
 cmd_template() {

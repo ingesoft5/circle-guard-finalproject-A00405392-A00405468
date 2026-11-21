@@ -1,0 +1,24 @@
+# SealedSecret generado por ./deploy/helm/local.sh seal (de cada valor cifrado solo se muestran los 8 primeros caracteres y el largo; el archivo completo es seguro de versionar, pero solo ese cluster lo abre)
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: circleguard-secrets
+  namespace: circleguard-local
+spec:
+  encryptedData:
+    DB_PASSWORD: AgCCzAEZ… (cifrado, 740 caracteres)
+    JWT_SECRET: AgA0r3OR… (cifrado, 792 caracteres)
+    LDAP_PASSWORD: AgC1VnmV… (cifrado, 720 caracteres)
+    NEO4J_PASSWORD: AgBBskUC… (cifrado, 740 caracteres)
+    QR_SECRET: AgA6cwry… (cifrado, 792 caracteres)
+    VAULT_HASH_SALT: AgC0smze… (cifrado, 740 caracteres)
+    VAULT_SALT: AgB1I0hv… (cifrado, 740 caracteres)
+    VAULT_SECRET: AgBCODh0… (cifrado, 740 caracteres)
+  template:
+    metadata:
+      name: circleguard-secrets
+      namespace: circleguard-local
+    type: Opaque
+# El controlador lo abrió y creó el Secret (solo los nombres de las claves, nunca los valores):
+Secret circleguard-secrets (Opaque), creado por SealedSecret: claves = DB_PASSWORD, JWT_SECRET, LDAP_PASSWORD, NEO4J_PASSWORD, QR_SECRET, VAULT_HASH_SALT, VAULT_SALT, VAULT_SECRET

@@ -1,0 +1,61 @@
+$ kubectl -n circleguard-local get networkpolicy
+NAME                    POD-SELECTOR                                                       AGE
+allow-acme-solver       acme.cert-manager.io/http01-solver=true                            22s
+allow-metrics           app.kubernetes.io/name in (auth,form,gateway,identity,promotion)   11m
+allow-to-auth           app.kubernetes.io/name=auth                                        11m
+allow-to-dashboard      app.kubernetes.io/name=dashboard                                   11m
+allow-to-file           app.kubernetes.io/name=file                                        11m
+allow-to-form           app.kubernetes.io/name=form                                        11m
+allow-to-gateway        app.kubernetes.io/name=gateway                                     11m
+allow-to-identity       app.kubernetes.io/name=identity                                    11m
+allow-to-kafka          app.kubernetes.io/name=kafka                                       11m
+allow-to-neo4j          app.kubernetes.io/name=neo4j                                       11m
+allow-to-notification   app.kubernetes.io/name=notification                                11m
+allow-to-postgres       app.kubernetes.io/name=postgres                                    11m
+allow-to-promotion      app.kubernetes.io/name=promotion                                   11m
+allow-to-redis          app.kubernetes.io/name=redis                                       11m
+allow-to-web            app.kubernetes.io/name=web                                         11m
+default-deny-ingress    <none>                                                             11m
+
+$ kubectl -n circleguard-local get serviceaccount,role,rolebinding
+NAME                                  AGE
+serviceaccount/circleguard-viewer     11m
+serviceaccount/circleguard-workload   11m
+serviceaccount/default                12m
+
+NAME                                                CREATED AT
+role.rbac.authorization.k8s.io/circleguard-viewer   2026-11-18T21:34:53Z
+
+NAME                                                       ROLE                      AGE
+rolebinding.rbac.authorization.k8s.io/circleguard-viewer   Role/circleguard-viewer   11m
+
+$ kubectl -n circleguard-local get certificate,ingress,sealedsecret,secret
+NAME                                          READY   SECRET            AGE
+certificate.cert-manager.io/circleguard-tls   True    circleguard-tls   6m13s
+
+NAME                                         CLASS     HOSTS               ADDRESS      PORTS     AGE
+ingress.networking.k8s.io/circleguard        traefik   circleguard.local   172.17.0.2   80, 443   11m
+ingress.networking.k8s.io/circleguard-http   traefik   circleguard.local   172.17.0.2   80        22s
+
+NAME                                           STATUS   SYNCED   AGE
+sealedsecret.bitnami.com/circleguard-secrets            True     12m
+
+NAME                                       TYPE                 DATA   AGE
+secret/circleguard-secrets                 Opaque               8      12m
+secret/circleguard-tls                     kubernetes.io/tls    3      6m13s
+secret/sh.helm.release.v1.circleguard.v1   helm.sh/release.v1   1      11m
+secret/sh.helm.release.v1.circleguard.v2   helm.sh/release.v1   1      6m14s
+secret/sh.helm.release.v1.circleguard.v3   helm.sh/release.v1   1      96s
+secret/sh.helm.release.v1.circleguard.v4   helm.sh/release.v1   1      22s
+
+$ kubectl get clusterissuer
+NAME                     READY   AGE
+circleguard-ca           True    12m
+circleguard-selfsigned   True    12m
+
+$ helm history circleguard
+REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCRIPTION     
+1       	Wed Nov 18 21:34:53 2026	superseded	circleguard-0.1.0	0.0.0      	Install complete
+2       	Wed Nov 18 21:40:33 2026	superseded	circleguard-0.1.0	0.0.0      	Upgrade complete
+3       	Wed Nov 18 21:45:10 2026	superseded	circleguard-0.1.0	0.0.0      	Upgrade complete
+4       	Wed Nov 18 21:46:24 2026	deployed  	circleguard-0.1.0	0.0.0      	Upgrade complete

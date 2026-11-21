@@ -1,0 +1,104 @@
+suite: TLS del Ingress con cert-manager (HU-23)
+templates:
+  - templates/ingress.yaml
+  - templates/tls-redirect.yaml
+  - templates/networkpolicy.yaml
+set:
+  global:
+    imageTag: "1.2.3"
+tests:
+  - it: por defecto el Ingress no usa TLS ni pide certificados
+    template: templates/ingress.yaml
+    asserts:
+      - notExists:
+          path: spec.tls
+      - notExists:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+
+  - it: con TLS el Ingress pide su certificado al emisor y solo escucha en HTTPS
+    template: templates/ingress.yaml
+    set:
+      ingress.host: dev.example.com
+      ingress.tls.enabled: true
+    asserts:
+      - equal:
+          path: spec.tls
+          value:
+            - hosts: [dev.example.com]
+              secretName: circleguard-tls
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: circleguard-ca
+      - equal:
+          path: metadata.annotations["traefik.ingress.kubernetes.io/router.entrypoints"]
+          value: websecure
+
+  - it: el emisor se elige por ambiente (Let's Encrypt en la nube)
+    template: templates/ingress.yaml
+    set:
+      ingress.host: 1-2-3-4.sslip.io
+      ingress.tls.enabled: true
+      ingress.tls.clusterIssuer: letsencrypt
+    asserts:
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: letsencrypt
+
+  - it: con TLS y sin nombre de host falla (un certificado necesita un nombre)
+    template: templates/ingress.yaml
+    set:
+      ingress.tls.enabled: true
+    asserts:
+      - failedTemplate:
+          errorPattern: "ingress.host"
+
+  - it: con TLS el trafico HTTP se redirige a HTTPS
+    template: templates/tls-redirect.yaml
+    set:
+      ingress.host: dev.example.com
+      ingress.tls.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: spec.redirectScheme.scheme
+          value: https
+        documentSelector:
+          path: kind
+          value: Middleware
+      - equal:
+          path: metadata.annotations["traefik.ingress.kubernetes.io/router.entrypoints"]
+          value: web
+        documentSelector:
+          path: kind
+          value: Ingress
+
+  - it: sin TLS no hay redireccion
+    template: templates/tls-redirect.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: con TLS el Ingress controller puede llegar al pod que resuelve el desafio de Let's Encrypt
+    template: templates/networkpolicy.yaml
+    set:
+      ingress.host: dev.example.com
+      ingress.tls.enabled: true
+    documentSelector:
+      path: metadata.name
+      value: allow-acme-solver
+    asserts:
+      - equal:
+          path: spec.podSelector.matchLabels["acme.cert-manager.io/http01-solver"]
+          value: "true"
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+              podSelector: { matchLabels: { app.kubernetes.io/name: traefik } }
+
+  - it: sin TLS no se abre nada para el desafio
+    template: templates/networkpolicy.yaml
+    asserts:
+      - hasDocuments:
+          count: 15

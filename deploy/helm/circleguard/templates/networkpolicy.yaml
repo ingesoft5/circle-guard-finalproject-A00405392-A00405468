@@ -1,0 +1,99 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- $np := .Values.networkPolicy }}
+{{- /* Cada dependencia que un servicio espera al arrancar (waitFor) debe estar permitida en la tabla; si no, su initContainer
+       hace nc -z contra un destino que descarta el trafico y el pod se queda en Init para siempre. Se falla al renderizar. */ -}}
+{{- range $name, $s := .Values.services }}
+{{- if $s.enabled }}
+{{- range $s.waitFor }}
+{{- $dest := index (splitList ":" .) 0 }}
+{{- if not (has $name ((get $np.allow $dest) | default (list))) }}
+{{- fail (printf "networkPolicy.allow.%s debe incluir a %q: ese servicio espera a %s al arrancar (waitFor) y la red lo bloquearia" $dest $name $dest) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+# HU-23: la red nace cerrada. Un pod solo recibe trafico si una regla de abajo lo permite (la tabla vive en
+# values.yaml: networkPolicy.allow). Es solo de entrada: la salida (DNS, LDAP, Kafka externo) queda libre.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+{{- range $target, $sources := $np.allow }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-to-{{ $target }}
+  labels:
+    {{- include "cg.labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $target }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- range $sources }}
+        {{- if eq . "ingress-controller" }}
+        {{- include "cg.ingressControllerPeer" $np.ingressController | nindent 8 }}
+        {{- else }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ . }}
+        {{- end }}
+        {{- end }}
+{{- end }}
+{{- if $np.metricsFromNamespaces }}
+---
+# Prometheus (HU-20) lee /actuator de los servicios Spring desde otro namespace; el middleware y la web no se abren.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-metrics
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          {{- range $name, $s := .Values.services }}
+          {{- if and $s.enabled $s.spring }}
+          - {{ $name }}
+          {{- end }}
+          {{- end }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- range $np.metricsFromNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+        {{- end }}
+{{- end }}
+{{- if .Values.ingress.tls.enabled }}
+---
+# cert-manager levanta un pod temporal en este namespace para el desafio HTTP-01; Traefik tiene que poder llegar a el.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-acme-solver
+  labels:
+    {{- include "cg.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      acme.cert-manager.io/http01-solver: "true"
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- include "cg.ingressControllerPeer" $np.ingressController | nindent 8 }}
+{{- end }}
+{{- end }}

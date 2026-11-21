@@ -26,6 +26,9 @@ spec:
         checksum/config: {{ include "cg.configChecksum" $root }}
     spec:
       enableServiceLinks: false # las variables FOO_PORT de los Service chocan con la configuracion de Kafka y otros
+      {{- include "cg.podIdentity" . | nindent 6 }}
+      securityContext:
+        {{- include "cg.podSecurityContext" $s | nindent 8 }}
       {{- if $s.waitFor }}
       initContainers:
         {{- range $s.waitFor }}
@@ -35,6 +38,8 @@ spec:
           resources:
             requests: { cpu: 10m, memory: 8Mi }
             limits: { memory: 32Mi }
+          securityContext:
+            {{- include "cg.containerSecurityContext" . | nindent 12 }}
         {{- end }}
       {{- end }}
       containers:
@@ -85,8 +90,20 @@ spec:
           resources:
             {{- toYaml $s.resources | nindent 12 }}
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
+            {{- include "cg.containerSecurityContext" . | nindent 12 }}
+          {{- with $s.writablePaths }}
+          volumeMounts:
+            {{- range $i, $p := . }}
+            - name: w{{ $i }}
+              mountPath: {{ $p }}
+            {{- end }}
+          {{- end }}
+      {{- with $s.writablePaths }}
+      volumes:
+        {{- range $i, $p := . }}
+        - name: w{{ $i }}
+          emptyDir: {}
+        {{- end }}
+      {{- end }}
 {{- end }}
 {{- end }}
