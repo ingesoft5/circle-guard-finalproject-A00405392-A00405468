@@ -85,7 +85,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder(@Value("${circleguard.security.bcrypt-strength:10}") int strength) {
+        // HU-24: costo explícito. 10 es el mínimo que recomienda OWASP; más alto hace el login dominado por CPU
+        // (con 12, un nodo de 2 vCPU se saturaba en 8,5 logins/s). No se acepta menos de 10.
+        if (strength < 10) {
+            throw new IllegalArgumentException("circleguard.security.bcrypt-strength debe ser al menos 10, recibió " + strength);
+        }
+        return new BCryptPasswordEncoder(strength);
     }
 }
