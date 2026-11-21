@@ -1,4 +1,4 @@
-# HU-20 (#27) y HU-21 (#28): Prometheus, Grafana y Alertmanager junto al compose de un ambiente:
+# HU-20 (#27), HU-21 (#28) y HU-22 (#29): Prometheus, Grafana, Alertmanager, Jaeger y Loki junto al compose:
 #   ./deploy/compose/compose.sh dev -f deploy/compose/observability.yml up -d --wait
 # Grafana en http://localhost:3000 (o GRAFANA_PORT; usuario admin, contraseña GRAFANA_ADMIN_PASSWORD del .env).
 # Solo escuchan en 127.0.0.1: no se publican hacia afuera de la máquina.
@@ -78,6 +78,58 @@ services:
     depends_on:
       kafka: { condition: service_healthy }
 
+  # ---------------------------------------------------------------- HU-22: trazas y logs
+  # Jaeger recibe las trazas por OTLP (puerto 4318) y las muestra en http://localhost:16686.
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "127.0.0.1:${JAEGER_PORT:-16686}:16686"
+
+  loki:
+    image: grafana/loki:3.2.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ../observability/loki/loki.yml:/etc/loki/loki.yml:ro
+      - lokidata:/loki
+
+  # Lee los logs de los contenedores por el socket de Docker (solo lectura) y los envía a Loki.
+  promtail:
+    image: grafana/promtail:3.2.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ../observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+
+  # notification no está en el compose de la Parte 1; aquí se agrega para completar la traza
+  # form -> Kafka -> promotion -> Kafka -> notification.
+  notification:
+    image: ${REGISTRY:-local}/circleguard/circleguard-notification-service:${IMAGE_TAG:?Define IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      QR_SECRET: ${QR_SECRET:?Define QR_SECRET en .env}
+      AUTH_API_URL: http://auth:8180
+      TRACING_SAMPLING: "1.0"
+      OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      kafka: { condition: service_healthy }
+
+  # Con este overlay los servicios exportan todas sus trazas a Jaeger (en la base el muestreo es 0).
+  auth:      { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  identity:  { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  form:      { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  promotion: { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  gateway:   { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+
 volumes:
   promdata:
   alertlog:
+  lokidata:

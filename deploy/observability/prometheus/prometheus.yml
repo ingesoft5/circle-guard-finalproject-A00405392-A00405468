@@ -24,9 +24,10 @@ scrape_configs:
           - form:8086
           - promotion:8088
           - gateway:8087
+          - notification:8082   # solo con el overlay de observabilidad (HU-22)
         labels:
           environment: compose
-      # dashboard, file y notification no corren en el compose de la Parte 1; en Kubernetes sí.
+      # dashboard y file no corren en el compose de la Parte 1; en Kubernetes sí.
 
   # HU-21: lag de los grupos de consumidores de Kafka, medido desde el broker. Un consumidor detenido
   # no puede reportar su propio atraso, por eso no basta con las métricas de los servicios.
