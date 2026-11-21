@@ -6,6 +6,8 @@
 FROM gradle:8.14-jdk21 AS build
 WORKDIR /workspace
 COPY settings.gradle.kts build.gradle.kts ./
+# HU-22: logback-spring.xml compartido (logs en JSON con trace_id); el build raíz lo agrega a los recursos.
+COPY config/logging config/logging
 COPY services/circleguard-auth-service services/circleguard-auth-service
 # Caché de dependencias de Gradle entre builds (BuildKit). Las pruebas corren en el pipeline, no aquí.
 RUN --mount=type=cache,target=/home/gradle/.gradle \

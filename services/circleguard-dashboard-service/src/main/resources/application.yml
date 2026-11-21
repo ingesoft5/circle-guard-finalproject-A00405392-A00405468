@@ -34,6 +34,14 @@ management:
     health:
       probes:
         enabled: true
+  # HU-22 (#29): trazas W3C. Con muestreo 0 (por defecto) los logs llevan trace_id pero no se exporta nada;
+  # el ambiente con Jaeger fija TRACING_SAMPLING=1.0 y OTLP_TRACING_ENDPOINT (compose: observability.yml).
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:0.0}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}
   metrics:
     tags:
       application: ${spring.application.name}   # cada serie lleva el servicio que la produce

@@ -20,6 +20,11 @@ spring:
       password: ${NEO4J_PASSWORD}
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    # HU-22: la traza viaja en las cabeceras del mensaje (traceparent): producer y consumer con observación.
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
     producer:
       # Los servicios publican Map/objetos: sin JsonSerializer Kafka usa StringSerializer y el envío falla.
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -45,6 +50,14 @@ management:
     health:
       probes:
         enabled: true
+  # HU-22 (#29): trazas W3C. Con muestreo 0 (por defecto) los logs llevan trace_id pero no se exporta nada;
+  # el ambiente con Jaeger fija TRACING_SAMPLING=1.0 y OTLP_TRACING_ENDPOINT (compose: observability.yml).
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:0.0}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}
   metrics:
     tags:
       application: ${spring.application.name}   # cada serie lleva el servicio que la produce
