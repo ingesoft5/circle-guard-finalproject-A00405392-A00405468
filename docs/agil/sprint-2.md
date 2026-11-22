@@ -1,6 +1,6 @@
 # Sprint 2 — lunes 9 a domingo 22 de noviembre de 2026
 
-> **Borrador al 19 de noviembre.** El sprint cierra el domingo 22; las cifras de «Estado» y la retrospectiva se actualizan ese día. Cada historia enlaza su evidencia real en [`docs/evidencias/sprint-2/`](../evidencias/sprint-2/).
+> **Borrador al 22 de noviembre.** El sprint cierra el domingo 22; las cifras de «Estado» y la retrospectiva se actualizan ese día. Cada historia enlaza su evidencia real en [`docs/evidencias/sprint-2/`](../evidencias/sprint-2/).
 
 | | |
 |---|---|
@@ -19,15 +19,15 @@
 |---|---|---|---|---|---|
 | [#21](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/21) | HU-14 Terraform en módulos y 4 ambientes | A | 13 | **Hecho** (PR #65). 5 módulos, 4 ambientes, estado remoto con *lock*, 22 pruebas de módulos; los 4 ambientes se crearon y se destruyeron de verdad, con `plan` limpio y un *drift* provocado y detectado | [`hu-14-terraform.md`](../evidencias/sprint-2/hu-14-terraform.md), [`infra-terraform.md`](../arquitectura/infra-terraform.md) |
 | [#22](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/22) | HU-15 Los 8 servicios y el middleware en Kubernetes | A | 13 | **Hecho** (PR #67). Un chart de Helm, 38 pruebas de plantillas y una instalación real en un k3s local con 7 sondas y login real | [`hu-15-kubernetes.md`](../evidencias/sprint-2/hu-15-kubernetes.md), [`deploy/helm/README.md`](../../deploy/helm/README.md) |
-| [#23](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/23) | HU-16 Pipeline: Terraform, Trivy y Kubernetes | A | 8 | **En curso.** Escrito y probado en local (Jenkins simulado y k3s real); falta ejecutarlo en un Jenkins real y en AWS | `hu-16-pipeline.md` (en su PR) |
+| [#23](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/23) | HU-16 Pipeline: Terraform, Trivy y Kubernetes | A | 8 | **Hecho en revisión** (PR #73, aprobado por `pierrecuevas`). El check de Jenkins quedó en verde el 21 nov en el Jenkins real (gitleaks, Trivy, Sonar e integración); falta fusionar y ejecutar los jobs de Terraform y Kubernetes en una ventana de nube | `hu-16-pipeline.md` (en su PR) |
 | [#24](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/24) | HU-17 Circuit Breaker + Retry | B | 5 | **Hecho** (PR #66, de `pierrecuevas`). Pruebas con fallas inyectadas y análisis de *trade-offs* | [`hu-17-resiliencia.md`](../evidencias/sprint-2/hu-17-resiliencia.md), [`docs/patrones/resiliencia.md`](../patrones/resiliencia.md) |
 | [#25](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/25) | HU-18 External Configuration + Feature Toggle | B | 3 | **Hecho** (PR #68; la hizo A y B la revisó, que no tenía trabajo empezado) | [`hu-18-configuracion.md`](../evidencias/sprint-2/hu-18-configuracion.md), [`docs/patrones/configuracion.md`](../patrones/configuracion.md) |
 | [#26](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/26) | HU-19 Cache-aside y patrones existentes | B | 5 | **Hecho** (PR #69, de `pierrecuevas`). Encontró un fallo real: tras reiniciar Redis el gateway dejaba pasar a usuarios confirmados | [`hu-19-cache-aside.md`](../evidencias/sprint-2/hu-19-cache-aside.md), [`docs/patrones/`](../patrones/README.md) |
-| [#27](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/27) | HU-20 Prometheus y Grafana | B | 8 | **Sin empezar** (sin rama al 19 nov) | — |
-| [#28](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/28) | HU-21 Alertas con Alertmanager | B | 3 | **Sin empezar** | — |
-| [#29](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/29) | HU-22 Jaeger y Loki | B | 5 | **Sin empezar** | — |
-| [#30](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/30) | HU-23 Seguridad | A | 8 | **En revisión** (PR #71, check de Jenkins verde). Trivy, Sealed Secrets, NetworkPolicies, pods sin root, RBAC y TLS, probados en un k3s real; Let's Encrypt real y el RBAC de Jenkins quedan para una ventana | [`hu-23-seguridad.md`](../evidencias/sprint-2/hu-23-seguridad.md) (en su PR), [`seguridad.md`](../arquitectura/seguridad.md) |
-| [#31](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/31) | HU-24 Locust y OWASP ZAP | B | 5 | **Sin empezar** | — |
+| [#27](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/27) | HU-20 Prometheus y Grafana | B | 8 | **En revisión** (PR #72, de `pierrecuevas`): métricas de los 8 servicios y 3 dashboards de Grafana | — |
+| [#28](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/28) | HU-21 Alertas con Alertmanager | B | 3 | **En revisión** (PR #75, de `pierrecuevas`): 4 alertas probadas provocando la falla | — |
+| [#29](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/29) | HU-22 Jaeger y Loki | B | 5 | **En revisión** (PR #76, de `pierrecuevas`, borrador apilado sobre #75): Jaeger y Loki | — |
+| [#30](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/30) | HU-23 Seguridad | A | 8 | **Hecho** (PR #71, fusionado el 21 nov). Trivy, Sealed Secrets, NetworkPolicies, pods sin root, RBAC y TLS, probados en un k3s real; Let's Encrypt real queda pendiente de la nube. El RBAC de Jenkins quedó aplicado y se comprobó en el Jenkins real | [`hu-23-seguridad.md`](../evidencias/sprint-2/hu-23-seguridad.md) (en su PR), [`seguridad.md`](../arquitectura/seguridad.md) |
+| [#31](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/31) | HU-24 Locust y OWASP ZAP | B | 5 | **En revisión** (PR #74, de `pierrecuevas`): Locust con objetivo declarado, BCrypt 12→10 (×3,5) y ZAP baseline | — |
 | [#32](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/32) | HU-25 Rollback y registro de cambios en K8s | A | 2 | **Hecho** (PR #70). `release.sh` con `--atomic`; la demo revirtió sola una versión inexistente | [`hu-25-rollback.md`](../evidencias/sprint-2/hu-25-rollback.md) |
 | [#33](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/33) | HU-26 Documentación completa | A+B | 5 | **En curso.** Costos reales (Cost Explorer), manual de operaciones, resumen en inglés y diagramas escritos | [`costos.md`](../operaciones/costos.md), [`manual-operaciones.md`](../operaciones/manual-operaciones.md), [`resumen-ejecutivo.md`](../resumen-ejecutivo.md) |
 | [#34](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/issues/34) | HU-27 Presentación y sustentación | A+B | 3 | **Pendiente** (guion y ensayos) | — |
@@ -38,10 +38,10 @@
 | Métrica | Sprint 1 | Sprint 2 (al 19 nov) |
 |---|---|---|
 | Puntos comprometidos | 61 | 91 |
-| Puntos terminados | 61 | **41** (HU-14, 15, 17, 18, 19 y 25); 8 más en revisión (HU-23) |
+| Puntos terminados | 61 | **49** (HU-14, 15, 17, 18, 19, 23 y 25); 8 más en revisión (HU-16) y 21 de Pierre (HU-20, 21, 22 y 24) en revisión |
 | Días del sprint | 4 (5 a 8 nov) | 14 (9 a 22 nov); se empezó a trabajar el 13 |
 | Velocidad | 61 pts en 4 días ≈ 15 pts/día | 41 pts en 10 días ≈ 4 pts/día |
-| PR fusionados | 11 | #65, #66, #67, #68, #69, #70 (y #71 en revisión) |
+| PR fusionados | 11 | #65 a #71; en revisión #72 a #76 |
 | Versiones publicadas | `v1.0.0`, `v1.1.0` | `v1.2.0`, `v1.3.0`, `v1.4.0` |
 | Pruebas | 121 (110 unitarias + 11 de integración) + 6 E2E | + 22 de módulos Terraform, 40 del chart de Helm (76 con HU-23), 14 de resiliencia, 13 del cache-aside |
 | Costo de nube (consumo bruto del mes) | — | USD 49,45 de 60; neto USD 0,00 por créditos ([`costos.md`](../operaciones/costos.md)) |
