@@ -74,6 +74,19 @@ docker build -f mobile/Dockerfile -t local/circleguard-web:local .
 | `release.sh history <ambiente> [--md]` | El registro de cambios del ambiente: revisión, fecha, estado, **versión** y motivo |
 | `release.sh selftest` | Pruebas de la lógica que elige la revisión de destino (no necesitan clúster; corren en `run.sh check`) |
 
+`release.sh deploy` acepta `SEALED=1` (usa el Secret que creó Sealed Secrets en vez de un archivo de secretos) y `--set clave=valor` repetido (host del Ingress, TLS).
+
+### Promover una versión (lo que llama el pipeline)
+
+[`promote.sh`](promote.sh) junta los pasos de un despliegue a Kubernetes (HU-16) y sirve igual a mano: `KUBECONFIG_FILE=<ruta> ./deploy/helm/promote.sh <ambiente> <versión> [--commit <sha>] [--build <n>]`.
+
+1. [`platform.sh ensure`](platform.sh): instala cert-manager y Sealed Secrets y sella los secretos del ambiente **solo si faltan** (un cluster nuevo); en uno que ya los tiene no toca nada.
+2. `release.sh deploy` con `SEALED=1` (y, con `INGRESS_HOST`, TLS por cert-manager).
+3. [`smoke.sh`](smoke.sh) si hay `SMOKE_URL`: las sondas de los 5 servicios núcleo, que `/version` diga la versión pedida y un login real.
+4. `release.sh history --md` a `HISTORY_OUT`, para archivarlo.
+
+Variables: `IMAGE_REGISTRY` (ECR; en el clúster local, `local` con la versión `local`), `INGRESS_HOST`, `TLS_ISSUER`, `ACME_EMAIL`, `SMOKE_URL`, `SMOKE_INSECURE=1`, `HISTORY_OUT`. Cómo lo usa Jenkins: [`pipeline-k8s.md`](../../docs/arquitectura/pipeline-k8s.md).
+
 **Por qué el registro es el historial de Helm** y no un archivo aparte: ya vive en el clúster de cada ambiente (un historial por namespace, así que ya es *por ambiente*), no se puede olvidar de escribir porque Helm lo crea con cada cambio, y se puede volver a cualquier revisión. Se sube el límite de revisiones a 50 (`--history-max`; el valor por defecto de Helm es 10 y borraría el registro demasiado pronto). Qué versión corría en cada revisión no viene en `helm history`; sale de los valores de esa revisión y por eso `history --md` la agrega.
 
 **Por qué «versión distinta de la activa»:** después de un rollback, la revisión anterior suele ser la misma versión que ya corre; volver a ella no arreglaría nada.

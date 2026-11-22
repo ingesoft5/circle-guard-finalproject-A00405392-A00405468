@@ -25,6 +25,12 @@ ensure_secret SONAR_DOCENTE_PASSWORD 20 strong
 secret_from_env GITHUB_TOKEN
 secret_from_env DISCORD_WEBHOOK_URL optional   # E1.5: aviso de fallos; se puede activar después
 secret_from_env WHATSAPP_RECIPIENTS optional   # "+57XXXXXXXXXX:apikey,+57...:apikey" (CallMeBot)
+# HU-16 (opcionales): llaves de AWS de un usuario de IAM PROPIO de Jenkins (jobs de Terraform y subida a ECR; no uses el de
+# administración) y el correo de las alarmas de CloudWatch y de Let's Encrypt. Sin ellas Jenkins arranca igual y los jobs
+# circleguard-infra / circleguard-drift y TARGET=k8s fallan diciendo qué falta.
+secret_from_env AWS_ACCESS_KEY_ID optional
+secret_from_env AWS_SECRET_ACCESS_KEY optional
+secret_from_env ALERT_EMAIL optional
 DEPLOY_KEY="$STATE_DIR/deploy_key"
 [[ -f "$DEPLOY_KEY" ]] || ssh-keygen -q -t ed25519 -N "" -C "jenkins-deploy@$PROJECT" -f "$DEPLOY_KEY"
 sec() { state_get "$SECRETS_FILE" "$1"; }
@@ -60,6 +66,19 @@ write_env() {   # .env de las herramientas: se reescribe completo en cada ejecuc
       echo "$s=$(sec "$s")"
     done
     echo "SONAR_TOKEN=$(sec SONAR_TOKEN)"
+    # HU-16: Terraform y Kubernetes en AWS. Terraform lee TF_VAR_* sin archivo tfvars; la llave pública que autoriza a Jenkins
+    # en los nodos k3s es la de deploy-ssh (la misma que ya usa para las VMs de la Parte 1).
+    local bucket acct
+    bucket="$(awk -F'"' '/^bucket/ { print $2 }' "$REPO_ROOT/infra/terraform/backend.hcl" 2>/dev/null || true)"
+    acct="$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)"
+    echo "TF_STATE_BUCKET=$bucket"
+    echo "ECR_REGISTRY=${acct:+$acct.dkr.ecr.$AWS_REGION.amazonaws.com}"
+    echo "TF_VAR_tools_cidr=$TOOLS_PUB/32"
+    echo "TF_VAR_ssh_public_key=$(cat "$DEPLOY_KEY.pub")"
+    echo "TF_VAR_admin_cidrs=[\"$(curl -fsS --max-time 10 https://checkip.amazonaws.com 2>/dev/null || echo 0.0.0.0)/32\"]"
+    echo "TF_VAR_alert_email=$(sec ALERT_EMAIL)"
+    echo "ACME_EMAIL=$(sec ALERT_EMAIL)"
+    for s in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do echo "$s=$(sec "$s")"; done
   } | remote tools "umask 077 && cat > $REMOTE_DIR/.env"
 }
 write_env

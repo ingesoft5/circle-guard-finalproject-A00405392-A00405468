@@ -34,7 +34,10 @@ cmd_up() {
   docker inspect "$NAME" >/dev/null 2>&1 && die "Ya existe el clúster $NAME (./deploy/helm/local.sh down para borrarlo)"
   docker run -d --name "$NAME" --privileged --tmpfs /run --tmpfs /var/run \
     -p 127.0.0.1:6443:6443 -p "127.0.0.1:$HTTP_PORT:80" -p "127.0.0.1:$HTTPS_PORT:443" \
-    "$K3S_IMAGE" server --tls-san 127.0.0.1 >/dev/null
+    "$K3S_IMAGE" server --tls-san 127.0.0.1 \
+    --kubelet-arg="eviction-hard=${K3S_EVICTION_HARD:-imagefs.available<1%,nodefs.available<1%}" >/dev/null
+  # El kubelet pone el taint disk-pressure (y no agenda ningún pod) si al disco del equipo le queda menos del 10 %, y los
+  # portátiles de desarrollo suelen estar así: es un clúster de pruebas efímero, no un nodo que deba protegerse. Se baja a 1 %.
   echo "Esperando al nodo..."
   local i
   for i in $(seq 1 60); do
@@ -86,23 +89,7 @@ cmd_deploy() {
   kc -n "$NS" get pods,hpa,ingress
 }
 
-cmd_smoke() {
-  local base="http://127.0.0.1:$HTTP_PORT" fail=0 path code
-  for path in /healthz /version /api/auth/actuator/health/readiness /api/identity/actuator/health/readiness \
-              /api/form/actuator/health/readiness /api/promotion/actuator/health/readiness \
-              /api/gateway/actuator/health/readiness; do
-    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --retry 6 --retry-delay 5 --retry-all-errors "$base$path" || true)"
-    printf '[smoke] %-48s HTTP %s\n' "$path" "$code"
-    [[ "$code" == 200 ]] || fail=1
-  done
-  printf '[smoke] version desplegada: %s\n' "$(curl -s --max-time 10 "$base/version")"
-  # Login real: web (nginx) -> auth -> Postgres (y identity). super_admin/password es la cuenta semilla de la Parte 1.
-  local body
-  body="$(curl -s --max-time 20 -X POST -H 'Content-Type: application/json' \
-    -d '{"username":"super_admin","password":"password"}' "$base/api/auth/api/v1/auth/login" || true)"
-  if grep -q '"token"' <<<"$body"; then echo "[smoke] login super_admin: OK (devolvió token)"; else echo "[smoke] login super_admin: FALLÓ -> ${body:0:200}"; fail=1; fi
-  [[ $fail -eq 0 ]] && echo "[smoke] TODO OK" || { echo "[smoke] HAY FALLAS"; return 1; }
-}
+cmd_smoke() { "$HERE/smoke.sh" "http://127.0.0.1:$HTTP_PORT"; }   # la misma prueba que usa el pipeline (promote.sh)
 
 cmd_platform() { KUBECONFIG_FILE="$STATE/kubeconfig" "$HERE/platform.sh" install; }
 cmd_seal() { SEALED_OUT="$STATE/sealed.yaml" KUBECONFIG_FILE="$STATE/kubeconfig" "$HERE/platform.sh" seal local "$NS"; }
@@ -172,7 +159,9 @@ cmd_security_smoke() {
 }
 
 cmd_down() {
-  docker rm -f "$NAME" >/dev/null 2>&1 || true
+  # -v: la imagen de k3s declara volúmenes anónimos donde guarda las imágenes importadas (varios GB por clúster); sin -v
+  # quedan huérfanos al borrar el contenedor y llenan el disco (el kubelet termina poniendo el taint disk-pressure).
+  docker rm -f -v "$NAME" >/dev/null 2>&1 || true
   rm -f "$STATE/kubeconfig"
   echo "Clúster $NAME destruido"
 }
