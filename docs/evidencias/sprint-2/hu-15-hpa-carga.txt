@@ -1,0 +1,158 @@
+# HU-15 · 8 servicios y HPA bajo carga en un k3s local (21-22 nov 2026)
+# k3s rancher/k3s:v1.37.2-k3s1 dentro de Docker; imágenes local/circleguard-*:local (construidas hace 4 días, anteriores a #74 y #76)
+
+$ ./deploy/helm/local.sh deploy --set services.dashboard.enabled=true --set services.file.enabled=true --set services.notification.enabled=true
+$ kubectl -n circleguard-local get pods,hpa
+NAME                                READY   STATUS     RESTARTS   AGE
+pod/auth-69697b7d76-8t99m           1/1     Running    0          5m33s
+pod/auth-69697b7d76-cn7gp           0/1     Init:0/2   0          2s
+pod/dashboard-7bdf46f474-vfhw6      1/1     Running    0          5m32s
+pod/file-75fc88488b-v2qmk           1/1     Running    0          5m33s
+pod/form-69f5cf7cb8-lcv6n           1/1     Running    0          5m33s
+pod/gateway-757bf66cfd-qbrn4        1/1     Running    0          5m33s
+pod/identity-d854c4f4c-c7cxs        1/1     Running    0          5m33s
+pod/kafka-0                         1/1     Running    0          5m32s
+pod/neo4j-0                         1/1     Running    0          5m32s
+pod/notification-64659fbfcc-v64zh   1/1     Running    0          5m32s
+pod/postgres-0                      1/1     Running    0          5m32s
+pod/promotion-b667588fd-ccfkg       1/1     Running    0          5m33s
+pod/redis-78fddc9767-s9dgt          1/1     Running    0          5m33s
+pod/web-68786695cf-p9bqs            1/1     Running    0          5m32s
+
+NAME                                               REFERENCE                 TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/auth           Deployment/auth           cpu: 2988%/70%   1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/dashboard      Deployment/dashboard      cpu: 4%/70%      1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/file           Deployment/file           cpu: 6%/70%      1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/form           Deployment/form           cpu: 14%/70%     1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/gateway        Deployment/gateway        cpu: 5%/70%      1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/identity       Deployment/identity       cpu: 6%/70%      1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/notification   Deployment/notification   cpu: 14%/70%     1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/promotion      Deployment/promotion      cpu: 13%/70%     1         2         1          5m32s
+horizontalpodautoscaler.autoscaling/web            Deployment/web            cpu: 2%/70%      1         2         1          5m32s
+
+$ kubectl top pods (reposo)
+NAME                            CPU(cores)   MEMORY(bytes)   
+auth-69697b7d76-8t99m           2988m        274Mi           
+dashboard-7bdf46f474-vfhw6      4m           214Mi           
+file-75fc88488b-v2qmk           6m           129Mi           
+form-69f5cf7cb8-lcv6n           14m          226Mi           
+gateway-757bf66cfd-qbrn4        5m           152Mi           
+identity-d854c4f4c-c7cxs        6m           224Mi           
+kafka-0                         47m          325Mi           
+neo4j-0                         12m          527Mi           
+notification-64659fbfcc-v64zh   14m          198Mi           
+postgres-0                      16m          127Mi           
+promotion-b667588fd-ccfkg       13m          310Mi           
+redis-78fddc9767-s9dgt          5m           5Mi             
+web-68786695cf-p9bqs            1m           10Mi            
+
+$ ./deploy/helm/local.sh smoke
+[smoke] /healthz                                         HTTP 200
+[smoke] /version                                         HTTP 200
+[smoke] /api/auth/actuator/health/readiness              HTTP 200
+[smoke] /api/identity/actuator/health/readiness          HTTP 200
+[smoke] /api/form/actuator/health/readiness              HTTP 200
+[smoke] /api/promotion/actuator/health/readiness         HTTP 200
+[smoke] /api/gateway/actuator/health/readiness           HTTP 200
+[smoke] version desplegada: local
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+
+$ free -m (PC, con el cluster arriba)
+               total        used        free      shared  buff/cache   available
+Mem:           15382        9170         397          82        6160        6212
+
+# --- Línea de tiempo del HPA de auth (muestras cada 10 s, UTC; columnas: objetivo, mín, máx, réplicas) ---
+# Antes de las 02:37:55: ráfaga de CPU del arranque de la JVM (655 % de su request de 100m) escaló a 2; ~5 min tras calmarse bajó a 1.
+# 02:37:50: empieza Locust; 02:38:38: el HPA sube auth de 1 a 2 réplicas.
+02:35:05 auth      Deployment/auth      cpu: 7%/70%   1     2     2     8m19s
+02:35:15 auth      Deployment/auth      cpu: 7%/70%   1     2     2     8m30s
+02:35:26 auth      Deployment/auth      cpu: 5%/70%   1     2     2     8m40s
+02:35:37 auth      Deployment/auth      cpu: 6%/70%   1     2     2     8m51s
+02:35:47 auth      Deployment/auth      cpu: 7%/70%   1     2     2     9m2s
+02:35:58 auth      Deployment/auth      cpu: 7%/70%   1     2     2     9m12s
+02:36:09 auth      Deployment/auth      cpu: 5%/70%   1     2     2     9m23s
+02:36:19 auth      Deployment/auth      cpu: 7%/70%   1     2     2     9m34s
+02:36:30 auth      Deployment/auth      cpu: 7%/70%   1     2     2     9m44s
+02:36:41 auth      Deployment/auth      cpu: 7%/70%   1     2     2     9m55s
+02:36:51 auth      Deployment/auth      cpu: 10%/70%   1     2     2     10m
+02:37:02 auth      Deployment/auth      cpu: 10%/70%   1     2     2     10m
+02:37:13 auth      Deployment/auth      cpu: 10%/70%   1     2     2     10m
+02:37:23 auth      Deployment/auth      cpu: 12%/70%   1     2     2     10m
+02:37:34 auth      Deployment/auth      cpu: 10%/70%   1     2     2     10m
+02:37:45 auth      Deployment/auth      cpu: 10%/70%   1     2     2     10m
+02:37:55 auth      Deployment/auth      cpu: 7%/70%   1     2     1     11m
+02:38:06 auth      Deployment/auth      cpu: 5%/70%   1     2     1     11m
+02:38:17 auth      Deployment/auth      cpu: 6597%/70%   1     2     1     11m
+02:38:27 auth      Deployment/auth      cpu: 6597%/70%   1     2     1     11m
+02:38:38 auth      Deployment/auth      cpu: 9451%/70%   1     2     2     11m
+02:38:49 auth      Deployment/auth      cpu: 7339%/70%   1     2     2     12m
+02:39:00 auth      Deployment/auth      cpu: 7339%/70%   1     2     2     12m
+02:39:11 auth      Deployment/auth      cpu: 7597%/70%   1     2     2     12m
+02:39:22 auth      Deployment/auth      cpu: 4847%/70%   1     2     2     12m
+02:39:32 auth      Deployment/auth      cpu: 5320%/70%   1     2     2     12m
+02:39:43 auth      Deployment/auth      cpu: 5320%/70%   1     2     2     12m
+02:39:54 auth      Deployment/auth      cpu: 5123%/70%   1     2     2     13m
+02:40:05 auth      Deployment/auth      cpu: 5276%/70%   1     2     2     13m
+02:40:16 auth      Deployment/auth      cpu: 5276%/70%   1     2     2     13m
+02:40:27 auth      Deployment/auth      cpu: 5402%/70%   1     2     2     13m
+02:40:38 auth      Deployment/auth      cpu: 5402%/70%   1     2     2     13m
+02:40:49 auth      Deployment/auth      cpu: 5364%/70%   1     2     2     14m
+02:41:00 auth      Deployment/auth      cpu: 5364%/70%   1     2     2     14m
+02:41:11 auth      Deployment/auth      cpu: 5504%/70%   1     2     2     14m
+02:41:22 auth      Deployment/auth      cpu: 5327%/70%   1     2     2     14m
+02:41:33 auth      Deployment/auth      cpu: 5599%/70%   1     2     2     14m
+02:41:44 auth      Deployment/auth      cpu: 5599%/70%   1     2     2     14m
+02:41:55 auth      Deployment/auth      cpu: 5290%/70%   1     2     2     15m
+02:42:06 auth      Deployment/auth      cpu: 4416%/70%   1     2     2     15m
+
+--- baseline antes de la carga 02:37:47 UTC
+auth   Deployment/auth   cpu: 7%/70%   1     2     1     11m
+auth-69697b7d76-8t99m   1/1   Running   0     11m
+auth-69697b7d76-8t99m   7m    278Mi   
+
+$ Locust 2.32.3, escenario LoginUser, 50 usuarios, 10/s, 4 min, contra el Ingress del k3s (http://127.0.0.1:8088)
+Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+POST     auth: login                                                                     5337     0(0.00%) |   1221     405    3608   1200 |   22.32        0.00
+         Aggregated                                                                      5337     0(0.00%) |   1221     405    3608   1200 |   22.32        0.00
+Type     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+POST     auth: login                                                                          1200   1300   1500   1600   1800   2000   2100   2200   2600   3600   3600   5337
+         Aggregated                                                                           1200   1300   1500   1600   1800   2000   2100   2200   2600   3600   3600   5337
+
+$ kubectl get hpa,pods (al terminar la carga)
+NAME           REFERENCE                 TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+auth           Deployment/auth           cpu: 1355%/70%   1         2         2          15m
+dashboard      Deployment/dashboard      cpu: 4%/70%      1         2         1          15m
+file           Deployment/file           cpu: 3%/70%      1         2         1          15m
+form           Deployment/form           cpu: 3%/70%      1         2         1          15m
+gateway        Deployment/gateway        cpu: 4%/70%      1         2         1          15m
+identity       Deployment/identity       cpu: 16%/70%     1         2         2          15m
+notification   Deployment/notification   cpu: 24%/70%     1         2         2          15m
+promotion      Deployment/promotion      cpu: 14%/70%     1         2         1          15m
+web            Deployment/web            cpu: 6%/70%      1         2         1          15m
+NAME                    READY   STATUS    RESTARTS   AGE
+auth-69697b7d76-8t99m   1/1     Running   0          15m
+auth-69697b7d76-zws9z   1/1     Running   0          4m5s
+
+$ kubectl top pods (al terminar la carga)
+NAME                            CPU(cores)   MEMORY(bytes)   
+auth-69697b7d76-8t99m           4m           325Mi           
+auth-69697b7d76-zws9z           2706m        305Mi           
+dashboard-7bdf46f474-vfhw6      4m           217Mi           
+file-75fc88488b-v2qmk           3m           131Mi           
+form-69f5cf7cb8-lcv6n           3m           228Mi           
+gateway-757bf66cfd-qbrn4        4m           154Mi           
+identity-d854c4f4c-8dxw2        8m           257Mi           
+identity-d854c4f4c-c7cxs        24m          258Mi           
+kafka-0                         20m          365Mi           
+neo4j-0                         8m           536Mi           
+notification-64659fbfcc-djtsx   15m          196Mi           
+notification-64659fbfcc-v64zh   34m          202Mi           
+postgres-0                      5m           170Mi           
+promotion-b667588fd-ccfkg       14m          315Mi           
+redis-78fddc9767-s9dgt          6m           5Mi             
+web-68786695cf-p9bqs            3m           10Mi            
+
+$ free -m (PC: 8 servicios + middleware + Locust)
+               total        used        free      shared  buff/cache   available
+Mem:           15382       10181         637          82        4907        5201

@@ -60,3 +60,29 @@ run "rechaza_un_role_desconocido" {
 
   expect_failures = [var.role]
 }
+
+run "por_defecto_no_es_spot" {
+  command = apply
+
+  assert {
+    condition     = length(aws_instance.this.instance_market_options) == 0
+    error_message = "Sin spot = true la VM debe ser on-demand."
+  }
+}
+
+run "con_spot_pide_una_instancia_spot_persistente_que_se_detiene" {
+  command = apply
+
+  variables {
+    spot = true
+  }
+
+  assert {
+    condition = (
+      aws_instance.this.instance_market_options[0].market_type == "spot" &&
+      aws_instance.this.instance_market_options[0].spot_options[0].spot_instance_type == "persistent" &&
+      aws_instance.this.instance_market_options[0].spot_options[0].instance_interruption_behavior == "stop"
+    )
+    error_message = "Con spot = true debe ser Spot persistente con interrupcion = stop."
+  }
+}

@@ -272,6 +272,13 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 
 ---
 
+### 2026-11-22 · `jmrojas06` · Bonos: chaos engineering y FinOps (#39)
+
+- **Contenido propio entregado:** el criterio de los bonos del enunciado (chaos engineering y FinOps con monitoreo de costos, Spot y *scale-to-zero*), las ventanas de nube y las capturas de Cost Explorer, y la decisión de que cada afirmación saliera de evidencia ya existente.
+- **Prompts (textuales):** *"Hagamos los bonos y todo porfavor. Necesito la mejor nota posible, vuelve a revisar la rubrica y compara y revisa que todo este perfecto para sacar 5.0"*.
+- **Qué produjo:** `docs/bonos/chaos-engineering.md` (cinco experimentos con hipótesis, resultado y lo que cambió, armados con las salidas de HU-17, 19, 21 y 27), `docs/bonos/finops.md`, `scripts/finops.sh` (informe de solo lectura de costos, presupuesto y Spot), la variable `spot` del módulo `compute` de Terraform con dos pruebas nuevas, y `scripts/chaos/identidad-caida.sh`.
+- **Verificación / cambios del equipo:** `scripts/finops.sh` se ejecutó contra la cuenta real (USD 53,56 del presupuesto de 60, precios Spot leídos de la API); `./infra/terraform/run.sh check` pasa completo (24 pruebas de módulos). No se hizo un `apply` real con Spot y no se usó una herramienta de caos: ambas cosas se dicen en los propios documentos.
+
 ## Reflexión crítica del equipo
 
 _Se completa al cierre de cada sprint (en la retrospectiva): qué aportó la IA, qué errores cometió y cómo se detectaron, qué decisiones se tomaron en contra de su sugerencia y qué aprendimos haciendo el trabajo nosotros._

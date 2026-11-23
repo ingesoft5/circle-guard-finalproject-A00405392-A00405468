@@ -1,0 +1,154 @@
+== validate infra/terraform/bootstrap
+Success! The configuration is valid.
+
+== validate infra/terraform/modules/compute
+Success! The configuration is valid.
+
+== validate infra/terraform/modules/network
+Success! The configuration is valid.
+
+== validate infra/terraform/modules/observability
+Success! The configuration is valid.
+
+== validate infra/terraform/modules/registry
+Success! The configuration is valid.
+
+== validate infra/terraform/modules/storage
+Success! The configuration is valid.
+
+== validate infra/terraform/envs/dev
+Success! The configuration is valid.
+
+== validate infra/terraform/envs/prod
+Success! The configuration is valid.
+
+== validate infra/terraform/envs/stage
+Success! The configuration is valid.
+
+== validate infra/terraform/envs/tools
+Success! The configuration is valid.
+
+== test infra/terraform/modules/compute
+tests/compute.tftest.hcl... in progress
+  run "exige_imdsv2"... pass
+  run "el_disco_raiz_va_cifrado_y_es_gp3"... pass
+  run "el_nodo_k3s_instala_k3s_con_la_version_fija"... pass
+  run "la_vm_tools_no_instala_k3s"... pass
+  run "rechaza_un_role_desconocido"... pass
+  run "por_defecto_no_es_spot"... pass
+  run "con_spot_pide_una_instancia_spot_persistente_que_se_detiene"... pass
+tests/compute.tftest.hcl... tearing down
+tests/compute.tftest.hcl... pass
+
+Success! 7 passed, 0 failed.
+== test infra/terraform/modules/network
+tests/network.tftest.hcl... in progress
+  run "crea_una_regla_por_puerto_y_cidr"... pass
+  run "ssh_nunca_queda_abierto_al_mundo"... pass
+  run "la_subred_no_asigna_ip_publica_sola"... pass
+  run "rechaza_un_cidr_invalido"... pass
+tests/network.tftest.hcl... tearing down
+tests/network.tftest.hcl... pass
+
+Success! 4 passed, 0 failed.
+== test infra/terraform/modules/observability
+tests/observability.tftest.hcl... in progress
+  run "las_dos_alarmas_avisan_por_el_tema_sns"... pass
+  run "la_alarma_de_cpu_salta_sobre_80"... pass
+  run "una_vm_apagada_no_dispara_alarmas"... pass
+  run "los_logs_tienen_retencion"... pass
+  run "rechaza_un_correo_invalido"... pass
+tests/observability.tftest.hcl... tearing down
+tests/observability.tftest.hcl... pass
+
+Success! 5 passed, 0 failed.
+== test infra/terraform/modules/registry
+tests/registry.tftest.hcl... in progress
+  run "crea_un_repositorio_por_nombre"... pass
+  run "las_etiquetas_son_inmutables"... pass
+  run "escanea_al_subir"... pass
+  run "rechaza_una_lista_vacia"... pass
+tests/registry.tftest.hcl... tearing down
+tests/registry.tftest.hcl... pass
+
+Success! 4 passed, 0 failed.
+== test infra/terraform/modules/storage
+tests/storage.tftest.hcl... in progress
+  run "el_versionado_esta_activo"... pass
+  run "bloquea_todo_acceso_publico"... pass
+  run "cifra_los_objetos"... pass
+  run "expira_las_versiones_antiguas"... pass
+tests/storage.tftest.hcl... tearing down
+tests/storage.tftest.hcl... pass
+
+Success! 4 passed, 0 failed.
+All plugins are already installed
+2026-11-23T02:30:53Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-11-23T02:30:54Z	INFO	[checks-client] Using existing checks from cache	path="/cache/policy/content"
+2026-11-23T02:30:56Z	INFO	[terraform scanner] Scanning root module	file_path="bootstrap"
+2026-11-23T02:30:56Z	INFO	[terraform scanner] Scanning root module	file_path="envs/dev"
+2026-11-23T02:30:56Z	WARN	[terraform parser] Variable values were not found in the environment or variable files. Evaluating may not work correctly.	module="root" variables="admin_cidrs, alert_email, ssh_public_key, tools_cidr"
+2026-11-23T02:30:56Z	INFO	[terraform scanner] Scanning root module	file_path="envs/prod"
+2026-11-23T02:30:56Z	WARN	[terraform parser] Variable values were not found in the environment or variable files. Evaluating may not work correctly.	module="root" variables="admin_cidrs, alert_email, ssh_public_key, tools_cidr"
+2026-11-23T02:30:57Z	INFO	[terraform scanner] Scanning root module	file_path="envs/stage"
+2026-11-23T02:30:57Z	WARN	[terraform parser] Variable values were not found in the environment or variable files. Evaluating may not work correctly.	module="root" variables="admin_cidrs, alert_email, ssh_public_key, tools_cidr"
+2026-11-23T02:30:57Z	INFO	[terraform scanner] Scanning root module	file_path="envs/tools"
+2026-11-23T02:30:57Z	WARN	[terraform parser] Variable values were not found in the environment or variable files. Evaluating may not work correctly.	module="root" variables="admin_cidrs, alert_email, ssh_public_key"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-dynamodb-table-customer-key" range="bootstrap/main.tf:78-95"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="bootstrap/main.tf:39-47"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="bootstrap/main.tf:21-27"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="modules/observability/main.tf:4-6"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="modules/network/main.tf:81"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="modules/storage/main.tf:17-25"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="modules/storage/main.tf:3-5"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="modules/observability/main.tf:4-6"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="modules/network/main.tf:81"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="modules/storage/main.tf:17-25"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="modules/storage/main.tf:3-5"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-encryption-customer-key" range="modules/storage/main.tf:17-25"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-s3-enable-logging" range="modules/storage/main.tf:3-5"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="modules/observability/main.tf:4-6"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="modules/network/main.tf:81"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-sns-enable-topic-encryption" range="modules/observability/main.tf:4-6"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ec2-no-public-egress-sgr" range="modules/network/main.tf:81"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	[terraform executor] Ignore finding	rule="aws-ecr-repository-customer-key" range="modules/registry/main.tf:14"
+2026-11-23T02:30:57Z	INFO	Detected config files	num=10
+
+Report Summary
+
+┌───────────────────────────────┬───────────┬───────────────────┐
+│            Target             │   Type    │ Misconfigurations │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ bootstrap                     │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ bootstrap/main.tf             │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ envs/dev                      │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ envs/prod                     │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ envs/stage                    │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ envs/tools                    │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ modules/network/main.tf       │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ modules/observability/main.tf │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ modules/registry/main.tf      │ terraform │         0         │
+├───────────────────────────────┼───────────┼───────────────────┤
+│ modules/storage/main.tf       │ terraform │         0         │
+└───────────────────────────────┴───────────┴───────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+exit=0

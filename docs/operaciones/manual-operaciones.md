@@ -100,6 +100,7 @@ El estado remoto (bootstrap) se conserva. Un `SealedSecret` no sobrevive a un cl
 
 ## 7. Qué no cubre este manual
 
-- La **observabilidad** (Prometheus, Grafana, Alertmanager, Jaeger, Loki) y las **pruebas de carga y seguridad** (Locust, OWASP ZAP) son las historias HU-20 a HU-22 y HU-24; su operación se agrega cuando se fusionen.
+- La **observabilidad** (Prometheus, Grafana, Alertmanager, Jaeger, Loki) corre solo en Docker Compose (`deploy/compose/observability.yml`), no en Kubernetes. Su operación y las alertas con su runbook están en `docs/observabilidad/`. Las **pruebas de carga y seguridad** se corren con `tests/performance/run.sh` y `tests/security/zap/run.sh` (ver `docs/pruebas/informe-calidad.md`).
+- El **control de costos** (qué está encendido, consumo del mes, presupuesto y precios Spot) sale de `./scripts/finops.sh`; el análisis completo está en `docs/bonos/finops.md`.
 - Un **dominio propio con TLS válido de producción**: se usa `sslip.io` con Let's Encrypt.
 - **Alta disponibilidad**: cada ambiente es un solo nodo (D2-03: aislamiento y costo por encima de redundancia).

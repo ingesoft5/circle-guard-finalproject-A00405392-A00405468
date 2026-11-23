@@ -7,8 +7,8 @@ Historia: [#27](https://github.com/ingesoft5/circle-guard-finalproject-A00405392
 | Criterio | Estado | Evidencia |
 |---|---|---|
 | Micrometer + `/actuator/prometheus` en los 8 servicios | ✅ | Registro en el `build.gradle.kts` raíz y `include: health,prometheus` en los 8 `application.yml`; en el compose, Prometheus lee los 5 servicios que corren (`up`) |
-| Dashboard por servicio | ✅ | **CircleGuard · Servicios (RED)**: una fila por servicio con Rate, Errors, p95/p50, instancias, memoria y CPU ([captura](hu-20-grafana-servicios.png)) |
-| Dashboard de negocio: tiempo de contención, promociones por minuto, check-ins | ✅ | **CircleGuard · Negocio** ([captura](hu-20-grafana-negocio.png)) |
+| Dashboard por servicio | ✅ | **CircleGuard · Servicios (RED)**: una fila por servicio con Rate, Errors, p95/p50, instancias, memoria y CPU |
+| Dashboard de negocio: tiempo de contención, promociones por minuto, check-ins | ✅ | **CircleGuard · Negocio** |
 | Métricas RED (rate, errors, duración p95) por servicio | ✅ | Histograma de `http.server.requests` activado en los 8 servicios; consultas en [`metricas.md`](../../observabilidad/metricas.md#métricas-técnicas-red-por-servicio) |
 | Métricas de negocio propias con Micrometer en el código | ✅ | `circleguard_promotions_total`, `circleguard_containment_time_seconds`, `circleguard_gate_checkins_total` y `circleguard_surveys_submitted_total` |
 
@@ -42,7 +42,7 @@ Tráfico con [`hu-20-trafico.sh 8 5`](hu-20-trafico.sh), solo por las APIs públ
 
 Latencia p95 en los últimos 5 minutos: gateway 6 ms, auth 8 ms, form 13 ms, promotion 111 ms.
 
-**Capturas:** en [`hu-20-grafana-negocio.png`](hu-20-grafana-negocio.png) se ven las curvas de promociones, check-ins y cuestionarios por minuto, y el tiempo de contención. En [`hu-20-grafana-servicios.png`](hu-20-grafana-servicios.png), las filas de los 5 servicios; en promotion aparece la ruta interna `/internal/v1/users/{anonymousId}/status` que usa el cache-aside de HU-19. Los totales de la última hora salen con un decimal (27,3 y 79,4) porque `increase()` extrapola; después de la captura se configuraron para mostrarse enteros.
+**Capturas:** las de los dashboards «Negocio» y «Servicios» salieron con «No data» (se tomaron antes de que hubiera tráfico) y se retiraron del repositorio; la evidencia de esos dos dashboards son las consultas y los valores medidos de arriba. La captura del dashboard de resiliencia, con datos, está en [`hu-20-grafana-resiliencia.png`](hu-20-grafana-resiliencia.png).
 
 ## 3. Dashboard de resiliencia con una falla provocada
 

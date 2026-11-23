@@ -30,6 +30,8 @@ El presupuesto de AWS del proyecto casi se agotó (USD 45,34 de 50 el 17 de nov)
 2. **Una imagen no se había importado al clúster, sin avisar** (`ErrImageNeverPull` en `auth`): `ctr images import` terminó sin error y no importó nada. `local.sh images` ahora comprueba que cada imagen quedó cargada.
 3. **Helm dejó la release en `failed`** porque `--wait` esperó 10 min a ese pod. Se reinstaló (es idempotente) y quedó `deployed`.
 
+> **Actualización:** los dos primeros límites de abajo (dashboard, file y notification sin ejecutar; HPA sin escalar) se cerraron en local; ver [`hu-15-hpa-carga.md`](hu-15-hpa-carga.md).
+
 ## Limitaciones
 
 - **No se ejecutaron dashboard, file y notification** (la memoria del PC no alcanza para los 8 más Neo4j y Kafka): sus manifiestos se validan con `helm template`, `helm lint` y las pruebas de plantillas, no corriendo. En prod (`t3.xlarge`) están habilitados; en dev y stage (8 GB) quedan apagados.

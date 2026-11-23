@@ -66,6 +66,18 @@ resource "aws_instance" "this" {
   iam_instance_profile   = aws_iam_instance_profile.this.name
   user_data              = local.user_data
 
+  # FinOps (HU-29): Spot persistente con parada, para poder apagar y encender la VM en las ventanas de trabajo.
+  dynamic "instance_market_options" {
+    for_each = var.spot ? [1] : []
+    content {
+      market_type = "spot"
+      spot_options {
+        spot_instance_type             = "persistent"
+        instance_interruption_behavior = "stop"
+      }
+    }
+  }
+
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required" # IMDSv2 obligatorio
