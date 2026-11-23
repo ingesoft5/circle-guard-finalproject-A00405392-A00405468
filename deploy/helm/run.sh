@@ -18,12 +18,14 @@ SECRETS_EXAMPLE="$CHART/values-secrets.example.yaml"
 
 die() { printf 'run.sh: %s\n' "$*" >&2; exit 1; }
 command -v docker >/dev/null || die "Falta Docker"
+# Jenkins corre en un contenedor: las rutas de los -v se traducen a las del host (scripts/hostpath.sh).
+source "$ROOT/scripts/hostpath.sh"
 
 # Con KUBECONFIG_FILE=<ruta> helm habla con ese clúster (el local o el de AWS); sin él, solo renderiza y valida.
 helm() {
   local net=()
-  [[ -n "${KUBECONFIG_FILE:-}" ]] && net=(--network host -v "$KUBECONFIG_FILE:/kube/config:ro" -e KUBECONFIG=/kube/config)
-  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp "${net[@]}" -v "$ROOT:/work" -w /work \
+  [[ -n "${KUBECONFIG_FILE:-}" ]] && net=(--network host -v "$(hostpath "$KUBECONFIG_FILE"):/kube/config:ro" -e KUBECONFIG=/kube/config)
+  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp "${net[@]}" -v "$(hostpath "$ROOT"):/work" -w /work \
     "alpine/helm:$HELM_VERSION" "$@"
 }
 
@@ -41,7 +43,7 @@ cmd_lint() {
 }
 
 cmd_test() {   # el chart de la aplicacion y el de los emisores de certificados
-  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$ROOT:/apps" -w /apps "$UNITTEST_IMAGE" "$CHART" deploy/helm/platform
+  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$(hostpath "$ROOT"):/apps" -w /apps "$UNITTEST_IMAGE" "$CHART" deploy/helm/platform
 }
 
 cmd_template() {

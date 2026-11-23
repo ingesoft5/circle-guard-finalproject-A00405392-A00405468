@@ -22,8 +22,12 @@ CACHE="${CIRCLEGUARD_CACHE:-$HOME/.cache/circleguard-iac}"   # la comparte con i
 
 die() { printf 'run.sh: %s\n' "$*" >&2; exit 1; }
 command -v docker >/dev/null || die "Falta Docker"
+# Jenkins corre en un contenedor: las rutas de los -v se traducen a las del host (scripts/hostpath.sh), y los
+# temporales no pueden ir en /tmp (el host no lo ve): van junto al workspace, que sí es un volumen.
+source "$ROOT/scripts/hostpath.sh"
+if [[ -f /.dockerenv ]]; then export TMPDIR="${ROOT}@cg-tmp"; mkdir -p "$TMPDIR"; fi
 
-gitleaks() { docker run --rm -v "$ROOT:/repo:ro" "$GITLEAKS_IMAGE" "$@"; }
+gitleaks() { docker run --rm -v "$(hostpath "$ROOT"):/repo:ro" "$GITLEAKS_IMAGE" "$@"; }
 
 # trivy_in <directorio> <argumentos>: el directorio queda en /work (solo lectura). Con el socket de Docker también ve
 # las imágenes del equipo; el grupo del socket se agrega porque el contenedor corre con tu usuario, no como root.
@@ -34,7 +38,7 @@ trivy_in() {
   mkdir -p "$CACHE/trivy"
   docker run --rm -u "$(id -u):$(id -g)" "${sock[@]}" -e HOME=/tmp -e TRIVY_CACHE_DIR=/cache \
     -e TRIVY_SKIP_DB_UPDATE -e TRIVY_SKIP_JAVA_DB_UPDATE \
-    -v "$CACHE/trivy:/cache" -v "$dir:/work:ro" -w /work "$TRIVY_IMAGE" "$@"
+    -v "$(hostpath "$CACHE/trivy"):/cache" -v "$(hostpath "$dir"):/work:ro" -w /work "$TRIVY_IMAGE" "$@"
 }
 trivy() { trivy_in "$ROOT" "$@"; }
 
@@ -47,7 +51,7 @@ cmd_secrets() {
   tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' RETURN
   git clone -q --mirror "$common" "$tmp/repo.git"
   log="$tmp/gitleaks.log"
-  docker run --rm -v "$tmp/repo.git:/repo.git:ro" -v "$ROOT/.gitleaks.toml:/cfg.toml:ro" "$GITLEAKS_IMAGE" \
+  docker run --rm -v "$(hostpath "$tmp/repo.git"):/repo.git:ro" -v "$(hostpath "$ROOT/.gitleaks.toml"):/cfg.toml:ro" "$GITLEAKS_IMAGE" \
     git /repo.git --config /cfg.toml --redact --no-banner --exit-code 1 2>&1 | tee "$log"
   # Un escaneo que no leyó ningún commit no demuestra nada: se exige que haya leído alguno.
   grep -Eq '[1-9][0-9]* commits scanned' "$log" || die "gitleaks escaneó 0 commits: el resultado no vale"
@@ -63,7 +67,7 @@ cmd_secrets_tree() {
   LC_ALL=C comm -z -23 <(git -C "$ROOT" ls-files -z --cached --others --exclude-standard | LC_ALL=C sort -z -u) \
                        <(git -C "$ROOT" ls-files -z --deleted | LC_ALL=C sort -z -u) | (cd "$ROOT" && tar --null -T - -cf -) | tar -xf - -C "$tmp"
   [[ -n "$(ls -A "$tmp")" ]] || die "No se copio ningun archivo: el resultado no valdria"
-  docker run --rm -v "$tmp:/repo:ro" -v "$ROOT/.gitleaks.toml:/cfg.toml:ro" "$GITLEAKS_IMAGE" \
+  docker run --rm -v "$(hostpath "$tmp"):/repo:ro" -v "$(hostpath "$ROOT/.gitleaks.toml"):/cfg.toml:ro" "$GITLEAKS_IMAGE" \
     dir /repo --config /cfg.toml --redact --no-banner --exit-code 1
 }
 
@@ -120,7 +124,7 @@ cmd_selftest() {
 {"name":"x","lockfileVersion":3,"packages":{"":{"name":"x","dependencies":{"minimist":"1.2.5"}},"node_modules/minimist":{"version":"1.2.5"}}}
 EOF
 
-  scan() { docker run --rm -v "$ROOT/.gitleaks.toml:/cfg.toml:ro" -v "$1:/scan:ro" "$GITLEAKS_IMAGE" dir /scan --config /cfg.toml --redact --no-banner --exit-code 1 >/dev/null 2>&1; }
+  scan() { docker run --rm -v "$(hostpath "$ROOT/.gitleaks.toml"):/cfg.toml:ro" -v "$(hostpath "$1"):/scan:ro" "$GITLEAKS_IMAGE" dir /scan --config /cfg.toml --redact --no-banner --exit-code 1 >/dev/null 2>&1; }
   expect() { # expect <fallar|pasar> <descripción> <comando...>
     local want="$1" what="$2"; shift 2
     if "$@" >/dev/null 2>&1; then

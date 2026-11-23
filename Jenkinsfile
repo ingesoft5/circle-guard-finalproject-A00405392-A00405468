@@ -1,6 +1,9 @@
-// Pipeline de CircleGuard (HU-04 CI · HU-08/09/10 CD). Multibranch: en cada PR corre la CI; en main, además,
-// calcula la versión con semantic-release, publica las 9 imágenes en Nexus y las promueve
-// dev -> E2E -> stage -> aprobación manual -> prod. Discord y WhatsApp avisan fallos, la espera y el resultado.
+// Pipeline de CircleGuard (HU-04 CI · HU-08/09/10 CD · HU-16 seguridad y Kubernetes). Multibranch: en cada PR corre la CI
+// (con los escaneos de seguridad, que bloquean); en main, además, calcula la versión con semantic-release, publica las 9
+// imágenes en Nexus, las escanea con Trivy (bloquea) y las promueve dev -> E2E -> stage -> aprobación manual -> prod.
+// El destino lo elige el parámetro TARGET: `compose` (las VMs de la Parte 1, por defecto) o `k8s` (Kubernetes en AWS con
+// Helm: jenkins/vars/deployK8s.groovy). Terraform lo gobiernan los jobs circleguard-infra (plan/apply con aprobación en
+// prod) y circleguard-drift (plan programado). Discord y WhatsApp avisan fallos, la espera y el resultado.
 // Las etapas reutilizables viven en la Shared Library de jenkins/ (cargada desde la misma rama).
 library "circleguard@${env.CHANGE_BRANCH ?: env.BRANCH_NAME}"
 
@@ -18,6 +21,15 @@ pipeline {
         disableConcurrentBuilds(abortPrevious: true)
         buildDiscarder(logRotator(numToKeepStr: '20'))
         timeout(time: 4, unit: 'HOURS')   // CI + publicación (~30 min) y hasta 2 h de espera de aprobación
+    }
+
+    // Solo cambian el DESTINO de los despliegues de main; en PR y sin versión nueva no se usan. Los valores por defecto
+    // conservan el comportamiento de la Parte 1 (los webhooks y los reescaneos siempre usan el primero).
+    parameters {
+        choice(name: 'TARGET', choices: ['compose', 'k8s'],
+               description: 'Dónde desplegar la versión nueva: compose = VMs de la Parte 1; k8s = Kubernetes en AWS (el ambiente debe existir: job circleguard-infra)')
+        choice(name: 'TLS_ISSUER', choices: ['letsencrypt-staging', 'letsencrypt'],
+               description: 'Solo con TARGET=k8s: emisor del certificado (staging no tiene límite de emisión; letsencrypt es el válido)')
     }
 
     environment {
@@ -39,6 +51,21 @@ pipeline {
 
                 stage('Commitlint') {
                     steps { commitLint() }
+                }
+
+                // Escaneo continuo (HU-23/HU-16): en cada build, PR incluido. Bloquea con HIGH/CRITICAL; las excepciones están
+                // revisadas, por CVE y con vencimiento en .trivyignore.yaml y .gitleaks.toml. Corren con Docker del host
+                // (scripts/hostpath.sh traduce las rutas del contenedor de Jenkins).
+                stage('Secretos (gitleaks)') {
+                    steps { sh './security/run.sh secrets-tree' }
+                }
+
+                stage('Trivy: IaC (Dockerfile, chart y Terraform)') {
+                    steps { sh './security/run.sh iac' }
+                }
+
+                stage('Trivy: dependencias') {
+                    steps { sh './security/run.sh deps' }
                 }
 
                 stage('Build') {
@@ -101,16 +128,25 @@ pipeline {
                     }
                 }
 
-                stage('Deploy dev') {
+                // Trivy sobre las 9 imágenes recién publicadas: si hay un HIGH/CRITICAL con arreglo, no se promueve a ningún ambiente.
+                stage('Trivy: imágenes') {
                     when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
                     steps {
-                        deployCompose('dev', RELEASE_VERSION)
-                        smokeTest('dev')
+                        script {
+                            List refs = changedServices.all().collect { svc -> "${env.REGISTRY}/circleguard/${svc == 'web' ? 'circleguard-web' : svc}:${RELEASE_VERSION}" }
+                            sh "./security/run.sh image ${refs.join(' ')}"
+                        }
                     }
                 }
 
-                stage('E2E contra dev') {
+                stage('Deploy dev') {
                     when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
+                    steps { deployTarget('dev', RELEASE_VERSION) }
+                }
+
+                // El E2E de Playwright apunta a las VMs de la Parte 1; en Kubernetes la prueba de humo de deployK8s ya hace un login real.
+                stage('E2E contra dev') {
+                    when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean }; expression { (params.TARGET ?: 'compose') == 'compose' } } }
                     steps { e2eTests('dev') }
                     post {
                         always {
@@ -124,8 +160,7 @@ pipeline {
                 stage('Deploy stage') {
                     when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
                     steps {
-                        deployCompose('stage', RELEASE_VERSION)
-                        smokeTest('stage')
+                        deployTarget('stage', RELEASE_VERSION)
                         notifyTeam('APPROVAL', "v${RELEASE_VERSION} ya está en dev y stage. Espera aprobación para prod: ${env.BUILD_URL}input/")
                     }
                 }
@@ -149,10 +184,7 @@ pipeline {
         stage('Deploy prod') {
             agent any
             when { beforeAgent true; allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
-            steps {
-                deployCompose('prod', RELEASE_VERSION)
-                smokeTest('prod')
-            }
+            steps { deployTarget('prod', RELEASE_VERSION) }
             post {
                 success { notifyTeam('SUCCESS', "v${RELEASE_VERSION} desplegada en prod: ${env.PROD_URL}") }
                 failure { notifyTeam('FAILURE', "Falló el despliegue de v${RELEASE_VERSION} en prod") }

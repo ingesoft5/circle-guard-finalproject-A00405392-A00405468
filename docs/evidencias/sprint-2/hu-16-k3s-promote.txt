@@ -1,0 +1,90 @@
+# HU-16 · promote.sh contra un k3s REAL local (misma versión que instala Terraform), imágenes locales: IMAGE_REGISTRY=local, versión 'local'
+
+## Hallazgo: el primer intento no agendó ningún pod (taint disk-pressure del nodo: el disco del PC al 94 %)
+   local.sh up ahora baja el umbral de desalojo del cluster de pruebas a 1 % (K3S_EVICTION_HARD).
+
+## Intento con el umbral bajado: instaló cert-manager, Sealed Secrets y los emisores, selló los secretos... y reventó al volver de cmd_seal
+== PROMOTE (1ª vez: cluster nuevo)
+== [promote] dev <- local
+== cert-manager v1.21.1
+== Sealed Secrets (chart 2.22.0)
+== emisores de certificados
+Escrito <repo>/deploy/sealed/dev.yaml (cifrado: solo este cluster puede abrirlo)
+Secret circleguard-secrets listo en circleguard-dev
+<repo>/deploy/helm/platform.sh: line 77: cert: unbound variable
+== fin con código 1 a las 23:49:36 UTC
+   -> bug real de platform.sh: la trampa RETURN de cmd_seal sobrevive y, con set -u, falla al volver cmd_ensure. Corregido (trap - RETURN y ${cert:-}).
+
+## A) cluster con plataforma pero SIN secretos (se borraron): debe sellar y seguir
+== A) cluster con plataforma pero SIN secretos: debe sellar y seguir
+== [promote] dev <- local
+plataforma: cert-manager y Sealed Secrets ya estan instalados
+Escrito <repo>/deploy/sealed/dev.yaml (cifrado: solo este cluster puede abrirlo)
+Secret circleguard-secrets listo en circleguard-dev
+== dev: desplegando local (--atomic, espera hasta 10m)
+STATUS: deployed
+REVISION: 1
+[smoke] /healthz                                         HTTP 200
+[smoke] /version                                         HTTP 200
+[smoke] /api/auth/actuator/health/readiness              HTTP 200
+[smoke] /api/identity/actuator/health/readiness          HTTP 200
+[smoke] /api/form/actuator/health/readiness              HTTP 200
+[smoke] /api/promotion/actuator/health/readiness         HTTP 200
+[smoke] /api/gateway/actuator/health/readiness           HTTP 200
+[smoke] version desplegada: local
+[smoke] la versión coincide con la pedida (local)
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+[promote] registro de cambios en <scratchpad>/historial-dev.md
+== A fin código 0
+
+## B) segunda corrida igual: no toca la plataforma ni los secretos, sube la revisión
+== B) segunda corrida igual: no debe tocar la plataforma ni los secretos
+== [promote] dev <- local
+plataforma: cert-manager y Sealed Secrets ya estan instalados
+secretos: circleguard-secrets ya existe en circleguard-dev
+== dev: desplegando local (--atomic, espera hasta 10m)
+Release "circleguard" has been upgraded. Happy Helming!
+STATUS: deployed
+REVISION: 2
+[smoke] /healthz                                         HTTP 200
+[smoke] /version                                         HTTP 200
+[smoke] /api/auth/actuator/health/readiness              HTTP 200
+[smoke] /api/identity/actuator/health/readiness          HTTP 200
+[smoke] /api/form/actuator/health/readiness              HTTP 200
+[smoke] /api/promotion/actuator/health/readiness         HTTP 200
+[smoke] /api/gateway/actuator/health/readiness           HTTP 200
+[smoke] version desplegada: local
+[smoke] la versión coincide con la pedida (local)
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+[promote] registro de cambios en <scratchpad>/historial-dev.md
+== B fin código 0
+
+## CONTROL 1: la prueba de humo con una versión que NO corre debe fallar
+[smoke] FALLÓ: /version no menciona v9.9.9
+[smoke] HAY FALLAS   (salida 1)
+
+## CONTROL 3: una versión mala (imagen inexistente, v404): --atomic revierte, promote.sh falla y NO corre el humo
+== control 3: versión mala (imagen inexistente) -> --atomic debe revertir, promote debe fallar y NO correr el humo
+== [promote] dev <- v404
+== dev: desplegando v404 (--atomic, espera hasta 90s)
+Error: UPGRADE FAILED: release circleguard failed, and has been rolled back due to atomic being set: context deadline exceeded
+== promote v404 terminó con código 1 (se esperaba != 0)
+== versión que sigue corriendo:
+local
+| 1 | Wed Nov 18 23:50:27 2026 | superseded | local | deploy local · commit 82e34b1 · build #1 |
+| 2 | Wed Nov 18 23:55:23 2026 | superseded | local | deploy local · commit 82e34b1 · build #2 |
+| 3 | Wed Nov 18 23:57:45 2026 | failed | v404 | Upgrade "circleguard" failed: context deadline exceeded |
+| 4 | Wed Nov 18 23:59:16 2026 | deployed | local | Rollback to 2 |
+== fin 23:59:20 UTC
+
+## Registro de cambios archivado (release.sh history dev --md), tras A y B:
+# Registro de cambios: dev
+
+Namespace `circleguard-dev` · release `circleguard` · generado con `release.sh history dev --md` el 2026-11-18 23:55Z.
+
+| Revisión | Fecha | Estado | Versión | Motivo |
+|---|---|---|---|---|
+| 1 | Wed Nov 18 23:50:27 2026 | superseded | local | deploy local · commit 82e34b1 · build #1 |
+| 2 | Wed Nov 18 23:55:23 2026 | deployed | local | deploy local · commit 82e34b1 · build #2 |

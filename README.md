@@ -98,6 +98,7 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 | Infraestructura como código (Terraform): módulos, 4 ambientes, estado remoto, costos | [`infra/terraform/README.md`](infra/terraform/README.md) · [diagrama y decisiones](docs/arquitectura/infra-terraform.md) |
 | Imágenes, compose por ambiente, despliegue y rollback | [`deploy/compose/README.md`](deploy/compose/README.md) |
 | Kubernetes: chart de Helm de los 8 servicios y el middleware, y cómo probarlo sin gastar AWS | [`deploy/helm/README.md`](deploy/helm/README.md) |
+| Pipeline que gobierna Terraform, Trivy y Kubernetes (jobs `circleguard-infra` y `circleguard-drift`, `TARGET=k8s`) | [`docs/arquitectura/pipeline-k8s.md`](docs/arquitectura/pipeline-k8s.md) · [evidencia](docs/evidencias/sprint-2/hu-16-pipeline.md) |
 | Patrones de diseño (resiliencia, configuración externa): problema, solución y trade-offs | [`docs/patrones/README.md`](docs/patrones/README.md) |
 | Versionado automático y release notes | [`docs/release-notes/README.md`](docs/release-notes/README.md) |
 | Gestión de cambios: tipos, aprobaciones, RFC, etiquetado | [`docs/change-management/politica.md`](docs/change-management/politica.md) |
