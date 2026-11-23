@@ -51,3 +51,9 @@ variable "k3s_version" {
   type        = string
   default     = "v1.37.2+k3s1"
 }
+
+variable "spot" {
+  description = "VM del nodo k3s como Spot persistente (FinOps). Para el ensayo: terraform apply -var spot=true."
+  type        = bool
+  default     = false
+}

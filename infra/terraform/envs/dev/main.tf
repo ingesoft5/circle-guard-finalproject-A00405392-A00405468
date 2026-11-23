@@ -54,6 +54,7 @@ module "compute" {
   security_group_id = module.network.security_group_id
   key_name          = aws_key_pair.this.key_name
   k3s_version       = var.k3s_version
+  spot              = var.spot
 
   iam_policy_statements = [
     { actions = ["ecr:GetAuthorizationToken"], resources = ["*"] },

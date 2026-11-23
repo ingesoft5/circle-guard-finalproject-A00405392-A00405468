@@ -101,6 +101,8 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 | Pipeline que gobierna Terraform, Trivy y Kubernetes (jobs `circleguard-infra` y `circleguard-drift`, `TARGET=k8s`) | [`docs/arquitectura/pipeline-k8s.md`](docs/arquitectura/pipeline-k8s.md) · [evidencia](docs/evidencias/sprint-2/hu-16-pipeline.md) |
 | Arquitectura desplegada de la Parte 2 (la nube y un cluster, con diagramas) | [`docs/arquitectura/despliegue-parte-2.md`](docs/arquitectura/despliegue-parte-2.md) |
 | Costos de la nube, estimados y reales (AWS Cost Explorer) | [`docs/operaciones/costos.md`](docs/operaciones/costos.md) |
+| Bono: chaos engineering (cinco experimentos con hipótesis y resultado) | [`docs/bonos/chaos-engineering.md`](docs/bonos/chaos-engineering.md) |
+| Bono: FinOps (presupuesto, *scale-to-zero*, Spot, `scripts/finops.sh`) | [`docs/bonos/finops.md`](docs/bonos/finops.md) |
 | Manual de operaciones: ventanas de nube, despliegue, rollback y qué hacer cuando algo falla | [`docs/operaciones/manual-operaciones.md`](docs/operaciones/manual-operaciones.md) |
 | Resumen ejecutivo en inglés (1 página) | [`docs/resumen-ejecutivo.md`](docs/resumen-ejecutivo.md) |
 | Patrones de diseño (resiliencia, configuración externa): problema, solución y trade-offs | [`docs/patrones/README.md`](docs/patrones/README.md) |

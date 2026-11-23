@@ -18,6 +18,12 @@ variable "instance_type" {
   type        = string
 }
 
+variable "spot" {
+  description = "Si es true, la VM se pide como instancia Spot persistente (se detiene en vez de terminarse). Ahorra ~70 % en dev y stage; no usar en prod ni en tools."
+  type        = bool
+  default     = false
+}
+
 variable "disk_gb" {
   description = "Tamano del disco raiz en GB."
   type        = number
