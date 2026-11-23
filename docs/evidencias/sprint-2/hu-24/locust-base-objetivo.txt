@@ -1,0 +1,2 @@
+[objetivo] puerta: validar QR: 44.8 req/s (>= 33), p95 9 ms (<= 300), errores 0.00% (< 1 %) -> CUMPLE
+[objetivo] cuestionario: enviar: 8.8 req/s (>= 14), p95 67 ms (<= 800), errores 0.00% (< 1 %) -> NO CUMPLE

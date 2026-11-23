@@ -81,3 +81,7 @@ infra/terraform/modules/**/.terraform.lock.hcl
 
 # Estado local de las pruebas del chart (kubeconfig y secretos aleatorios)
 deploy/helm/.local/
+
+# Informes de Locust (HU-24): se generan en cada corrida; la evidencia va en docs/evidencias/
+tests/performance/reports/
+tests/security/zap/reports/
