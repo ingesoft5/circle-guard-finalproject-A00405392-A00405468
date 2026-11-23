@@ -11,3 +11,45 @@ apt-get install -y curl ca-certificates
 
 # k3s: Kubernetes certificado y ligero. --tls-san deja llegar al API por la IP elastica.
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${k3s_version}' sh -s - server --tls-san '${public_ip}'
+
+# HU-16: containerd no sabe usar el rol IAM de la VM para bajar imagenes de ECR (se vio en la primera ejecucion real en AWS:
+# "no basic auth credentials"). Este temporizador escribe el token de ECR (dura 12 h) en registries.yaml cada 6 h.
+# Todo va con `|| true`: si algo falla, la VM arranca igual y el operador lo ve en /var/log/circleguard-bootstrap.log.
+snap install aws-cli --classic || true
+cat >/usr/local/bin/ecr-login.sh <<'EOS'
+#!/usr/bin/env bash
+set -euo pipefail
+imds=$(curl -fsS -X PUT http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 60')
+region=$(curl -fsS -H "X-aws-ec2-metadata-token: $imds" http://169.254.169.254/latest/meta-data/placement/region)
+acct=$(/snap/bin/aws sts get-caller-identity --query Account --output text --region "$region")
+tok=$(/snap/bin/aws ecr get-login-password --region "$region")
+umask 077
+cat >/etc/rancher/k3s/registries.yaml.new <<EOF2
+configs:
+  "$acct.dkr.ecr.$region.amazonaws.com":
+    auth:
+      username: AWS
+      password: $tok
+EOF2
+mv /etc/rancher/k3s/registries.yaml.new /etc/rancher/k3s/registries.yaml
+systemctl restart k3s
+EOS
+chmod 700 /usr/local/bin/ecr-login.sh
+cat >/etc/systemd/system/ecr-login.service <<'EOS'
+[Unit]
+Description=Renueva el token de ECR para k3s
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ecr-login.sh
+EOS
+cat >/etc/systemd/system/ecr-login.timer <<'EOS'
+[Unit]
+Description=Renueva el token de ECR cada 6 horas
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=6h
+[Install]
+WantedBy=timers.target
+EOS
+systemctl daemon-reload
+systemctl enable --now ecr-login.timer || true

@@ -1,0 +1,87 @@
+# Evidencia: dev en AWS desplegado por Jenkins (circleguard-k8s #2, v1.5.0) — 2026-11-23 04:02Z
+== nodo
+NAME                  STATUS   ROLES           AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION           CONTAINE
+circleguard-dev-k3s   Ready    control-plane   20m   v1.37.2+k3s1   10.10.1.106   <none>        Ubuntu 24.04.5 LTS   7.0.0-1018-aws (amd64)   containe
+
+== pods, HPA, Ingress, certificado y NetworkPolicy de circleguard-dev
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/auth-775cd6cc5b-4gkkv        0/1     Running   0          22s
+pod/auth-775cd6cc5b-ldvzf        1/1     Running   0          5m52s
+pod/form-57ff575d84-7vwvw        1/1     Running   0          5m52s
+pod/gateway-7ddc54d688-jntkg     1/1     Running   0          5m52s
+pod/identity-748f96f757-prh2l    1/1     Running   0          5m52s
+pod/kafka-0                      1/1     Running   0          5m52s
+pod/neo4j-0                      1/1     Running   0          5m52s
+pod/postgres-0                   1/1     Running   0          5m52s
+pod/promotion-7cbcfc4bbb-wr7tb   1/1     Running   0          5m52s
+pod/redis-78fddc9767-hzqdt       1/1     Running   0          5m52s
+pod/web-76b9dd9bd8-fbm4j         1/1     Running   0          5m52s
+
+NAME                                            REFERENCE              TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/auth        Deployment/auth        cpu: 525%/70%   1         2         2          5m52s
+horizontalpodautoscaler.autoscaling/form        Deployment/form        cpu: 5%/70%     1         2         1          5m52s
+horizontalpodautoscaler.autoscaling/gateway     Deployment/gateway     cpu: 4%/70%     1         2         1          5m52s
+horizontalpodautoscaler.autoscaling/identity    Deployment/identity    cpu: 60%/70%    1         2         1          5m52s
+horizontalpodautoscaler.autoscaling/promotion   Deployment/promotion   cpu: 18%/70%    1         2         1          5m52s
+horizontalpodautoscaler.autoscaling/web         Deployment/web         cpu: 2%/70%     1         2         1          5m52s
+
+NAME                                         CLASS     HOSTS                     ADDRESS       PORTS     AGE
+ingress.networking.k8s.io/circleguard        traefik   44-195-212-144.sslip.io   10.10.1.106   80, 443   5m52s
+ingress.networking.k8s.io/circleguard-http   traefik   44-195-212-144.sslip.io   10.10.1.106   80        5m52s
+
+NAME                                          READY   SECRET            AGE
+certificate.cert-manager.io/circleguard-tls   True    circleguard-tls   5m52s
+
+NAME                                                    POD-SELECTOR                                                       AGE
+networkpolicy.networking.k8s.io/allow-acme-solver       acme.cert-manager.io/http01-solver=true                            5m53s
+networkpolicy.networking.k8s.io/allow-metrics           app.kubernetes.io/name in (auth,form,gateway,identity,promotion)   5m53s
+networkpolicy.networking.k8s.io/allow-to-auth           app.kubernetes.io/name=auth                                        5m53s
+networkpolicy.networking.k8s.io/allow-to-dashboard      app.kubernetes.io/name=dashboard                                   5m53s
+networkpolicy.networking.k8s.io/allow-to-file           app.kubernetes.io/name=file                                        5m53s
+networkpolicy.networking.k8s.io/allow-to-form           app.kubernetes.io/name=form                                        5m53s
+networkpolicy.networking.k8s.io/allow-to-gateway        app.kubernetes.io/name=gateway                                     5m53s
+networkpolicy.networking.k8s.io/allow-to-identity       app.kubernetes.io/name=identity                                    5m53s
+networkpolicy.networking.k8s.io/allow-to-kafka          app.kubernetes.io/name=kafka                                       5m53s
+networkpolicy.networking.k8s.io/allow-to-neo4j          app.kubernetes.io/name=neo4j                                       5m53s
+networkpolicy.networking.k8s.io/allow-to-notification   app.kubernetes.io/name=notification                                5m53s
+networkpolicy.networking.k8s.io/allow-to-postgres       app.kubernetes.io/name=postgres                                    5m53s
+networkpolicy.networking.k8s.io/allow-to-promotion      app.kubernetes.io/name=promotion                                   5m53s
+networkpolicy.networking.k8s.io/allow-to-redis          app.kubernetes.io/name=redis                                       5m53s
+networkpolicy.networking.k8s.io/allow-to-web            app.kubernetes.io/name=web                                         5m53s
+networkpolicy.networking.k8s.io/default-deny-ingress    <none>                                                             5m53s
+
+== plataforma
+sealed-secrets-controller-7b58c5948-mpbmf   1/1     Running     0          17m
+cert-manager cert-manager-66b9bfb996-dskpp Running
+cert-manager cert-manager-cainjector-5cc56c6f78-fz27g Running
+cert-manager cert-manager-webhook-579c6dd789-b2tks Running
+kube-system sealed-secrets-controller-7b58c5948-mpbmf Running
+
+== uso de memoria del nodo
+               total        used        free      shared  buff/cache   available
+Mem:            7816        3934         566          31        3666        3881
+auth-775cd6cc5b-ldvzf 525m 270Mi
+form-57ff575d84-7vwvw 5m 233Mi
+gateway-7ddc54d688-jntkg 4m 161Mi
+identity-748f96f757-prh2l 60m 243Mi
+kafka-0 25m 320Mi
+neo4j-0 10m 497Mi
+postgres-0 7m 97Mi
+promotion-7cbcfc4bbb-wr7tb 18m 317Mi
+redis-78fddc9767-hzqdt 5m 3Mi
+web-76b9dd9bd8-fbm4j 1m 3Mi
+
+== HTTPS desde afuera: https://44-195-212-144.sslip.io
+GET /healthz -> HTTP 200
+1.5.0
+
+HTTP -> 301 (redirige a https://44-195-212-144.sslip.io/)
+== certificado
+subject=CN=44-195-212-144.sslip.io
+issuer=C=US, O=Let's Encrypt, CN=(STAGING) Dastardly Durum YR1
+notBefore=Nov 23 02:47:50 2026 GMT
+notAfter=Jan 26 02:47:49 2027 GMT
+== login real
+POST /api/auth/api/v1/auth/login -> HTTP 200
+== /internal desde afuera
+GET /api/promotion/internal/... -> HTTP 404

@@ -1,0 +1,16 @@
+# circleguard-infra #4: líneas clave de la consola (recortadas; el resto es el detalle de Docker y de Git)
+== validate infra/terraform/bootstrap
+== validate infra/terraform/modules/compute
+== validate infra/terraform/modules/network
+== validate infra/terraform/modules/observability
+== validate infra/terraform/modules/registry
+== validate infra/terraform/modules/storage
+== validate infra/terraform/envs/dev
+== validate infra/terraform/envs/prod
+== validate infra/terraform/envs/stage
+== validate infra/terraform/envs/tools
+== trivy config: Dockerfile, chart de Helm y Terraform (HIGH/CRITICAL bloquea)
+2026-11-23T03:40:22Z	ERROR	[kubernetes scanner] Failed to parse file	file_path="deploy/helm/platform/templates/issuers.yaml" err="unmarshal yaml: yaml: line 8: could not find expected ':'"
+Plan: 31 to add, 0 to change, 0 to destroy.
+Apply complete! Resources: 31 added, 0 changed, 0 destroyed.
+Finished: SUCCESS

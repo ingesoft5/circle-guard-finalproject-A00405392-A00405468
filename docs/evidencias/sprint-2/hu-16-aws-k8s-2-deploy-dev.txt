@@ -1,0 +1,29 @@
+# circleguard-k8s #2: líneas clave de la consola (recortadas; el resto es el detalle de Docker y de Git)
+[ecr] circleguard-auth-service:1.5.0 ya está en ECR
+[ecr] circleguard-dashboard-service:1.5.0 ya está en ECR
+[ecr] circleguard-file-service:1.5.0 ya está en ECR
+[ecr] circleguard-form-service:1.5.0 ya está en ECR
+[ecr] circleguard-gateway-service:1.5.0 ya está en ECR
+[ecr] circleguard-identity-service:1.5.0 ya está en ECR
+[ecr] circleguard-notification-service:1.5.0 ya está en ECR
+[ecr] circleguard-promotion-service:1.5.0 ya está en ECR
+[ecr] circleguard-web:1.5.0 ya está en ECR
+[deployK8s] dev (44.195.212.144) <- v1.5.0 con letsencrypt-staging en https://44-195-212-144.sslip.io
+== [promote] dev <- 1.5.0
+plataforma: cert-manager y Sealed Secrets ya estan instalados
+secretos: circleguard-secrets ya existe en circleguard-dev
+== dev: desplegando 1.5.0 (--atomic, espera hasta 10m)
+Release "circleguard" does not exist. Installing it now.
+[smoke] /healthz                                         HTTP 200
+[smoke] /version                                         HTTP 200
+[smoke] /api/auth/actuator/health/readiness              HTTP 200
+[smoke] /api/identity/actuator/health/readiness          HTTP 200
+[smoke] /api/form/actuator/health/readiness              HTTP 200
+[smoke] /api/promotion/actuator/health/readiness         HTTP 200
+[smoke] /api/gateway/actuator/health/readiness           HTTP 200
+[smoke] version desplegada: 1.5.0
+[smoke] la versión coincide con la pedida (1.5.0)
+[smoke] login super_admin: OK (devolvió token)
+[smoke] TODO OK
+[promote] registro de cambios en /var/jenkins_home/workspace/circleguard-k8s/history-dev.md
+Finished: SUCCESS

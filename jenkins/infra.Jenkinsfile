@@ -46,8 +46,8 @@ pipeline {
                             set -euo pipefail
                             args=(-input=false -out=tfplan); target=()
                             [ "$T_ACTION" = destroy ] && args+=(-destroy)
-                            [ -n "$T_TARGET" ] && target=("-target=$T_TARGET")
-                            ./infra/terraform/run.sh "$T_ENV" plan "${args[@]}" "${target[@]}"
+                            [ -n "${T_TARGET:-}" ] && target=("-target=${T_TARGET}")
+                            ./infra/terraform/run.sh "$T_ENV" plan "${args[@]}" ${target[@]+"${target[@]}"}
                             ./infra/terraform/run.sh "$T_ENV" show -no-color tfplan > "plan-$T_ENV.txt"
                             echo "[infra] plan de $T_ENV ($T_ACTION) guardado en plan-$T_ENV.txt"'''
                     }

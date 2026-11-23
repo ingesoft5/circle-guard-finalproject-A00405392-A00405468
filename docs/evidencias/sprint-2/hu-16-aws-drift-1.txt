@@ -1,0 +1,8 @@
+# circleguard-drift #1: líneas clave de la consola (recortadas; el resto es el detalle de Docker y de Git)
+== drift tools
+DRIFT: tools difiere del codigo (mira el detalle con: ./infra/terraform/run.sh tools plan)
+== drift dev
+OK: dev coincide con el codigo
+== stage: sin recursos (no desplegado): no hay drift que buscar
+== prod: sin recursos (no desplegado): no hay drift que buscar
+Finished: UNSTABLE

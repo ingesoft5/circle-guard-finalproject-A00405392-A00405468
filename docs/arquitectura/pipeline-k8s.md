@@ -80,3 +80,18 @@ Todas tienen valor por defecto vacío en el JCasC: **un Jenkins sin ellas arranc
 | La aprobación a prod con el rol de Desarrollador | — | **sin probar** |
 
 **Riesgos conocidos.** Los escaneos nuevos corren en todos los builds: si la red de la VM no baja la base de datos de Trivy, bloquean también los PR (la primera vez baja ~3 GB). Cambiar `Jenkinsfile` o `jenkins/` hace que la CI construya los 8 servicios. Trivy escanea las imágenes **después** de publicarlas en Nexus: bloquea la promoción, no la publicación.
+
+## Ejecución real en AWS (22 y 23 de nov de 2026)
+
+Los jobs `circleguard-infra`, `circleguard-k8s` y `circleguard-drift` se ejecutaron por primera vez contra AWS con un usuario de IAM propio de Jenkins (`circleguard-jenkins`, permisos acotados). Resultado, con la duración de cada etapa: [`hu-16-aws-jenkins-jobs.md`](../evidencias/sprint-2/hu-16-aws-jenkins-jobs.md). Estado del cluster: [`hu-16-aws-dev-estado.txt`](../evidencias/sprint-2/hu-16-aws-dev-estado.txt); rollback: [`hu-25-aws-rollback.txt`](../evidencias/sprint-2/hu-25-aws-rollback.txt); TLS válido de Let's Encrypt: [`hu-23-aws-tls.txt`](../evidencias/sprint-2/hu-23-aws-tls.txt).
+
+Lo que apareció solo al ejecutar de verdad, y su arreglo:
+
+| Hallazgo | Arreglo |
+|---|---|
+| Con `TARGET` vacío el job de Terraform fallaba (`T_TARGET: unbound variable`) | `jenkins/infra.Jenkinsfile` usa `${T_TARGET:-}` |
+| Los pods no bajaban imágenes de ECR (`no basic auth credentials`): containerd no usa el rol IAM de la VM | El `user_data` del nodo k3s instala un temporizador que renueva el token de ECR en `registries.yaml` cada 6 h. Probado con `terraform test`; **falta validarlo en un nodo real** |
+| El primer despliegue pasa los 10 min de Helm (descarga de imágenes y arranque de JVM en 2 vCPU) | `--atomic` revirtió solo; el segundo intento, con las imágenes ya en el nodo, tardó 6 min. Para un cluster nuevo conviene `HELM_TIMEOUT=20m` |
+| Un correo de alarmas inválido rompe el `plan` | Se configura `ALERT_EMAIL` en `secrets.env` antes de encender Jenkins |
+
+Sin probar en AWS: el pipeline principal con `TARGET=k8s`, los ambientes stage y prod, y la observabilidad (solo existe en Compose).

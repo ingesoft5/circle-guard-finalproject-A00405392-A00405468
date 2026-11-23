@@ -1,0 +1,19 @@
+# TLS valido en AWS (dev), 23 nov 2026: certificado real de Let's Encrypt emitido por cert-manager
+$ curl -sS https://44-195-212-144.sslip.io/version   (sin -k: el certificado se verifica contra las CA del sistema)
+1.5.0
+
+$ curl -sI http://44-195-212-144.sslip.io/ | head -3
+HTTP/1.1 308 Permanent Redirect
+Location: https://44-195-212-144.sslip.io/
+Date: Mon, 23 Nov 2026 04:14:52 GMT
+$ openssl s_client ... | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
+subject=CN=44-195-212-144.sslip.io
+issuer=C=US, O=Let's Encrypt, CN=YR1
+notBefore=Nov 23 03:13:19 2026 GMT
+notAfter=Feb 21 03:13:18 2027 GMT
+X509v3 Subject Alternative Name: 
+    DNS:44-195-212-144.sslip.io
+$ openssl s_client ... verificacion
+Verification: OK
+Verify return code: 0 (ok)
+    Verify return code: 0 (ok)

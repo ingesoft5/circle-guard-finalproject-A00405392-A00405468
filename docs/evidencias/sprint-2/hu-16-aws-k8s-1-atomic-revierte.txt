@@ -1,0 +1,23 @@
+# circleguard-k8s #1: líneas clave de la consola (recortadas; el resto es el detalle de Docker y de Git)
+[ecr] circleguard-auth-service:1.5.0 publicada
+[ecr] circleguard-dashboard-service:1.5.0 publicada
+[ecr] circleguard-file-service:1.5.0 publicada
+[ecr] circleguard-form-service:1.5.0 publicada
+[ecr] circleguard-gateway-service:1.5.0 publicada
+[ecr] circleguard-identity-service:1.5.0 publicada
+[ecr] circleguard-notification-service:1.5.0 publicada
+[ecr] circleguard-promotion-service:1.5.0 publicada
+[ecr] circleguard-web:1.5.0 publicada
+[deployK8s] dev (44.195.212.144) <- v1.5.0 con letsencrypt-staging en https://44-195-212-144.sslip.io
+== [promote] dev <- 1.5.0
+== cert-manager v1.21.1
+Release "cert-manager" does not exist. Installing it now.
+== Sealed Secrets (chart 2.22.0)
+Release "sealed-secrets" does not exist. Installing it now.
+== emisores de certificados (con ACME de letsencrypt para <CORREO-ACME>)
+Release "circleguard-platform" does not exist. Installing it now.
+== dev: desplegando 1.5.0 (--atomic, espera hasta 10m)
+Release "circleguard" does not exist. Installing it now.
+Error: release circleguard failed, and has been uninstalled due to atomic being set: context deadline exceeded
+ERROR: script returned exit code 1
+Finished: FAILURE
