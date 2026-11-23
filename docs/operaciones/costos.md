@@ -82,6 +82,8 @@ Supuestos: el piso es USD 0,93/día; el consumo bruto al cierre del 18 es ≈ US
 
 **Recomendación:** escenario B. Las IP y las VMs de la Parte 1 se conservan solo mientras la Parte 1 esté en revisión; destruirlas es la acción pendiente del «cutover» de Terraform y necesita la confirmación del equipo (la IP elástica es la URL entregada en el informe de la Parte 1).
 
+> **Actualización del 22 de nov:** el consumo bruto del 1 al 22 de nov es de USD 53,56 (89 % del presupuesto; pronóstico USD 61,28). El análisis de apagado automático, Spot y el script de control están en [`docs/bonos/finops.md`](../bonos/finops.md).
+
 ## 5. Cómo se consulta
 
 ```bash
