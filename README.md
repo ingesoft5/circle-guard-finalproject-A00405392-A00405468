@@ -99,12 +99,17 @@ CircleGuard follows a **Microservice Architecture** built on a **Hybrid Data Mod
 | Imágenes, compose por ambiente, despliegue y rollback | [`deploy/compose/README.md`](deploy/compose/README.md) |
 | Kubernetes: chart de Helm de los 8 servicios y el middleware, y cómo probarlo sin gastar AWS | [`deploy/helm/README.md`](deploy/helm/README.md) |
 | Pipeline que gobierna Terraform, Trivy y Kubernetes (jobs `circleguard-infra` y `circleguard-drift`, `TARGET=k8s`) | [`docs/arquitectura/pipeline-k8s.md`](docs/arquitectura/pipeline-k8s.md) · [evidencia](docs/evidencias/sprint-2/hu-16-pipeline.md) |
+| Arquitectura desplegada de la Parte 2 (la nube y un cluster, con diagramas) | [`docs/arquitectura/despliegue-parte-2.md`](docs/arquitectura/despliegue-parte-2.md) |
+| Costos de la nube, estimados y reales (AWS Cost Explorer) | [`docs/operaciones/costos.md`](docs/operaciones/costos.md) |
+| Manual de operaciones: ventanas de nube, despliegue, rollback y qué hacer cuando algo falla | [`docs/operaciones/manual-operaciones.md`](docs/operaciones/manual-operaciones.md) |
+| Resumen ejecutivo en inglés (1 página) | [`docs/resumen-ejecutivo.md`](docs/resumen-ejecutivo.md) |
 | Patrones de diseño (resiliencia, configuración externa): problema, solución y trade-offs | [`docs/patrones/README.md`](docs/patrones/README.md) |
 | Versionado automático y release notes | [`docs/release-notes/README.md`](docs/release-notes/README.md) |
 | Gestión de cambios: tipos, aprobaciones, RFC, etiquetado | [`docs/change-management/politica.md`](docs/change-management/politica.md) |
 | Sprints, burndown y evidencias | [`docs/agil/`](docs/agil), [`docs/evidencias/`](docs/evidencias) |
 | Video del pipeline de punta a punta (3 min 47 s) y su guion | [Video](https://github.com/ingesoft5/circle-guard-finalproject-A00405392-A00405468/releases/download/v1.1.0/circleguard-pipeline-sprint1.mp4) · [guion y antes/después](docs/evidencias/sprint-1/video-pipeline.md) |
 | Informe de la Parte 1 (PDF, 13 páginas, con capturas) | [`docs/entrega/informe-parte1-pipeline-cicd.pdf`](docs/entrega/informe-parte1-pipeline-cicd.pdf) |
+| Informe de la Parte 2 (PDF) | [`docs/entrega/informe-parte2-plataforma-k8s.pdf`](docs/entrega/informe-parte2-plataforma-k8s.pdf) |
 
 ### Ambientes
 
