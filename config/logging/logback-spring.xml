@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logs de los 8 servicios (HU-22 · #29). Un solo archivo para todos: el build.gradle.kts raíz lo agrega a los
+  recursos de cada servicio.
+  - Por defecto, una línea JSON por evento con trace_id y span_id (W3C Trace Context, de Micrometer Tracing):
+    Loki los indexa y Grafana salta del log a la traza en Jaeger.
+  - Con el perfil `plain-logs` (SPRING_PROFILES_ACTIVE=plain-logs) vuelve al formato de texto de Spring Boot,
+    más cómodo para leer en local.
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <springProperty name="SERVICE" source="spring.application.name" defaultValue="circleguard"/>
+
+    <springProfile name="plain-logs">
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!plain-logs">
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <customFields>{"service":"${SERVICE}"}</customFields>
+                <fieldNames>
+                    <timestamp>timestamp</timestamp>
+                    <version>[ignore]</version>
+                    <levelValue>[ignore]</levelValue>
+                </fieldNames>
+                <!-- Solo los campos de la traza del MDC, con los nombres que usa Grafana (trace_id, span_id). -->
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>spanId</includeMdcKeyName>
+                <mdcKeyFieldName>traceId=trace_id</mdcKeyFieldName>
+                <mdcKeyFieldName>spanId=span_id</mdcKeyFieldName>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
+</configuration>

@@ -1,0 +1,23 @@
+# HU-22: traza de punta a punta y sus logs (compose de dev + Jaeger + Loki), 21 nov 2026
+
+== persona de88f74a-c3f9-48e0-8b26-3d763b852265 con 2 contactos en el grafo
+== cuestionario con síntomas, traceparent 00-661e8ffbfe986c56d353710c9e0a71ea-71f6cca1bf9f169b-01
+form respondió HTTP 200
+== esperando la traza en Jaeger (form -> promotion -> notification)
+servicios en la traza: circleguard-form-service circleguard-notification-service circleguard-promotion-service
+5 spans en la traza 661e8ffbfe986c56d353710c9e0a71ea:
+  +     0.0 ms      11.5 ms  circleguard-form-service          http post /api/v1/surveys
+  +     6.1 ms       2.7 ms  circleguard-form-service          survey.submitted send
+  +    10.3 ms      41.3 ms  circleguard-promotion-service     survey.submitted receive
+  +    26.0 ms       2.7 ms  circleguard-promotion-service     promotion.status.changed send
+  +    29.9 ms       6.7 ms  circleguard-notification-service  promotion.status.changed receive
+== logs con ese trace_id en Loki (vía Grafana)
+7 líneas de log con trace_id:
+  circleguard-promotion-service    INFO  span=a6ca740dd77660c1  Received survey submission event: {anonymousId=de88f74a-c3f9-48e0-8b26-3d763b852265, times
+  circleguard-promotion-service    INFO  span=a6ca740dd77660c1  Promoting user de88f74a-c3f9-48e0-8b26-3d763b852265 to SUSPECT due to symptoms
+  circleguard-promotion-service    INFO  span=a6ca740dd77660c1  Updating status: de88f74a-c3f9-48e0-8b26-3d763b852265 -> SUSPECT (Admin Override: false)
+  circleguard-promotion-service    INFO  span=a6ca740dd77660c1  Batch updating 3 Redis entries based on consolidated propagation
+  circleguard-notification-service INFO  span=ec171b6bbb21f179  Received health status change event: {"anonymousId":"de88f74a-c3f9-48e0-8b26-3d763b852265"
+  circleguard-notification-service INFO  span=ec171b6bbb21f179  Dispatching contextual multi-channel notifications for user: de88f74a-c3f9-48e0-8b26-3d763
+  circleguard-promotion-service    WARN  span=a6ca740dd77660c1  Neo.ClientNotification.Statement.UnknownPropertyKeyWarning: The provided property key is n
+trace_id=661e8ffbfe986c56d353710c9e0a71ea

@@ -1,0 +1,48 @@
+# Alertas críticas de CircleGuard (HU-21 · #28). Las evalúa Prometheus y las envía a Alertmanager.
+# Cada una se probó provocando la falla (docs/evidencias/sprint-2/hu-21-alertas.md) y tiene prueba unitaria
+# con promtool (deploy/observability/prometheus/tests/alertas.test.yml).
+groups:
+  - name: circleguard-criticas
+    rules:
+      - alert: ServicioCaido
+        expr: up{job="circleguard"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance }} no responde"
+          description: "Prometheus no puede leer las métricas de {{ $labels.instance }} desde hace más de 1 minuto: el servicio está caído o no acepta conexiones."
+          runbook: "docs/observabilidad/alertas.md#serviciocaido"
+
+      - alert: CircuitoAbierto
+        expr: max by (application, name) (resilience4j_circuitbreaker_state{state="open"}) == 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuito {{ $labels.name }} abierto en {{ $labels.application }}"
+          description: "{{ $labels.application }} dejó de llamar a {{ $labels.name }} porque falló el 50 % o más de las últimas llamadas. Los usuarios reciben una respuesta degradada (p. ej. login 503)."
+          runbook: "docs/observabilidad/alertas.md#circuitoabierto"
+
+      - alert: LatenciaP95Alta
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le, application) (rate(http_server_requests_seconds_bucket{job="circleguard", uri!~"/actuator.*"}[2m]))
+          ) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "p95 de {{ $labels.application }} en {{ $value | humanizeDuration }}"
+          description: "El 5 % más lento de las peticiones de {{ $labels.application }} tarda más de 1 s desde hace 2 minutos."
+          runbook: "docs/observabilidad/alertas.md#latenciap95alta"
+
+      - alert: LagKafkaAlto
+        expr: sum by (consumergroup, topic) (kafka_consumergroup_lag) > 100
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.consumergroup }} lleva {{ $value }} mensajes de atraso en {{ $labels.topic }}"
+          description: "Los eventos de {{ $labels.topic }} se acumulan sin procesar: el cerco de las personas que reportan síntomas no se está aplicando."
+          runbook: "docs/observabilidad/alertas.md#lagkafkaalto"

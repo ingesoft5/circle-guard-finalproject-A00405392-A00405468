@@ -20,6 +20,14 @@ public class HealthSurveyService {
     private final QuestionnaireService questionnaireService;
     private final SymptomMapper symptomMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
+
+    /** HU-20: series en 0 desde el arranque para que Prometheus cuente el primer cuestionario. */
+    @jakarta.annotation.PostConstruct
+    void registerSurveyCounters() {
+        meterRegistry.counter("circleguard.surveys.submitted", "symptoms", "true");
+        meterRegistry.counter("circleguard.surveys.submitted", "symptoms", "false");
+    }
 
     private static final String TOPIC_SURVEY_SUBMITTED = "survey.submitted";
     private static final String TOPIC_CERTIFICATE_VALIDATED = "certificate.validated";
@@ -50,6 +58,9 @@ public class HealthSurveyService {
             "timestamp", System.currentTimeMillis()
         );
         kafkaTemplate.send(TOPIC_SURVEY_SUBMITTED, saved.getAnonymousId().toString(), event);
+
+        // HU-20: circleguard_surveys_submitted_total{symptoms}
+        meterRegistry.counter("circleguard.surveys.submitted", "symptoms", String.valueOf(hasSymptoms)).increment();
         
         return saved;
     }

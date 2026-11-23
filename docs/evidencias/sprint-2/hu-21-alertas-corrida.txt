@@ -1,0 +1,47 @@
+# HU-21: corrida de las alertas provocadas en el compose de dev (21 nov 2026)
+
+## Escenario 1: identity caido (primera corrida, valida)
+[08:10:40] == 1. identity caído (ServicioCaido y CircuitoAbierto)
+[08:10:53] identity detenido
+[08:12:01] Alertmanager: CircuitoAbierto DISPARADA
+[08:12:35] Alertmanager: ServicioCaido DISPARADA
+captura hu-21-alertmanager-identity.png
+[08:13:29] identity encendido
+[08:14:16] Alertmanager: ServicioCaido RESUELTA
+[08:14:16] Alertmanager: CircuitoAbierto RESUELTA
+[08:14:16] == 2. base de datos congelada (LatenciaP95Alta)
+
+## Escenarios 2 y 3 (repetidos con la guarda de alerta inactiva)
+[08:30:01] == 2. base de datos congelada (LatenciaP95Alta)
+[08:30:01] esperando que LatenciaP95Alta esté inactiva antes de provocarla
+[08:30:01] Alertmanager: LatenciaP95Alta RESUELTA
+[08:30:12] postgres congelado (docker pause)
+[08:33:17] Alertmanager: LatenciaP95Alta DISPARADA
+captura hu-21-alertmanager-latencia.png
+[08:33:31] postgres reanudado
+[08:36:05] Alertmanager: LatenciaP95Alta RESUELTA
+[08:36:05] == 3. promotion detenido con cuestionarios llegando (LagKafkaAlto)
+[08:36:05] esperando que LagKafkaAlto esté inactiva antes de provocarla
+[08:36:05] Alertmanager: LagKafkaAlto RESUELTA
+[08:36:07] promotion detenido
+[08:36:24] 150 cuestionarios enviados sin consumidor
+[08:37:47] Alertmanager: LagKafkaAlto DISPARADA
+captura hu-21-alertmanager-kafka.png
+[08:38:08] promotion encendido
+[08:38:50] Alertmanager: LagKafkaAlto RESUELTA
+
+## Notificaciones que recibio el receptor (alert-sink), en UTC (hora local = UTC-5)
+[13:12:00Z] DISPARADA CircuitoAbierto (critical): Circuito identity abierto en circleguard-auth-service
+[13:12:30Z] DISPARADA ServicioCaido (critical): identity:8083 no responde
+[13:13:15Z] DISPARADA LatenciaP95Alta (critical): p95 de circleguard-auth-service en 5.226s
+[13:14:30Z] RESUELTA ServicioCaido (critical): identity:8083 no responde
+[13:15:00Z] RESUELTA CircuitoAbierto (critical): Circuito identity abierto en circleguard-auth-service
+[13:18:15Z] RESUELTA LatenciaP95Alta (critical): p95 de circleguard-auth-service en 28.06s
+[13:19:45Z] DISPARADA ServicioCaido (critical): promotion:8088 no responde
+[13:24:45Z] RESUELTA ServicioCaido (critical): promotion:8088 no responde
+[13:33:15Z] DISPARADA LatenciaP95Alta (critical): p95 de circleguard-auth-service en 30s
+[13:36:15Z] RESUELTA LatenciaP95Alta (critical): p95 de circleguard-auth-service en 24.24s
+[13:37:45Z] DISPARADA ServicioCaido (critical): promotion:8088 no responde
+[13:37:45Z] DISPARADA LagKafkaAlto (critical): promotion-service-group lleva 150 mensajes de atraso en survey.submitted
+[13:39:45Z] RESUELTA ServicioCaido (critical): promotion:8088 no responde
+[13:39:45Z] RESUELTA LagKafkaAlto (critical): promotion-service-group lleva 150 mensajes de atraso en survey.submitted

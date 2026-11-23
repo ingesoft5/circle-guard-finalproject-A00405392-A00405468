@@ -1,0 +1,36 @@
+# Prometheus para el compose (HU-20). Lee /actuator/prometheus de cada servicio dentro de la red de
+# Docker; el nginx del web no publica esa ruta. En Kubernetes el mismo scrape se hace con
+# kubernetes_sd_configs (lo despliega la parte de plataforma); las métricas y los dashboards son los mismos.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# HU-21: reglas de alerta y Alertmanager.
+rule_files:
+  - /etc/prometheus/alertas.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: [alertmanager:9093]
+
+scrape_configs:
+  - job_name: circleguard
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - auth:8180
+          - identity:8083
+          - form:8086
+          - promotion:8088
+          - gateway:8087
+          - notification:8082   # solo con el overlay de observabilidad (HU-22)
+        labels:
+          environment: compose
+      # dashboard y file no corren en el compose de la Parte 1; en Kubernetes sí.
+
+  # HU-21: lag de los grupos de consumidores de Kafka, medido desde el broker. Un consumidor detenido
+  # no puede reportar su propio atraso, por eso no basta con las métricas de los servicios.
+  - job_name: kafka
+    static_configs:
+      - targets: [kafka-exporter:9308]

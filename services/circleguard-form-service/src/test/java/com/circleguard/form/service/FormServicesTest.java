@@ -31,8 +31,9 @@ class FormServicesTest {
     @SuppressWarnings("unchecked")
     private final KafkaTemplate<String, Object> kafka = mock(KafkaTemplate.class);
     private final QuestionnaireService questionnaireService = new QuestionnaireService(questionnaireRepository);
+    private final io.micrometer.core.instrument.simple.SimpleMeterRegistry meterRegistry = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
     private final HealthSurveyService surveyService =
-            new HealthSurveyService(surveyRepository, questionnaireService, symptomMapper, kafka);
+            new HealthSurveyService(surveyRepository, questionnaireService, symptomMapper, kafka, meterRegistry);
 
     // ------------------------------------------------------------- HealthSurveyService
 
@@ -56,6 +57,8 @@ class FormServicesTest {
         assertThat((Map<String, Object>) event.getValue())
                 .containsEntry("anonymousId", anonymousId)
                 .containsEntry("hasSymptoms", true);
+        // HU-20: la métrica de negocio cuenta el cuestionario por síntomas
+        assertThat(meterRegistry.counter("circleguard.surveys.submitted", "symptoms", "true").count()).isEqualTo(1.0);
     }
 
     @Test
@@ -71,6 +74,7 @@ class FormServicesTest {
         assertThat(saved.getHasCough()).isFalse();
         assertThat(saved.getValidationStatus()).isEqualTo(ValidationStatus.PENDING);
         verifyNoInteractions(symptomMapper);
+        assertThat(meterRegistry.counter("circleguard.surveys.submitted", "symptoms", "false").count()).isEqualTo(1.0);
     }
 
     @Test

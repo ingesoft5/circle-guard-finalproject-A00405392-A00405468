@@ -1,0 +1,16 @@
+# Alertmanager de CircleGuard (HU-21). Agrupa las alertas por nombre y servicio y las envía al receptor.
+# En el compose el receptor es alert-sink, que imprime cada notificación en su log (evidencia y demo).
+# Para Discord o WhatsApp (los mismos canales que avisan los fallos del pipeline) se agrega un receptor con
+# discord_configs/webhook_configs que lea la URL de un archivo montado (webhook_url_file): nunca va en el repo.
+route:
+  receiver: equipo
+  group_by: [alertname, instance, application, name, consumergroup]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+
+receivers:
+  - name: equipo
+    webhook_configs:
+      - url: http://alert-sink:8080/alertas
+        send_resolved: true

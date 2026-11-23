@@ -1,0 +1,85 @@
+# Pruebas de las reglas de alerta: promtool test rules deploy/observability/prometheus/tests/alertas.test.yml
+rule_files:
+  - ../alertas.yml
+evaluation_interval: 15s
+
+tests:
+  # ServicioCaido: dispara al minuto de no poder leer el servicio, no antes.
+  - interval: 15s
+    input_series:
+      - series: 'up{job="circleguard", instance="identity:8083"}'
+        values: '1 1 0 0 0 0 0 0'
+      - series: 'up{job="circleguard", instance="auth:8180"}'
+        values: '1 1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: ServicioCaido
+        exp_alerts: []
+      - eval_time: 105s
+        alertname: ServicioCaido
+        exp_alerts:
+          - exp_labels: { severity: critical, job: circleguard, instance: "identity:8083" }
+            exp_annotations:
+              summary: "identity:8083 no responde"
+              description: "Prometheus no puede leer las métricas de identity:8083 desde hace más de 1 minuto: el servicio está caído o no acepta conexiones."
+              runbook: "docs/observabilidad/alertas.md#serviciocaido"
+
+  # CircuitoAbierto: un circuito cerrado no alerta; abierto 30 s sí.
+  - interval: 15s
+    input_series:
+      - series: 'resilience4j_circuitbreaker_state{application="circleguard-auth-service", name="identity", state="open"}'
+        values: '0 0 1 1 1 1'
+      - series: 'resilience4j_circuitbreaker_state{application="circleguard-dashboard-service", name="promotion", state="open"}'
+        values: '0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 30s
+        alertname: CircuitoAbierto
+        exp_alerts: []
+      - eval_time: 75s
+        alertname: CircuitoAbierto
+        exp_alerts:
+          - exp_labels: { severity: critical, application: circleguard-auth-service, name: identity }
+            exp_annotations:
+              summary: "Circuito identity abierto en circleguard-auth-service"
+              description: "circleguard-auth-service dejó de llamar a identity porque falló el 50 % o más de las últimas llamadas. Los usuarios reciben una respuesta degradada (p. ej. login 503)."
+              runbook: "docs/observabilidad/alertas.md#circuitoabierto"
+
+  # LatenciaP95Alta: todas las peticiones en el bucket de 2.5 s (p95 > 1 s) durante más de 2 min.
+  - interval: 15s
+    input_series:
+      - series: 'http_server_requests_seconds_bucket{job="circleguard", application="auth", uri="/api/v1/auth/login", le="0.5"}'
+        values: '0+0x20'
+      - series: 'http_server_requests_seconds_bucket{job="circleguard", application="auth", uri="/api/v1/auth/login", le="2.5"}'
+        values: '0+10x20'
+      - series: 'http_server_requests_seconds_bucket{job="circleguard", application="auth", uri="/api/v1/auth/login", le="+Inf"}'
+        values: '0+10x20'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: LatenciaP95Alta
+        exp_alerts: []
+      - eval_time: 4m
+        alertname: LatenciaP95Alta
+        exp_alerts:
+          - exp_labels: { severity: critical, application: auth }
+            exp_annotations:
+              summary: "p95 de auth en 2.4s"
+              description: "El 5 % más lento de las peticiones de auth tarda más de 1 s desde hace 2 minutos."
+              runbook: "docs/observabilidad/alertas.md#latenciap95alta"
+
+  # LagKafkaAlto: 100 mensajes de atraso o menos no alerta; más de 100 por 1 min sí.
+  - interval: 15s
+    input_series:
+      - series: 'kafka_consumergroup_lag{consumergroup="promotion-service-group", topic="survey.submitted", partition="0"}'
+        values: '0 50 100 150 200 250 300 350'
+    alert_rule_test:
+      - eval_time: 30s
+        alertname: LagKafkaAlto
+        exp_alerts: []
+      - eval_time: 105s
+        alertname: LagKafkaAlto
+        exp_alerts:
+          - exp_labels: { severity: critical, consumergroup: promotion-service-group, topic: survey.submitted }
+            exp_annotations:
+              summary: "promotion-service-group lleva 350 mensajes de atraso en survey.submitted"
+              description: "Los eventos de survey.submitted se acumulan sin procesar: el cerco de las personas que reportan síntomas no se está aplicando."
+              runbook: "docs/observabilidad/alertas.md#lagkafkaalto"

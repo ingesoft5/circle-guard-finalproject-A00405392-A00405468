@@ -1,0 +1,29 @@
+# HU-22: Jaeger (trazas) y Loki (logs), enlazados en los dos sentidos por el trace_id.
+apiVersion: 1
+datasources:
+  - name: Jaeger
+    uid: jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    jsonData:
+      # Desde un span de la traza, "Logs for this span" abre Loki con las líneas que llevan el mismo trace_id.
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        filterByTraceID: false
+        customQuery: true
+        query: '{service=~"circleguard-.+"} |= "$${__span.traceId}"'
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      # En cada línea de log con "trace_id":"..." aparece el enlace a la traza en Jaeger.
+      derivedFields:
+        - name: trace_id
+          matcherRegex: '"trace_id":"(\w+)"'
+          datasourceUid: jaeger
+          url: '$${__value.raw}'

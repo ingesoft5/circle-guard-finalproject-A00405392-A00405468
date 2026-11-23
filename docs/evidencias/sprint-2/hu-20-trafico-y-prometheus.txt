@@ -1,0 +1,46 @@
+# Tráfico generado (hu-20-trafico.sh 8 5) y lo que registró Prometheus, 18 de noviembre de 2026
+
+## cuestionario activo
+## grafo de contactos: 8 personas, cada una con 3 contactos
+24
+## cuestionarios: 8 con síntomas y 8 sin síntomas
+## puerta: health_user entra, QR falsos, y staff_guard confirmado no entra
+health_user: GREEN (x20)
+QR falso: RED (x6)
+staff_guard confirmado: RED (x4)
+## carga sostenida durante 5 min
+rondas: 23 (cada una: 1 cuestionario con síntomas, 7 check-ins)
+## limpieza: se resuelve el caso de staff_guard
+resolve HTTP 200
+
+## Consultas a Prometheus (/api/v1/query) al terminar
+promociones por estado:
+    {'status': 'CONFIRMED'} 1.0
+    {'status': 'ACTIVE'} 0.0
+    {'status': 'SUSPECT'} 31.0
+    {'status': 'PROBABLE'} 47.0
+    {'status': 'RECOVERED'} 0.0
+tiempo de contencion (n, promedio s, max s):
+    {} 31.0
+    {} 0.602
+    {} 0.068
+check-ins por resultado:
+    {'result': 'denied_invalid'} 29.0
+    {'result': 'granted'} 135.0
+    {'result': 'denied_risk'} 27.0
+    {'result': 'denied_unavailable'} 0.0
+cuestionarios:
+    {'symptoms': 'true'} 31.0
+    {'symptoms': 'false'} 8.0
+RED - peticiones por servicio (sin actuator):
+    {'application': 'circleguard-form-service'} 43.0
+    {'application': 'circleguard-auth-service'} 165.0
+    {'application': 'circleguard-promotion-service'} 4.0
+    {'application': 'circleguard-identity-service'} 3.0
+    {'application': 'circleguard-gateway-service'} 191.0
+RED - p95 por servicio (s, ultimos 5 min):
+    {'application': 'circleguard-form-service'} 0.013
+    {'application': 'circleguard-auth-service'} 0.008
+    {'application': 'circleguard-promotion-service'} 0.111
+    {'application': 'circleguard-identity-service'} nan
+    {'application': 'circleguard-gateway-service'} 0.006

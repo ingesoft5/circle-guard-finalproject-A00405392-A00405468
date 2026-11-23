@@ -1,0 +1,135 @@
+# HU-20 (#27), HU-21 (#28) y HU-22 (#29): Prometheus, Grafana, Alertmanager, Jaeger y Loki junto al compose:
+#   ./deploy/compose/compose.sh dev -f deploy/compose/observability.yml up -d --wait
+# Grafana en http://localhost:3000 (o GRAFANA_PORT; usuario admin, contraseña GRAFANA_ADMIN_PASSWORD del .env).
+# Solo escuchan en 127.0.0.1: no se publican hacia afuera de la máquina.
+# En Kubernetes la plataforma despliega Prometheus y Grafana; los dashboards son estos mismos archivos.
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../observability/prometheus/alertas.yml:/etc/prometheus/alertas.yml:ro
+      - promdata:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Define GRAFANA_ADMIN_PASSWORD en .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      prometheus: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # HU-21: Alertmanager agrupa las alertas y notifica al receptor.
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    volumes:
+      - ../observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "127.0.0.1:${ALERTMANAGER_PORT:-9093}:9093"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9093/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Receptor de notificaciones para el compose: imprime cada alerta en su log.
+  alert-sink:
+    image: python:3.12-alpine
+    restart: unless-stopped
+    command: ["python", "-u", "/sink/sink.py"]
+    volumes:
+      - ../observability/alert-sink/sink.py:/sink/sink.py:ro
+      - alertlog:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]   # 127.0.0.1: en alpine localhost resuelve a IPv6
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Lag de los consumidores de Kafka, leído del broker (alerta LagKafkaAlto).
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.8.0
+    restart: unless-stopped
+    command: ["--kafka.server=kafka:9092"]
+    depends_on:
+      kafka: { condition: service_healthy }
+
+  # ---------------------------------------------------------------- HU-22: trazas y logs
+  # Jaeger recibe las trazas por OTLP (puerto 4318) y las muestra en http://localhost:16686.
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "127.0.0.1:${JAEGER_PORT:-16686}:16686"
+
+  loki:
+    image: grafana/loki:3.2.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ../observability/loki/loki.yml:/etc/loki/loki.yml:ro
+      - lokidata:/loki
+
+  # Lee los logs de los contenedores por el socket de Docker (solo lectura) y los envía a Loki.
+  promtail:
+    image: grafana/promtail:3.2.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ../observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+
+  # notification no está en el compose de la Parte 1; aquí se agrega para completar la traza
+  # form -> Kafka -> promotion -> Kafka -> notification.
+  notification:
+    image: ${REGISTRY:-local}/circleguard/circleguard-notification-service:${IMAGE_TAG:?Define IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      QR_SECRET: ${QR_SECRET:?Define QR_SECRET en .env}
+      AUTH_API_URL: http://auth:8180
+      TRACING_SAMPLING: "1.0"
+      OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      kafka: { condition: service_healthy }
+
+  # Con este overlay los servicios exportan todas sus trazas a Jaeger (en la base el muestreo es 0).
+  auth:      { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  identity:  { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  form:      { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  promotion: { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+  gateway:   { environment: { TRACING_SAMPLING: "1.0", OTLP_TRACING_ENDPOINT: "http://jaeger:4318/v1/traces" } }
+
+volumes:
+  promdata:
+  alertlog:
+  lokidata:

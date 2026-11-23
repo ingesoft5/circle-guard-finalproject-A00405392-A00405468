@@ -30,6 +30,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/login", "/api/v1/auth/qr/verify").permitAll()
                 .requestMatchers("/actuator/health/**").permitAll()   // healthcheck del contenedor
+                .requestMatchers("/actuator/prometheus").permitAll()   // HU-20: lo lee Prometheus dentro de la red
                 .requestMatchers("/api/v1/auth/qr/generate").authenticated()
                 .anyRequest().permitAll())
             .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
