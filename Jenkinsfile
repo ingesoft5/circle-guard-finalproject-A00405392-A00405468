@@ -159,7 +159,8 @@ pipeline {
 
                 stage('ZAP baseline contra dev') {
                     // HU-24 (#31): análisis pasivo de seguridad; una cabecera de seguridad que se pierda frena la promoción.
-                    when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean } } }
+                    // Como el E2E, apunta a la dev de la Parte 1 (DEV_URL): con TARGET=k8s se omite.
+                    when { allOf { branch 'main'; expression { RELEASE_VERSION as boolean }; expression { (params.TARGET ?: 'compose') == 'compose' } } }
                     steps { zapBaseline('dev') }
                     post {
                         always {
