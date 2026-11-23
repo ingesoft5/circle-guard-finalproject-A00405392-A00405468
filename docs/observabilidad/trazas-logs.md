@@ -53,5 +53,5 @@ Jaeger, Loki y Promtail se despliegan en el namespace `monitoring`: la red de la
 ```bash
 ./deploy/compose/compose.sh dev -f deploy/compose/observability.yml up -d --wait
 bash docs/evidencias/sprint-2/hu-22-traza.sh          # cuestionario con síntomas y búsqueda de su traza y sus logs
-# Jaeger: http://localhost:16686 · Grafana › Explore › Loki: {service="circleguard-promotion-service"}
+# Jaeger: http://localhost:16686 (o JAEGER_PORT) · Grafana (GRAFANA_PORT) › Explore › Loki: {service="circleguard-promotion-service"}
 ```
