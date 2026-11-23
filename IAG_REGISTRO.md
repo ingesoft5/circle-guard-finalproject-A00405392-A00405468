@@ -279,6 +279,13 @@ Formato de cada entrada: fecha, integrante, contenido propio entregado, prompt, 
 - **Qué produjo:** `docs/bonos/chaos-engineering.md` (cinco experimentos con hipótesis, resultado y lo que cambió, armados con las salidas de HU-17, 19, 21 y 27), `docs/bonos/finops.md`, `scripts/finops.sh` (informe de solo lectura de costos, presupuesto y Spot), la variable `spot` del módulo `compute` de Terraform con dos pruebas nuevas, y `scripts/chaos/identidad-caida.sh`.
 - **Verificación / cambios del equipo:** `scripts/finops.sh` se ejecutó contra la cuenta real (USD 53,56 del presupuesto de 60, precios Spot leídos de la API); `./infra/terraform/run.sh check` pasa completo (24 pruebas de módulos). No se hizo un `apply` real con Spot y no se usó una herramienta de caos: ambas cosas se dicen en los propios documentos.
 
+### 2026-11-22 · `jmrojas06` · Ejecución real de los jobs de Terraform y Kubernetes en AWS (#23)
+
+- **Contenido propio entregado:** la decisión de ejecutar de verdad contra la nube lo que se había probado solo en local (releyendo el enunciado: Kubernetes «sobre la nube» y Jenkins que ejecuta Terraform), la autorización para crear el usuario de IAM de Jenkins y el correo de contacto de Let's Encrypt.
+- **Prompts (textuales):** *"intentemos hacer todo eso, no creo que demore tanto, empieza ya mismo a hacer lo que falta, a la perfeccion siguiendo la rubrica."*
+- **Qué produjo:** el usuario `circleguard-jenkins` con una política acotada, las ejecuciones de `circleguard-infra`, `circleguard-k8s` y `circleguard-drift` contra AWS, el rollback y la comprobación del certificado, y la evidencia en `docs/evidencias/sprint-2/hu-16-aws-*`; el arreglo de `T_TARGET` en `jenkins/infra.Jenkinsfile` y el temporizador de ECR del módulo `compute`.
+- **Verificación / cambios del equipo:** cada resultado sale de la API de Jenkins y de comandos contra el cluster (versión, login, certificado). Aparecieron cuatro errores que el simulador no mostraba (`TARGET` vacío, un correo de alarmas inválido, el acceso a ECR y el tiempo de Helm). El token de ECR se puso a mano en el nodo para continuar; el arreglo automático está probado solo con `terraform test` y falta validarlo en un nodo real.
+
 ## Reflexión crítica del equipo
 
 _Se completa al cierre de cada sprint (en la retrospectiva): qué aportó la IA, qué errores cometió y cómo se detectaron, qué decisiones se tomaron en contra de su sugerencia y qué aprendimos haciendo el trabajo nosotros._

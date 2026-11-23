@@ -86,3 +86,12 @@ run "con_spot_pide_una_instancia_spot_persistente_que_se_detiene" {
     error_message = "Con spot = true debe ser Spot persistente con interrupcion = stop."
   }
 }
+
+run "el_nodo_k3s_renueva_el_token_de_ecr" {
+  command = apply
+
+  assert {
+    condition     = strcontains(aws_instance.this.user_data, "ecr-login.timer") && strcontains(aws_instance.this.user_data, "registries.yaml")
+    error_message = "El nodo k3s debe renovar el token de ECR (HU-16): sin eso containerd no baja las imagenes."
+  }
+}
