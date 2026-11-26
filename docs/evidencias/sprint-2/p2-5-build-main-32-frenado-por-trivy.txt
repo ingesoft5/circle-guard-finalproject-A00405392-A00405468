@@ -1,0 +1,57 @@
+# P2.5: un build de main frenado por Trivy (circleguard/main #32, 25 nov 2026 19:43 a 19:46, hora de Colombia)
+# Commit c2c2b88 (squash del PR 82, feat(docs)). Release creo el tag 1.6.0 y Publicar subio las 9 imagenes; Trivy de imagenes encontro
+# 6 vulnerabilidades HIGH/CRITICAL con arreglo publicado en nginx de la imagen web y el build fallo: no se desplego a dev, stage ni prod.
+
+## Etapas del build (API de Jenkins)
+estado: FAILED
+ - CI y entrega a dev y stage : SUCCESS
+ - Preparar : SUCCESS
+ - Commitlint : SUCCESS
+ - Secretos (gitleaks) : SUCCESS
+ - Trivy: IaC (Dockerfile, chart y Terraform) : SUCCESS
+ - Trivy: dependencias : SUCCESS
+ - Build : NOT_EXECUTED
+ - Unit tests + JaCoCo : NOT_EXECUTED
+ - SonarQube + Quality Gate : NOT_EXECUTED
+ - Integration tests : NOT_EXECUTED
+ - Release (semantic-release) : SUCCESS
+ - Package + Publish : SUCCESS
+ - Trivy: imágenes : FAILED
+ - Deploy dev : FAILED
+ - E2E contra dev : FAILED
+ - ZAP baseline contra dev : FAILED
+ - Deploy stage : FAILED
+ - Aprobación para prod : FAILED
+ - Deploy prod : FAILED
+
+## Trivy de la imagen web (extracto del log)
+== trivy image: 172.31.32.157:8082/circleguard/circleguard-web:1.6.0 (HIGH/CRITICAL con arreglo bloquea)
+2026-11-26T00:46:19Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-26T00:46:19Z	INFO	[secret] Secret scanning is enabled
+2026-11-26T00:46:19Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-11-26T00:46:19Z	INFO	[secret] Please see https://trivy.dev/docs/v0.76/guide/scanner/secret#recommendation for faster secret detection
+2026-11-26T00:46:22Z	INFO	Detected OS	family="alpine" version="3.24.2"
+2026-11-26T00:46:22Z	INFO	[alpine] Detecting vulnerabilities...	os_version="3.24" repository="3.24" pkg_num=70
+2026-11-26T00:46:22Z	INFO	Number of language-specific files	num=0
+2026-11-26T00:46:22Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.76/guide/scanner/vulnerability#severity-selection for details.
+Report Summary
+┌──────────────────────────────────────────────────────────────────────┬────────┬─────────────────┬─────────┐
+│                                Target                                │  Type  │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
+│ 172.31.32.157:8082/circleguard/circleguard-web:1.6.0 (alpine 3.24.2) │ alpine │        6        │    -    │
+└──────────────────────────────────────────────────────────────────────┴────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+172.31.32.157:8082/circleguard/circleguard-web:1.6.0 (alpine 3.24.2)
+====================================================================
+Total: 6 (HIGH: 2, CRITICAL: 4)
+
+## Final del build
+ERROR: script returned exit code 1
+Finished: FAILURE
+
+## Versiones en los ambientes despues del build (no cambiaron)
+dev: 1.1.0
+stage: 1.1.0
+prod: 1.1.0

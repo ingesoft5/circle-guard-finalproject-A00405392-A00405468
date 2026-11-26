@@ -1,0 +1,34 @@
+# Falla provocada en el cluster de PRODUCCION de AWS (scripts/chaos/identidad-caida.sh), 2026-11-23 05:25Z
+# identity a cero réplicas; el login debe degradar con 503 + Retry-After y volver solo. Certificado real de Let's Encrypt, 8 servicios.
+
+== 1) Estado sano: identity con 2 réplica(s)
+NAME                        READY   STATUS    RESTARTS   AGE
+identity-547578f5bd-97828   1/1     Running   0          6m40s
+identity-547578f5bd-sljcx   1/1     Running   0          6m40s
+login: 200 1.363317s Retry-After=
+
+== 2) FALLA: se apaga identity (scale a 0)
+deployment.apps/identity scaled
+NAME                            READY   STATUS    RESTARTS   AGE
+
+== 3) El login degrada, no se cae: 503 claro con Retry-After; con el circuito abierto responde rápido
+intento 1: 503 7.302710s Retry-After=10
+intento 2: 503 7.894671s Retry-After=10
+intento 3: 503 7.721190s Retry-After=10
+intento 4: 503 2.973727s Retry-After=10
+intento 5: 503 5.136358s Retry-After=10
+intento 6: 503 0.498133s Retry-After=10
+
+== 4) RECUPERACIÓN: se vuelve a encender identity (2 réplica(s))
+deployment "identity" successfully rolled out
+login: 200 0.795136s Retry-After=
+recuperado en 33 s, sin reiniciar auth
+
+== 5) Estado final
+NAME                            READY   STATUS    RESTARTS   AGE
+auth-55cdf4555-kpg5r            1/1     Running   0          2m43s
+auth-55cdf4555-l6j4c            1/1     Running   0          2m43s
+auth-55cdf4555-nf5cd            1/1     Running   0          7m57s
+auth-55cdf4555-td49j            1/1     Running   0          7m58s
+identity-547578f5bd-jd2q9       1/1     Running   0          33s
+identity-547578f5bd-jwwvk       1/1     Running   0          33s
