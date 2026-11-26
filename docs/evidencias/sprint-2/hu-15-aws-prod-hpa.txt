@@ -1,0 +1,251 @@
+# Carga sobre produccion en AWS, 2026-11-23 05:34Z: 60 logins en paralelo durante 180 s contra el login del Ingress (certificado Let's Encrypt real)
+# kubectl se ejecuta en el nodo k3s por ssh; el HPA de cada servicio tiene minimo 2 y maximo 4 (auth: objetivo 70% de CPU)
+
+== ANTES
+NAME           REFERENCE                 TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+auth           Deployment/auth           cpu: 4%/70%    2         4         4          15m
+dashboard      Deployment/dashboard      cpu: 2%/70%    1         2         1          15m
+file           Deployment/file           cpu: 3%/70%    1         2         1          15m
+form           Deployment/form           cpu: 3%/70%    2         4         2          15m
+gateway        Deployment/gateway        cpu: 3%/70%    2         4         2          15m
+identity       Deployment/identity       cpu: 3%/70%    2         4         4          15m
+notification   Deployment/notification   cpu: 8%/70%    1         2         1          15m
+promotion      Deployment/promotion      cpu: 12%/70%   2         4         2          15m
+web            Deployment/web            cpu: 2%/70%    2         3         2          15m
+kafka-0                         21m   336Mi   
+promotion-5f6bbc5645-jqk2g      13m   336Mi   
+promotion-5f6bbc5645-7ngbj      11m   336Mi   
+notification-85d4db968b-9mbkc   8m    224Mi   
+auth-55cdf4555-l6j4c            8m    310Mi   
+neo4j-0                         7m    534Mi   
+
+NAME                   STATUS   ROLES           AGE   VERSION
+circleguard-prod-k3s   Ready    control-plane   29m   v1.37.2+k3s1
+
+== t=+20s (05:34:29Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   4 (67s ago)   5m2s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   4 (70s ago)   5m2s
+
+== t=+40s (05:34:53Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   Running   5 (91s ago)   5m26s
+  pod no listo: identity-547578f5bd-78w7q       0/1   Running   5 (94s ago)   5m26s
+
+== t=+60s (05:35:17Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   Running   5 (115s ago)   5m50s
+  pod no listo: identity-547578f5bd-78w7q       0/1   Running   5 (118s ago)   5m50s
+
+== t=+80s (05:35:41Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (21s ago)   6m14s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (10s ago)   6m14s
+
+== t=+100s (05:36:05Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (45s ago)   6m38s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (34s ago)   6m38s
+
+== t=+120s (05:36:29Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (69s ago)   7m2s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (58s ago)   7m2s
+
+== t=+140s (05:36:53Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (93s ago)   7m26s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (82s ago)   7m26s
+
+== Respuestas durante los 180 s de carga (codigo HTTP: cantidad)
+   4642 200
+      3 000
+
+== t=+160s (05:37:17Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (116s ago)   7m49s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (105s ago)   7m49s
+
+== t=+180s (05:37:40Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (2m20s ago)   8m13s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (2m9s ago)    8m13s
+
+== t=+200s (05:38:04Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   5 (2m43s ago)   8m36s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   5 (2m32s ago)   8m36s
+
+== t=+260s (05:38:27Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   6 (12s ago)     8m59s
+  pod no listo: identity-547578f5bd-78w7q       0/1   Error              6 (2m55s ago)   8m59s
+
+== t=+320s (05:38:50Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   6 (36s ago)   9m23s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   6 (28s ago)   9m23s
+
+== t=+380s (05:39:14Z)
+auth           cpu cpu:       min 2 max 4 replicas 4
+dashboard      cpu cpu:       min 1 max 2 replicas 1
+file           cpu cpu:       min 1 max 2 replicas 1
+form           cpu cpu:       min 2 max 4 replicas 2
+gateway        cpu cpu:       min 2 max 4 replicas 2
+identity       cpu cpu:       min 2 max 4 replicas 4
+notification   cpu cpu:       min 1 max 2 replicas 1
+promotion      cpu cpu:       min 2 max 4 replicas 2
+web            cpu cpu:       min 2 max 3 replicas 2
+  pod no listo: identity-547578f5bd-5s5xh       0/1   CrashLoopBackOff   6 (59s ago)   9m46s
+  pod no listo: identity-547578f5bd-78w7q       0/1   CrashLoopBackOff   6 (51s ago)   9m46s
+
+== DESPUES (sin carga)
+NAME           REFERENCE                 TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+auth           Deployment/auth           cpu: 2%/70%    2         4         4          20m
+dashboard      Deployment/dashboard      cpu: 4%/70%    1         2         1          20m
+file           Deployment/file           cpu: 3%/70%    1         2         1          20m
+form           Deployment/form           cpu: 3%/70%    2         4         2          20m
+gateway        Deployment/gateway        cpu: 17%/70%   2         4         2          20m
+identity       Deployment/identity       cpu: 3%/70%    2         4         4          20m
+notification   Deployment/notification   cpu: 7%/70%    1         2         1          20m
+promotion      Deployment/promotion      cpu: 8%/70%    2         4         2          20m
+web            Deployment/web            cpu: 2%/70%    2         3         2          20m
+NAME                            READY   STATUS             RESTARTS      AGE
+auth-55cdf4555-kpg5r            1/1     Running            0             15m
+auth-55cdf4555-l6j4c            1/1     Running            0             15m
+auth-55cdf4555-nf5cd            1/1     Running            0             20m
+auth-55cdf4555-td49j            1/1     Running            0             20m
+dashboard-6f5686fd67-h6shs      1/1     Running            0             20m
+file-55ff5d9f89-vlnd2           1/1     Running            0             20m
+form-7494bcd7fc-584wm           1/1     Running            0             20m
+form-7494bcd7fc-6g98j           1/1     Running            0             20m
+gateway-556499fbf7-2n8lc        1/1     Running            0             20m
+gateway-556499fbf7-h5dv7        1/1     Running            0             20m
+identity-547578f5bd-5s5xh       0/1     CrashLoopBackOff   6 (62s ago)   9m49s
+identity-547578f5bd-78w7q       0/1     CrashLoopBackOff   6 (54s ago)   9m49s
+identity-547578f5bd-jd2q9       1/1     Running            0             12m
+identity-547578f5bd-jwwvk       1/1     Running            0             12m
+kafka-0                         1/1     Running            0             20m
+neo4j-0                         1/1     Running            0             20m
+notification-85d4db968b-9mbkc   1/1     Running            0             20m
+postgres-0                      1/1     Running            0             20m
+promotion-5f6bbc5645-7ngbj      1/1     Running            0             20m
+promotion-5f6bbc5645-jqk2g      1/1     Running            0             20m
+redis-78fddc9767-qj6m6          1/1     Running            0             20m
+web-f69645949-cj85j             1/1     Running            0             20m
+web-f69645949-rxqcx             1/1     Running            0             20m
+
+# ============================================================================================
+# LECTURA (23 nov, 05:45Z). Dos cosas de verdad, una buena y una que hay que arreglar.
+#
+# 1) Lo bueno: 180 s de 60 logins en paralelo contra el Ingress con TLS real: 4642 respuestas 200 y 3 "000"
+#    (tiempo de espera del cliente), ninguna 5xx. El HPA ya tenia auth e identity en su maximo (4 de 4),
+#    asi que esta corrida NO muestra un escalado nuevo: muestra el cluster en el maximo sirviendo la carga.
+#    El escalado de auth de 2 a 4 ocurrio en el despliegue (hu-15-aws-prod-estado.txt, auth con 4 replicas).
+#
+# 2) El hallazgo: de las 4 replicas de identity, DOS (5s5xh y 78w7q) estan en CrashLoopBackOff desde que
+#    el HPA las creo. Causa (log de la replica): "FATAL: sorry, too many clients already" (SQL State 53300)
+#    al abrir el pool de Hikari y correr Flyway. PostgreSQL esta con max_connections = 100 (por defecto) y
+#    cada replica abre hasta 10 conexiones (pool de Hikari por defecto); con el HPA en su maximo, los
+#    servicios que usan PostgreSQL superan las 100. Las dos replicas originales siguen sanas, asi que no hay
+#    caida de servicio, pero el HPA de identity "escala" a pods que no pueden arrancar.
+#    Ni el chart ni los application.yml fijan max_connections ni hikari.maximum-pool-size (grep del 23 nov).
+#    Arreglo propuesto (no aplicado): max_connections=300 en el StatefulSet de PostgreSQL y/o
+#    spring.datasource.hikari.maximum-pool-size=5; o bajar maxReplicas de los servicios con base de datos.
+# ============================================================================================

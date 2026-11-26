@@ -29,6 +29,16 @@ misconfigurations:
     statement: "Middleware con imagen oficial que arranca como root para ajustar el volumen local-path; ver el comentario de arriba."
 
 vulnerabilities:
+
+  # nginx de la imagen web (aceptado el 2026-11-25): Trivy bloqueo el build 32 de main por 6 hallazgos (4 CRITICAL, 2 HIGH) con arreglo publicado
+  # que la imagen base oficial todavia no trae. Se aceptan por 15 dias, no por meses: vence el 2026-12-10 para obligar a actualizar la
+  # base apenas la publiquen. Riesgo acotado: nginx solo escucha HTTP plano en el puerto 8080 detras de Traefik y de la NetworkPolicy.
+  - {id: CVE-2026-113425, expired_at: 2026-12-10, statement: "nginx 1.30.6 de la imagen base nginxinc/nginx-unprivileged:1.30-alpine; el arreglo (1.30.7) aun no esta en esa imagen y apk upgrade no lo instala por los modulos de nginx fijados. funcion afectada: servidor mail proxy, no habilitado."}
+  - {id: CVE-2026-121810, expired_at: 2026-12-10, statement: "nginx 1.30.6 de la imagen base nginxinc/nginx-unprivileged:1.30-alpine; el arreglo (1.30.7) aun no esta en esa imagen y apk upgrade no lo instala por los modulos de nginx fijados. funcion afectada: HTTP/3, no habilitado (nginx escucha HTTP plano en 8080)."}
+  - {id: CVE-2026-123007, expired_at: 2026-12-10, statement: "nginx 1.30.6 de la imagen base nginxinc/nginx-unprivileged:1.30-alpine; el arreglo (1.30.7) aun no esta en esa imagen y apk upgrade no lo instala por los modulos de nginx fijados. funcion afectada: HTTP/2, no habilitado (nginx escucha HTTP plano en 8080)."}
+  - {id: CVE-2026-123633, expired_at: 2026-12-10, statement: "nginx 1.30.6 de la imagen base nginxinc/nginx-unprivileged:1.30-alpine; el arreglo (1.30.7) aun no esta en esa imagen y apk upgrade no lo instala por los modulos de nginx fijados. funcion afectada: HTTP/2, no habilitado (nginx escucha HTTP plano en 8080)."}
+  - {id: CVE-2026-118899, expired_at: 2026-12-10, statement: "nginx 1.30.6 de la imagen base nginxinc/nginx-unprivileged:1.30-alpine; el arreglo (1.30.7) aun no esta en esa imagen y apk upgrade no lo instala por los modulos de nginx fijados. TLS lo termina Traefik, nginx no negocia TLS."}
+  - {id: CVE-2026-123634, expired_at: 2026-12-10, statement: "nginx 1.30.6 de la imagen base nginxinc/nginx-unprivileged:1.30-alpine; el arreglo (1.30.7) aun no esta en esa imagen y apk upgrade no lo instala por los modulos de nginx fijados. el resolver SI se usa, pero apunta solo al DNS interno del ambiente (127.0.0.11 en Compose, kube-dns en Kubernetes)."}
   # Dependencias npm de la web (mobile/package-lock.json), revisadas el 2026-11-18: 74 hallazgos (73 HIGH, 1 CRITICAL) en 17 paquetes.
   # Todos vienen de la cadena de compilacion de Expo (empaquetador, servidor de desarrollo, utilidades de archivos): corren en la
   # etapa build del Dockerfile con expo export y NO viajan en la imagen final, que solo lleva nginx y el dist estatico. La correccion

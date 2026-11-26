@@ -1,0 +1,61 @@
+# Evidencia: prod en AWS con los 8 servicios, desplegado por Jenkins (circleguard-k8s #6, v1.5.0) — 2026-11-23 05:25Z
+== nodo
+NAME                   STATUS   ROLES           AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KE
+circleguard-prod-k3s   Ready    control-plane   20m   v1.37.2+k3s1   10.30.1.115   <none>        Ubuntu 24.04.5 LTS   7.
+
+== pods, HPA, Ingress y certificado de circleguard-prod
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/auth-55cdf4555-kpg5r            1/1     Running   0          68s
+pod/auth-55cdf4555-l6j4c            1/1     Running   0          68s
+pod/auth-55cdf4555-nf5cd            1/1     Running   0          6m22s
+pod/auth-55cdf4555-td49j            1/1     Running   0          6m23s
+pod/dashboard-6f5686fd67-h6shs      1/1     Running   0          6m23s
+pod/file-55ff5d9f89-vlnd2           1/1     Running   0          6m23s
+pod/form-7494bcd7fc-584wm           1/1     Running   0          6m23s
+pod/form-7494bcd7fc-6g98j           1/1     Running   0          6m22s
+pod/gateway-556499fbf7-2n8lc        1/1     Running   0          6m23s
+pod/gateway-556499fbf7-h5dv7        1/1     Running   0          6m23s
+pod/identity-547578f5bd-97828       1/1     Running   0          6m23s
+pod/identity-547578f5bd-sljcx       1/1     Running   0          6m23s
+pod/kafka-0                         1/1     Running   0          6m23s
+pod/neo4j-0                         1/1     Running   0          6m23s
+pod/notification-85d4db968b-9mbkc   1/1     Running   0          6m23s
+pod/postgres-0                      1/1     Running   0          6m23s
+pod/promotion-5f6bbc5645-7ngbj      1/1     Running   0          6m22s
+pod/promotion-5f6bbc5645-jqk2g      1/1     Running   0          6m23s
+pod/redis-78fddc9767-qj6m6          1/1     Running   0          6m23s
+pod/web-f69645949-cj85j             1/1     Running   0          6m23s
+pod/web-f69645949-rxqcx             1/1     Running   0          6m22s
+
+NAME                                               REFERENCE                 TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/auth           Deployment/auth           cpu: 33%/70%   2         4         4          6m23s
+horizontalpodautoscaler.autoscaling/dashboard      Deployment/dashboard      cpu: 5%/70%    1         2         1          6m23s
+horizontalpodautoscaler.autoscaling/file           Deployment/file           cpu: 3%/70%    1         2         1          6m23s
+horizontalpodautoscaler.autoscaling/form           Deployment/form           cpu: 6%/70%    2         4         2          6m23s
+horizontalpodautoscaler.autoscaling/gateway        Deployment/gateway        cpu: 4%/70%    2         4         2          6m23s
+horizontalpodautoscaler.autoscaling/identity       Deployment/identity       cpu: 28%/70%   2         4         2          6m23s
+horizontalpodautoscaler.autoscaling/notification   Deployment/notification   cpu: 11%/70%   1         2         1          6m23s
+horizontalpodautoscaler.autoscaling/promotion      Deployment/promotion      cpu: 19%/70%   2         4         2          6m23s
+horizontalpodautoscaler.autoscaling/web            Deployment/web            cpu: 2%/70%    2         3         2          6m23s
+
+NAME                                         CLASS     HOSTS                    ADDRESS       PORTS     AGE
+ingress.networking.k8s.io/circleguard        traefik   18-213-39-246.sslip.io   10.30.1.115   80, 443   6m23s
+ingress.networking.k8s.io/circleguard-http   traefik   18-213-39-246.sslip.io   10.30.1.115   80        6m23s
+
+NAME                                          READY   SECRET            AGE
+certificate.cert-manager.io/circleguard-tls   True    circleguard-tls   6m23s
+
+== memoria y CPU
+               total        used        free      shared  buff/cache   available
+Mem:           15783        6503        3616          33        6048        9279
+circleguard-prod-k3s   364m   9%    6022Mi   38%   
+
+== desde afuera: https://18-213-39-246.sslip.io
+GET /healthz -> HTTP 200
+1.5.0
+
+subject=CN=18-213-39-246.sslip.io
+issuer=C=US, O=Let's Encrypt, CN=YR2
+notBefore=Nov 23 04:09:41 2026 GMT
+notAfter=Feb 21 04:09:40 2027 GMT
+POST login -> HTTP 200
